@@ -104,7 +104,7 @@ function AdScriptContainer({ scriptHtml, className }: { scriptHtml?: string; cla
   useEffect(() => {
     if (!ref.current || !scriptHtml) return
     ref.current.innerHTML = scriptHtml
-    
+
     // Find all script tags and execute them
     const scripts = ref.current.getElementsByTagName("script")
     for (let i = 0; i < scripts.length; i++) {
@@ -154,7 +154,7 @@ export default function MatchCenterPage({ params }: { params: Promise<{ slug: st
           setAdsConfig(data.ads)
         }
       })
-      .catch(() => {})
+      .catch(() => { })
   }, [])
 
   useEffect(() => {
@@ -321,7 +321,7 @@ export default function MatchCenterPage({ params }: { params: Promise<{ slug: st
             className="object-cover "
             unoptimized
           />
-          <div className="absolute inset-0 bg-linear-to-b from-slate-600/70 via-slate-950 to-slate-950"></div>
+          <div className="absolute inset-0 bg-linear-to-b from-black/90 via-slate-950/80 to-slate-950/95"></div>
         </div>
       )}
 
@@ -333,7 +333,7 @@ export default function MatchCenterPage({ params }: { params: Promise<{ slug: st
       <AdScriptContainer scriptHtml={adsConfig?.header_ads} className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 flex justify-center z-10 relative" />
 
       {/* Header Banner */}
-      <header className="sticky top-0 z-40 bg-slate-955/80 backdrop-blur-md border-b border-slate-900 mb-8">
+      <header className="sticky top-0 z-40 bg-slate-900 backdrop-blur-md border-b border-slate-900 mb-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 rounded-xl bg-linear-to-br from-cyan-500 to-emerald-500 flex items-center justify-center shadow-lg shadow-cyan-500/15">
@@ -372,7 +372,7 @@ export default function MatchCenterPage({ params }: { params: Promise<{ slug: st
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8 animate-fade-in relative z-10">
         {/* Match Scoreboard Header Card (Sleek and compact) */}
-        <div className="p-4 rounded-2xl bg-linear-to-r from-slate-900/60 to-slate-955/60 border border-slate-900 shadow-xl flex flex-col gap-4 relative overflow-hidden max-w-4xl mx-auto">
+        <div className="p-4 rounded-2xl bg-linear-to-r from-slate-900 to-slate-900 border border-slate-900 shadow-xl flex flex-col gap-4 relative overflow-hidden max-w-4xl mx-auto">
           <div className="absolute top-0 right-0 w-64 h-64 bg-cyan-500/5 rounded-full blur-3xl pointer-events-none"></div>
 
           {/* Top info and badge row */}
@@ -462,7 +462,7 @@ export default function MatchCenterPage({ params }: { params: Promise<{ slug: st
           {!showInlineSignup ? (
             <div
               onClick={handlePlayClick}
-              className="w-full aspect-video rounded-3xl overflow-hidden border border-slate-900 bg-slate-955 relative group cursor-pointer shadow-2xl hover:border-cyan-500/20 transition-all duration-300"
+              className="w-full aspect-video rounded-3xl overflow-hidden border-2 border-cyan-500/30 bg-slate-950 relative group cursor-pointer shadow-[0_0_35px_rgba(6,182,212,0.15)] hover:border-cyan-455 hover:shadow-[0_0_50px_rgba(6,182,212,0.4)] transition-all duration-500 transform hover:scale-[1.005]"
             >
               {/* Split Screen Image or Custom Background */}
               <div className="absolute inset-0 flex select-none">
@@ -472,7 +472,7 @@ export default function MatchCenterPage({ params }: { params: Promise<{ slug: st
                       src={selectedGame.modal_image}
                       alt=""
                       fill
-                      className="object-cover opacity-45 scale-100"
+                      className="object-cover opacity-85 scale-100 group-hover:scale-[1.03] transition-transform duration-500"
                       unoptimized
                     />
                   </div>
@@ -484,7 +484,7 @@ export default function MatchCenterPage({ params }: { params: Promise<{ slug: st
                           src={selectedGameHomeFlag}
                           alt=""
                           fill
-                          className="object-cover blur-md opacity-35 scale-110"
+                          className="object-cover blur-xs opacity-75 scale-110"
                           unoptimized
                         />
                       ) : (
@@ -498,7 +498,7 @@ export default function MatchCenterPage({ params }: { params: Promise<{ slug: st
                           src={selectedGameAwayFlag}
                           alt=""
                           fill
-                          className="object-cover blur-md opacity-35 scale-110"
+                          className="object-cover blur-xs opacity-75 scale-110"
                           unoptimized
                         />
                       ) : (
@@ -516,9 +516,12 @@ export default function MatchCenterPage({ params }: { params: Promise<{ slug: st
               {/* Center Overlays */}
               <div className="absolute inset-0 flex flex-col items-center justify-center">
                 {!isBuffering ? (
-                  /* Golden Play button (shown initially) */
-                  <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full border-[3px] border-cyan-500 bg-cyan-500/15 flex items-center justify-center transition-all duration-300 group-hover:scale-110 group-hover:bg-cyan-500/25 group-hover:shadow-[0_0_30px_rgba(245,158,11,0.4)] z-10">
-                    <Play className="w-7 h-7 sm:w-9 sm:h-9 text-cyan-500 fill-cyan-500 translate-x-0.5" />
+                  /* Highlighted Play button with pulse radar ring */
+                  <div className="relative flex items-center justify-center">
+                    <div className="absolute inset-0 rounded-full bg-cyan-500/25 animate-ping duration-1000 scale-125"></div>
+                    <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full border-[3px] border-cyan-400 bg-cyan-500/25 flex items-center justify-center transition-all duration-500 group-hover:scale-110 group-hover:bg-cyan-500/40 group-hover:shadow-[0_0_45px_rgba(6,182,212,0.75)] z-10 relative">
+                      <Play className="w-7 h-7 sm:w-9 sm:h-9 text-cyan-400 fill-cyan-400 translate-x-0.5" />
+                    </div>
                   </div>
                 ) : (
                   /* rotating loading spinner text (shown during buffering delay) */
@@ -627,7 +630,7 @@ export default function MatchCenterPage({ params }: { params: Promise<{ slug: st
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {/* Column 1: Match Schedule */}
-            <div className="bg-slate-905/30 border border-slate-905 rounded-2xl p-5 space-y-4">
+            <div className="bg-slate-900/90 backdrop-blur-md border border-slate-800/80 rounded-2xl p-5 space-y-4">
               <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">{translate("match_schedule", lang)}</span>
               <div className="flex items-center gap-3 bg-slate-950/50 p-3 rounded-xl border border-slate-900/60 text-xs">
                 <Calendar className="w-4 h-4 text-cyan-500" />
@@ -663,7 +666,7 @@ export default function MatchCenterPage({ params }: { params: Promise<{ slug: st
                 (s) => s.id === selectedGame.stadium_id || s._id === selectedGame.stadium_id
               );
               return (
-                <div className="bg-slate-905/30 border border-slate-905 rounded-2xl p-5 space-y-3">
+                <div className="bg-slate-900/90 backdrop-blur-md border border-slate-800/80 rounded-2xl p-5 space-y-3">
                   <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">{translate("stadium_stats", lang)}</span>
                   {stadium ? (
                     <div className="bg-slate-955/50 p-3.5 rounded-xl border border-slate-900/60 text-xs space-y-2.5">
@@ -725,7 +728,7 @@ export default function MatchCenterPage({ params }: { params: Promise<{ slug: st
             })()}
 
             {/* Column 3: Interactive Statistics */}
-            <div className="bg-slate-905/30 border border-slate-905 rounded-2xl p-5 space-y-3">
+            <div className="bg-slate-900/90 backdrop-blur-md border border-slate-800/80 rounded-2xl p-5 space-y-3">
               <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">{translate("match_statistics", lang)}</span>
 
               <div className="space-y-3 bg-slate-955/50 p-3.5 rounded-xl border border-slate-900/60 text-xs">
