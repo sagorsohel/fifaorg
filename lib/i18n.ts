@@ -673,7 +673,29 @@ export function detectBrowserLanguage(): LanguageCode {
     return "en"
   }
 
-  // Get preferred languages list
+  // 1. Check LocalStorage first for manual user selection persistence
+  try {
+    const savedLang = window.localStorage.getItem("worldcup2026_lang") as LanguageCode | null
+    if (savedLang && LANGUAGES.some(l => l.code === savedLang)) {
+      return savedLang
+    }
+  } catch (e) {}
+
+  // 2. Check timezone for specific regions (like Bangladesh -> bn, Iran -> ar/fa, etc.)
+  try {
+    const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone
+    if (timeZone) {
+      const tzLower = timeZone.toLowerCase()
+      if (tzLower.includes("dhaka")) return "bn" // Bangladesh
+      if (tzLower.includes("tehran")) return "ar" // Iran (RTL Arabic alphabet layout)
+      if (tzLower.includes("baku")) return "az" // Azerbaijan
+      if (tzLower.includes("istanbul")) return "tr" // Turkey
+      if (tzLower.includes("kolkata") || tzLower.includes("calcutta")) return "bn" // West Bengal (Bengali)
+      if (tzLower.includes("shanghai") || tzLower.includes("urumqi")) return "zh" // China
+    }
+  } catch (e) {}
+
+  // 3. Get preferred languages list
   const browserLangs = navigator.languages || [navigator.language || "en"]
   
   for (const rawLang of browserLangs) {

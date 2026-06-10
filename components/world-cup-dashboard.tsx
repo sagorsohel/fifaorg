@@ -136,8 +136,36 @@ export default function WorldCupDashboard() {
   const [lang, setLang] = useState<LanguageCode>("en")
 
   useEffect(() => {
-    setLang(detectBrowserLanguage())
+    const detected = detectBrowserLanguage()
+    setLang(detected)
     document.title = "World Cup 2026 Dashboard"
+
+    try {
+      const saved = localStorage.getItem("worldcup2026_lang")
+      if (!saved) {
+        fetch("https://ipapi.co/json/")
+          .then((res) => res.json())
+          .then((data) => {
+            if (data && data.country_code) {
+              const country = data.country_code.toUpperCase()
+              if (country === "BD") {
+                setLang("bn")
+                localStorage.setItem("worldcup2026_lang", "bn")
+              } else if (country === "IR") {
+                setLang("ar")
+                localStorage.setItem("worldcup2026_lang", "ar")
+              } else if (country === "AZ") {
+                setLang("az")
+                localStorage.setItem("worldcup2026_lang", "az")
+              } else if (country === "TR") {
+                setLang("tr")
+                localStorage.setItem("worldcup2026_lang", "tr")
+              }
+            }
+          })
+          .catch(() => {})
+      }
+    } catch (e) {}
   }, [])
 
   // Selectors from Redux UI State
@@ -429,7 +457,11 @@ export default function WorldCupDashboard() {
             <div className="flex items-center gap-2">
               <select
                 value={lang}
-                onChange={(e) => setLang(e.target.value as LanguageCode)}
+                onChange={(e) => {
+                  const newLang = e.target.value as LanguageCode
+                  setLang(newLang)
+                  localStorage.setItem("worldcup2026_lang", newLang)
+                }}
                 className="bg-slate-900 border border-slate-800 text-xs font-semibold text-slate-200 px-3 py-2 rounded-xl focus:outline-hidden focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/30 transition-all cursor-pointer shadow-xs"
               >
                 {LANGUAGES.map((l) => (
