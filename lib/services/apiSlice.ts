@@ -80,3 +80,15 @@ export const apiSlice = createApi({
 
 export const { useGetTeamsQuery, useGetGamesQuery, useGetStadiumsQuery } = apiSlice
 
+export function getGameSlug(game: Game) {
+  const home = (game.home_team_name_en || game.home_team_label || "tbd")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "")
+  const away = (game.away_team_name_en || game.away_team_label || "tbd")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "")
+  return `${home}-vs-${away}-${game.id || game._id}`
+}
+

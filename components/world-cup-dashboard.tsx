@@ -10,6 +10,7 @@ import {
   useGetStadiumsQuery,
   Game,
   Team,
+  getGameSlug,
 } from "@/lib/services/apiSlice"
 import {
   useAppDispatch,
@@ -445,7 +446,7 @@ export default function WorldCupDashboard() {
                       return (
                         <div
                           key={match._id}
-                          onClick={() => router.push(`/match/${match._id}`)}
+                          onClick={() => router.push(`/match/${getGameSlug(match)}`)}
                           className="p-5 rounded-2xl bg-slate-900/30 border border-slate-900 hover:border-slate-805 hover:bg-slate-900/50 transition-all flex flex-col justify-between gap-4 group shadow-xs cursor-pointer"
                         >
                           <div className="flex items-center justify-between text-[10px] text-slate-500 pb-1 border-b border-slate-900/30">
@@ -508,7 +509,7 @@ export default function WorldCupDashboard() {
                       return (
                         <div
                           key={match._id}
-                          onClick={() => router.push(`/match/${match._id}`)}
+                          onClick={() => router.push(`/match/${getGameSlug(match)}`)}
                           className="p-5 rounded-2xl bg-slate-900/30 border border-slate-900 hover:border-slate-850 hover:bg-slate-900/50 transition-all flex flex-col justify-between gap-4 group shadow-xs cursor-pointer"
                         >
                           <div className="flex items-center justify-between text-[10px] text-slate-500 pb-1 border-b border-slate-900/30">
@@ -738,7 +739,7 @@ export default function WorldCupDashboard() {
                             return (
                               <div
                                 key={match._id}
-                                onClick={() => router.push(`/match/${match._id}`)}
+                                onClick={() => router.push(`/match/${getGameSlug(match)}`)}
                                 className="bg-slate-900/30 hover:bg-slate-900/60 backdrop-blur-xs border border-slate-900 hover:border-slate-800 rounded-2xl p-5 flex flex-col justify-between transition-all duration-300 hover:-translate-y-0.5 group shadow-xs hover:shadow-md cursor-pointer"
                               >
                                 {/* Card Header info */}

@@ -8,6 +8,7 @@ import {
   useGetTeamsQuery,
   useGetGamesQuery,
   useGetStadiumsQuery,
+  getGameSlug,
 } from "@/lib/services/apiSlice"
 import {
   Trophy,
@@ -61,7 +62,7 @@ function Countdown({ dateStr }: { dateStr: string }) {
       setTimeLeft({
         days: Math.floor(difference / (1000 * 60 * 60 * 24)),
         hours: Math.floor((difference / (1000 * 60 * 60)) % 24),
-        minutes: Math.floor((difference / 1000 / 65) % 60),
+        minutes: Math.floor((difference / 1000 / 60) % 60),
         seconds: Math.floor((difference / 1000) % 60),
       })
     }
@@ -74,7 +75,7 @@ function Countdown({ dateStr }: { dateStr: string }) {
 
   if (!timeLeft) {
     return (
-      <span className="text-[9px] font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20 font-mono tracking-wider">
+      <span className="text-[9px] font-bold text-emerald-450 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20 font-mono tracking-wider">
         LIVE / STARTED
       </span>
     )
@@ -93,9 +94,9 @@ function Countdown({ dateStr }: { dateStr: string }) {
   )
 }
 
-export default function MatchCenterPage({ params }: { params: Promise<{ id: string }> }) {
+export default function MatchCenterPage({ params }: { params: Promise<{ slug: string }> }) {
   const resolvedParams = use(params)
-  const id = resolvedParams.id
+  const slug = resolvedParams.slug
   const router = useRouter()
 
   // Local state for streamer actions
@@ -109,9 +110,9 @@ export default function MatchCenterPage({ params }: { params: Promise<{ id: stri
 
   // Memos for lookup data
   const selectedGame = useMemo(() => {
-    if (!id || !gamesData?.games) return null
-    return gamesData.games.find((g) => g._id === id || g.id === id)
-  }, [id, gamesData])
+    if (!slug || !gamesData?.games) return null
+    return gamesData.games.find((g) => g._id === slug || g.id === slug || getGameSlug(g) === slug)
+  }, [slug, gamesData])
 
   const selectedGameHomeTeam = useMemo(() => {
     if (!selectedGame || !teamsData?.teams) return null
@@ -219,12 +220,12 @@ export default function MatchCenterPage({ params }: { params: Promise<{ id: stri
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8 animate-fade-in">
         {/* Match Scoreboard Header Card (Sleek and compact) */}
-        <div className="p-4 rounded-2xl bg-linear-to-r from-slate-900/60 to-slate-950/60 border border-slate-900 shadow-xl flex flex-col gap-4 relative overflow-hidden max-w-4xl mx-auto">
+        <div className="p-4 rounded-2xl bg-linear-to-r from-slate-900/60 to-slate-955/60 border border-slate-900 shadow-xl flex flex-col gap-4 relative overflow-hidden max-w-4xl mx-auto">
           <div className="absolute top-0 right-0 w-64 h-64 bg-cyan-500/5 rounded-full blur-3xl pointer-events-none"></div>
           
           {/* Top info and badge row */}
           <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-900/40 pb-2.5">
-            <span className="bg-slate-950 px-2.5 py-1 rounded-full border border-slate-900 font-semibold text-[10px] text-slate-400">
+            <span className="bg-slate-955 px-2.5 py-1 rounded-full border border-slate-900 font-semibold text-[10px] text-slate-400">
               Group {selectedGame.group} • Matchday {selectedGame.matchday}
             </span>
 
@@ -261,7 +262,7 @@ export default function MatchCenterPage({ params }: { params: Promise<{ id: stri
               {isFinished ? (
                 <div className="flex items-center gap-3 bg-slate-950 px-4 py-1 rounded-xl border border-slate-900 shadow-inner font-mono font-bold text-base sm:text-lg text-emerald-400">
                   <span>{selectedGame.home_score}</span>
-                  <span className="text-slate-650 text-xs font-sans">:</span>
+                  <span className="text-slate-655 text-xs font-sans">:</span>
                   <span>{selectedGame.away_score}</span>
                 </div>
               ) : (
@@ -396,7 +397,7 @@ export default function MatchCenterPage({ params }: { params: Promise<{ id: stri
               {isFinished &&
                 ((selectedGame.home_scorers && selectedGame.home_scorers !== "null") ||
                   (selectedGame.away_scorers && selectedGame.away_scorers !== "null")) && (
-                  <div className="bg-slate-950/60 p-3.5 rounded-xl border border-slate-900/60 text-[10px] space-y-2">
+                  <div className="bg-slate-955/60 p-3.5 rounded-xl border border-slate-900/60 text-[10px] space-y-2">
                     <span className="font-bold text-slate-500 uppercase tracking-wider block">⚽ Goal Scorers</span>
                     <div className="flex justify-between gap-4 text-slate-300">
                       <div className="truncate flex-1 flex flex-col gap-0.5">
@@ -450,7 +451,7 @@ export default function MatchCenterPage({ params }: { params: Promise<{ id: stri
             <div className="bg-slate-905/30 border border-slate-905 rounded-2xl p-5 space-y-3">
               <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">Match Statistics</span>
               
-              <div className="space-y-3 bg-slate-950/50 p-3.5 rounded-xl border border-slate-900/60 text-xs">
+              <div className="space-y-3 bg-slate-955/50 p-3.5 rounded-xl border border-slate-900/60 text-xs">
                 {/* Stat 1: Possession */}
                 <div className="space-y-1">
                   <div className="flex justify-between text-[9px] font-bold text-slate-400">
