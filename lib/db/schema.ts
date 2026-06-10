@@ -1,4 +1,4 @@
-import { mysqlTable, varchar, int, text } from "drizzle-orm/mysql-core"
+import { mysqlTable, varchar, int, text, double } from "drizzle-orm/mysql-core"
 
 export const teams = mysqlTable("teams", {
   id: varchar("id", { length: 50 }).primaryKey(),
@@ -10,7 +10,21 @@ export const teams = mysqlTable("teams", {
   iso2: varchar("iso2", { length: 10 }),
   groups: varchar("groups", { length: 10 }),
   translations: text("translations"),
+  fifa_team_id: varchar("fifa_team_id", { length: 50 }),
 })
+
+export const players = mysqlTable("players", {
+  id: varchar("id", { length: 50 }).primaryKey(),
+  team_id: varchar("team_id", { length: 50 }).notNull(),
+  name: varchar("name", { length: 150 }).notNull(),
+  jersey_num: int("jersey_num"),
+  position: varchar("position", { length: 100 }),
+  weight: double("weight"),
+  height: double("height"),
+  picture_url: varchar("picture_url", { length: 255 }),
+  fifa_id: varchar("fifa_id", { length: 50 }),
+})
+
 
 export const stadiums = mysqlTable("stadiums", {
   id: varchar("id", { length: 50 }).primaryKey(),

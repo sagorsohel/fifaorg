@@ -10,6 +10,19 @@ export interface Team {
   groups: string // E.g. "A"
   id: string
   translations?: string
+  fifa_team_id?: string
+}
+
+export interface Player {
+  id: string
+  team_id: string
+  name: string
+  jersey_num: number | null
+  position: string
+  weight: number | null
+  height: number | null
+  picture_url?: string | null
+  fifa_id?: string | null
 }
 
 export interface Game {
@@ -81,10 +94,41 @@ export const apiSlice = createApi({
     getStadiums: builder.query<StadiumsResponse, void>({
       query: () => "/api/stadiums",
     }),
+    getPlayers: builder.query<{ players: Player[] }, string>({
+      query: (teamId) => `/api/manage/players?team_id=${teamId}`,
+    }),
+    syncSquad: builder.mutation<any, { fifa_team_id: string; team_id?: string }>({
+      query: (body) => ({
+        url: "/api/manage/teams/sync-squad",
+        method: "POST",
+        body,
+      }),
+    }),
+    savePlayer: builder.mutation<any, Partial<Player>>({
+      query: (body) => ({
+        url: "/api/manage/players",
+        method: "POST",
+        body,
+      }),
+    }),
+    deletePlayer: builder.mutation<any, string>({
+      query: (id) => ({
+        url: `/api/manage/players?id=${id}`,
+        method: "DELETE",
+      }),
+    }),
   }),
 })
 
-export const { useGetTeamsQuery, useGetGamesQuery, useGetStadiumsQuery } = apiSlice
+export const {
+  useGetTeamsQuery,
+  useGetGamesQuery,
+  useGetStadiumsQuery,
+  useGetPlayersQuery,
+  useSyncSquadMutation,
+  useSavePlayerMutation,
+  useDeletePlayerMutation,
+} = apiSlice
 
 export function getGameSlug(game: Game) {
   if (game.slug) return game.slug

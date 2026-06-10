@@ -32,7 +32,22 @@ export async function ensureTablesExist() {
         \`fifa_code\` varchar(10),
         \`iso2\` varchar(10),
         \`groups\` varchar(10),
-        \`translations\` text
+        \`translations\` text,
+        \`fifa_team_id\` varchar(50)
+      )
+    `)
+
+    await poolConnection.query(`
+      CREATE TABLE IF NOT EXISTS \`players\` (
+        \`id\` varchar(50) PRIMARY KEY,
+        \`team_id\` varchar(50) NOT NULL,
+        \`name\` varchar(150) NOT NULL,
+        \`jersey_num\` int,
+        \`position\` varchar(100),
+        \`weight\` double,
+        \`height\` double,
+        \`picture_url\` varchar(255),
+        \`fifa_id\` varchar(50)
       )
     `)
 
@@ -92,6 +107,10 @@ export async function ensureTablesExist() {
     } catch (err) {}
 
     // Self-healing columns for existing tables
+    try {
+      await poolConnection.query("ALTER TABLE `teams` ADD COLUMN `fifa_team_id` VARCHAR(50) NULL")
+    } catch (err) {}
+
     try {
       await poolConnection.query("ALTER TABLE `teams` ADD COLUMN `translations` TEXT NULL")
     } catch (err) {
