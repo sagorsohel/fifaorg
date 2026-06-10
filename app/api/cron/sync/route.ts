@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server"
-import { db } from "@/lib/db"
+import { db, ensureTablesExist } from "@/lib/db"
 import { teams, stadiums, games } from "@/lib/db/schema"
 import { getGameSlug } from "@/lib/services/apiSlice"
 
@@ -26,6 +26,8 @@ export async function GET(req: Request) {
     if (envSecret && secret !== envSecret) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
+
+    await ensureTablesExist()
 
     console.log("Database Sync Started...")
 

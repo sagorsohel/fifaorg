@@ -106,11 +106,16 @@ export default function MatchCenterPage({ params }: { params: Promise<{ slug: st
   const { data: gamesData, isLoading: isGamesLoading } = useGetGamesQuery()
   const { data: stadiumsData, isLoading: isStadiumsLoading } = useGetStadiumsQuery()
 
-  // Memos for lookup data
   const selectedGame = useMemo(() => {
     if (!slug || !gamesData?.games) return null
     return gamesData.games.find((g) => g._id === slug || g.id === slug || g.slug === slug || getGameSlug(g) === slug)
   }, [slug, gamesData])
+
+  useEffect(() => {
+    if (selectedGame) {
+      document.title = selectedGame.slug || getGameSlug(selectedGame)
+    }
+  }, [selectedGame])
 
   const selectedGameHomeTeam = useMemo(() => {
     if (!selectedGame || !teamsData?.teams) return null

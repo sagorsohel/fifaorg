@@ -137,6 +137,7 @@ export default function WorldCupDashboard() {
 
   useEffect(() => {
     setLang(detectBrowserLanguage())
+    document.title = "World Cup 2026 Dashboard"
   }, [])
 
   // Selectors from Redux UI State

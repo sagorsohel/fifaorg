@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server"
-import { db } from "@/lib/db"
+import { db, ensureTablesExist } from "@/lib/db"
 import { teams } from "@/lib/db/schema"
 
 export async function GET() {
   try {
+    await ensureTablesExist()
     const teamsList = await db.select().from(teams)
     return NextResponse.json({ teams: teamsList })
   } catch (error: any) {

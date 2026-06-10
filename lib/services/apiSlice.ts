@@ -82,6 +82,7 @@ export const apiSlice = createApi({
 export const { useGetTeamsQuery, useGetGamesQuery, useGetStadiumsQuery } = apiSlice
 
 export function getGameSlug(game: Game) {
+  if (game.slug) return game.slug
   const home = (game.home_team_name_en || game.home_team_label || "tbd")
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server"
-import { db } from "@/lib/db"
+import { db, ensureTablesExist } from "@/lib/db"
 import { games } from "@/lib/db/schema"
 import { eq, or } from "drizzle-orm"
 
@@ -9,6 +9,7 @@ export async function GET(
 ) {
   try {
     const { slug } = await params
+    await ensureTablesExist()
 
     if (!slug) {
       return NextResponse.json({ error: "Missing slug parameter" }, { status: 400 })
