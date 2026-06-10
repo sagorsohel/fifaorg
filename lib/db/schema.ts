@@ -1,0 +1,46 @@
+import { mysqlTable, varchar, int, text } from "drizzle-orm/mysql-core"
+
+export const teams = mysqlTable("teams", {
+  id: varchar("id", { length: 50 }).primaryKey(),
+  _id: varchar("_id", { length: 50 }).notNull(),
+  name_en: varchar("name_en", { length: 100 }).notNull(),
+  name_fa: varchar("name_fa", { length: 100 }),
+  flag: varchar("flag", { length: 255 }),
+  fifa_code: varchar("fifa_code", { length: 10 }),
+  iso2: varchar("iso2", { length: 10 }),
+  groups: varchar("groups", { length: 10 }),
+})
+
+export const stadiums = mysqlTable("stadiums", {
+  id: varchar("id", { length: 50 }).primaryKey(),
+  _id: varchar("_id", { length: 50 }).notNull(),
+  name_en: varchar("name_en", { length: 100 }).notNull(),
+  name_fa: varchar("name_fa", { length: 100 }),
+  fifa_name: varchar("fifa_name", { length: 150 }),
+  city_en: varchar("city_en", { length: 100 }),
+  city_fa: varchar("city_fa", { length: 100 }),
+  country_en: varchar("country_en", { length: 100 }),
+  country_fa: varchar("country_fa", { length: 100 }),
+  capacity: int("capacity"),
+  region: varchar("region", { length: 100 }),
+})
+
+export const games = mysqlTable("games", {
+  id: varchar("id", { length: 50 }).primaryKey(),
+  _id: varchar("_id", { length: 50 }).notNull(),
+  home_team_id: varchar("home_team_id", { length: 50 }).notNull(),
+  away_team_id: varchar("away_team_id", { length: 50 }).notNull(),
+  home_score: varchar("home_score", { length: 10 }).default("0"),
+  away_score: varchar("away_score", { length: 10 }).default("0"),
+  home_scorers: text("home_scorers"),
+  away_scorers: text("away_scorers"),
+  group: varchar("group", { length: 10 }),
+  matchday: varchar("matchday", { length: 50 }),
+  local_date: varchar("local_date", { length: 100 }),
+  persian_date: varchar("persian_date", { length: 100 }),
+  stadium_id: varchar("stadium_id", { length: 50 }),
+  finished: varchar("finished", { length: 10 }).default("FALSE"),
+  time_elapsed: varchar("time_elapsed", { length: 50 }),
+  type: varchar("type", { length: 50 }),
+  slug: varchar("slug", { length: 150 }).unique().notNull(),
+})

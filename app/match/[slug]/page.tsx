@@ -111,7 +111,7 @@ export default function MatchCenterPage({ params }: { params: Promise<{ slug: st
   // Memos for lookup data
   const selectedGame = useMemo(() => {
     if (!slug || !gamesData?.games) return null
-    return gamesData.games.find((g) => g._id === slug || g.id === slug || getGameSlug(g) === slug)
+    return gamesData.games.find((g) => g._id === slug || g.id === slug || g.slug === slug || getGameSlug(g) === slug)
   }, [slug, gamesData])
 
   const selectedGameHomeTeam = useMemo(() => {

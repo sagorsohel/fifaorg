@@ -34,6 +34,7 @@ export interface Game {
   away_team_name_fa?: string
   home_team_label?: string
   away_team_label?: string
+  slug?: string
 }
 
 export interface TeamsResponse {
