@@ -36,6 +36,9 @@ export interface Game {
   home_team_label?: string
   away_team_label?: string
   slug?: string
+  referral_link?: string
+  modal_image?: string
+  bg_image?: string
 }
 
 export interface TeamsResponse {

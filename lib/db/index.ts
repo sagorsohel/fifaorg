@@ -71,7 +71,10 @@ export async function ensureTablesExist() {
         \`finished\` varchar(10) DEFAULT 'FALSE',
         \`time_elapsed\` varchar(50),
         \`type\` varchar(50),
-        \`slug\` varchar(150) UNIQUE NOT NULL
+        \`slug\` varchar(150) UNIQUE NOT NULL,
+        \`referral_link\` text,
+        \`modal_image\` text,
+        \`bg_image\` text
       )
     `)
 
@@ -87,6 +90,18 @@ export async function ensureTablesExist() {
     } catch (err) {
       // Ignore if column already exists
     }
+
+    try {
+      await poolConnection.query("ALTER TABLE `games` ADD COLUMN `referral_link` TEXT NULL")
+    } catch (err) {}
+
+    try {
+      await poolConnection.query("ALTER TABLE `games` ADD COLUMN `modal_image` TEXT NULL")
+    } catch (err) {}
+
+    try {
+      await poolConnection.query("ALTER TABLE `games` ADD COLUMN `bg_image` TEXT NULL")
+    } catch (err) {}
 
     tablesEnsured = true
     console.log("Database tables verified/created successfully.")

@@ -86,6 +86,18 @@ function Countdown({ dateStr, stadiumId, lang }: { dateStr: string; stadiumId: s
   )
 }
 
+const getTeamName = (team: any, fallback: string, activeLang: LanguageCode) => {
+  if (!team) return fallback
+  if (team.translations) {
+    try {
+      const parsed = JSON.parse(team.translations)
+      if (parsed && parsed[activeLang]) return parsed[activeLang]
+    } catch (e) {}
+  }
+  if (activeLang === "ar" && team.name_fa) return team.name_fa
+  return team.name_en
+}
+
 export default function MatchCenterPage({ params }: { params: Promise<{ slug: string }> }) {
   const resolvedParams = use(params)
   const slug = resolvedParams.slug
@@ -98,7 +110,32 @@ export default function MatchCenterPage({ params }: { params: Promise<{ slug: st
   const [lang, setLang] = useState<LanguageCode>("en")
 
   useEffect(() => {
-    setLang(detectBrowserLanguage())
+    const detected = detectBrowserLanguage()
+    setLang(detected)
+
+    try {
+      const saved = localStorage.getItem("worldcup2026_lang")
+      if (!saved) {
+        fetch("/api/detect-region")
+          .then((res) => res.json())
+          .then((data) => {
+            if (data && data.country_code) {
+              const country = data.country_code.toUpperCase()
+              const map: Record<string, LanguageCode> = {
+                BD: "bn",
+                IR: "ar",
+                AZ: "az",
+                TR: "tr"
+              }
+              if (map[country]) {
+                setLang(map[country])
+                localStorage.setItem("worldcup2026_lang", map[country])
+              }
+            }
+          })
+          .catch(() => {})
+      }
+    } catch (e) {}
   }, [])
 
   // API Queries via RTK Query
@@ -111,11 +148,6 @@ export default function MatchCenterPage({ params }: { params: Promise<{ slug: st
     return gamesData.games.find((g) => g._id === slug || g.id === slug || g.slug === slug || getGameSlug(g) === slug)
   }, [slug, gamesData])
 
-  useEffect(() => {
-    if (selectedGame) {
-      document.title = selectedGame.slug || getGameSlug(selectedGame)
-    }
-  }, [selectedGame])
 
   const selectedGameHomeTeam = useMemo(() => {
     if (!selectedGame || !teamsData?.teams) return null
@@ -126,6 +158,14 @@ export default function MatchCenterPage({ params }: { params: Promise<{ slug: st
     if (!selectedGame || !teamsData?.teams) return null
     return teamsData.teams.find((t) => t.id === selectedGame.away_team_id || t._id === selectedGame.away_team_id)
   }, [selectedGame, teamsData])
+
+  useEffect(() => {
+    if (selectedGame) {
+      const homeName = getTeamName(selectedGameHomeTeam, selectedGame.home_team_name_en || selectedGame.home_team_label || "TBD", lang)
+      const awayName = getTeamName(selectedGameAwayTeam, selectedGame.away_team_name_en || selectedGame.away_team_label || "TBD", lang)
+      document.title = `${homeName} vs ${awayName} | ${translate("match_center", lang)}`
+    }
+  }, [selectedGame, selectedGameHomeTeam, selectedGameAwayTeam, lang])
 
   const flagMap = useMemo(() => {
     const map: Record<string, string> = {}
@@ -183,6 +223,14 @@ export default function MatchCenterPage({ params }: { params: Promise<{ slug: st
     }, 1500)
   }
 
+  const handleActionRedirect = () => {
+    if (selectedGame && selectedGame.referral_link) {
+      window.open(selectedGame.referral_link, "_blank")
+    } else {
+      window.open("https://lightsalmon-hummingbird-478538.hostingersite.com/register", "_blank")
+    }
+  }
+
   // Loading state fallback
   if (isTeamsLoading || isGamesLoading || isStadiumsLoading) {
     return (
@@ -209,21 +257,9 @@ export default function MatchCenterPage({ params }: { params: Promise<{ slug: st
     )
   }
 
-  const getTeamName = (team: any, fallback: string) => {
-    if (!team) return fallback
-    if (team.translations) {
-      try {
-        const parsed = JSON.parse(team.translations)
-        if (parsed && parsed[lang]) return parsed[lang]
-      } catch (e) {}
-    }
-    if (lang === "ar" && team.name_fa) return team.name_fa
-    return team.name_en
-  }
-
   const isFinished = selectedGame.finished.toUpperCase() === "TRUE"
-  const homeName = getTeamName(selectedGameHomeTeam, selectedGame.home_team_name_en || selectedGame.home_team_label || "TBD")
-  const awayName = getTeamName(selectedGameAwayTeam, selectedGame.away_team_name_en || selectedGame.away_team_label || "TBD")
+  const homeName = getTeamName(selectedGameHomeTeam, selectedGame.home_team_name_en || selectedGame.home_team_label || "TBD", lang)
+  const awayName = getTeamName(selectedGameAwayTeam, selectedGame.away_team_name_en || selectedGame.away_team_label || "TBD", lang)
 
   return (
     <div dir={LANGUAGES.find(l => l.code === lang)?.dir || "ltr"} className="min-h-screen bg-slate-950 text-slate-100 font-sans pb-16 transition-all duration-300">
@@ -250,11 +286,17 @@ export default function MatchCenterPage({ params }: { params: Promise<{ slug: st
           <div className="flex items-center gap-2">
             <select
               value={lang}
-              onChange={(e) => setLang(e.target.value as LanguageCode)}
+              onChange={(e) => {
+                const newLang = e.target.value as LanguageCode
+                setLang(newLang)
+                try {
+                  localStorage.setItem("worldcup2026_lang", newLang)
+                } catch (err) {}
+              }}
               className="bg-slate-900 border border-slate-800 text-xs font-semibold text-slate-200 px-3 py-2 rounded-xl focus:outline-hidden focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/30 transition-all cursor-pointer shadow-xs"
             >
               {LANGUAGES.map((l) => (
-                <option key={l.code} value={l.code} className="bg-slate-950 text-slate-200">
+                <option key={l.code} value={l.code} className="bg-slate-955 text-slate-200">
                   {l.name}
                 </option>
               ))}
@@ -353,36 +395,50 @@ export default function MatchCenterPage({ params }: { params: Promise<{ slug: st
             onClick={handlePlayClick}
             className="w-full aspect-video rounded-3xl overflow-hidden border border-slate-900 bg-slate-955 relative group cursor-pointer shadow-2xl hover:border-amber-500/20 transition-all duration-300"
           >
-            {/* Split Screen Image */}
+            {/* Split Screen Image or Custom Background */}
             <div className="absolute inset-0 flex select-none">
-              <div className="w-1/2 h-full relative overflow-hidden">
-                {selectedGameHomeFlag ? (
+              {selectedGame.bg_image ? (
+                <div className="relative w-full h-full">
                   <Image
-                    src={selectedGameHomeFlag}
+                    src={selectedGame.bg_image}
                     alt=""
                     fill
-                    className="object-cover blur-md opacity-35 scale-110"
+                    className="object-cover opacity-40 scale-100"
                     unoptimized
                   />
-                ) : (
-                  <div className="w-full h-full bg-slate-900" />
-                )}
-                <div className="absolute inset-0 bg-linear-to-r from-slate-955 via-slate-955/20 to-transparent"></div>
-              </div>
-              <div className="w-1/2 h-full relative overflow-hidden">
-                {selectedGameAwayFlag ? (
-                  <Image
-                    src={selectedGameAwayFlag}
-                    alt=""
-                    fill
-                    className="object-cover blur-md opacity-35 scale-110"
-                    unoptimized
-                  />
-                ) : (
-                  <div className="w-full h-full bg-slate-900" />
-                )}
-                <div className="absolute inset-0 bg-linear-to-l from-slate-955 via-slate-955/20 to-transparent"></div>
-              </div>
+                </div>
+              ) : (
+                <>
+                  <div className="w-1/2 h-full relative overflow-hidden">
+                    {selectedGameHomeFlag ? (
+                      <Image
+                        src={selectedGameHomeFlag}
+                        alt=""
+                        fill
+                        className="object-cover blur-md opacity-35 scale-110"
+                        unoptimized
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-slate-900" />
+                    )}
+                    <div className="absolute inset-0 bg-linear-to-r from-slate-955 via-slate-955/20 to-transparent"></div>
+                  </div>
+                  <div className="w-1/2 h-full relative overflow-hidden">
+                    {selectedGameAwayFlag ? (
+                      <Image
+                        src={selectedGameAwayFlag}
+                        alt=""
+                        fill
+                        className="object-cover blur-md opacity-35 scale-110"
+                        unoptimized
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-slate-900" />
+                    )}
+                    <div className="absolute inset-0 bg-linear-to-l from-slate-955 via-slate-955/20 to-transparent"></div>
+                  </div>
+                </>
+              )}
             </div>
 
             {/* Dark mask overlay */}
@@ -471,19 +527,52 @@ export default function MatchCenterPage({ params }: { params: Promise<{ slug: st
                 <div className="bg-slate-905/30 border border-slate-905 rounded-2xl p-5 space-y-3">
                   <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">{translate("stadium_stats", lang)}</span>
                   {stadium ? (
-                    <div className="bg-slate-950/50 p-3.5 rounded-xl border border-slate-900/60 text-xs space-y-2.5">
+                    <div className="bg-slate-955/50 p-3.5 rounded-xl border border-slate-900/60 text-xs space-y-2.5">
                       <div className="flex items-center gap-2">
                         <span className="text-cyan-500 font-bold">🏟️</span>
-                        <span className="font-bold text-slate-200 text-[11px] truncate">{stadium.name_en}</span>
+                        <span className="font-bold text-slate-200 text-[11px] truncate">
+                          {(() => {
+                            if (stadium.translations) {
+                              try {
+                                const parsed = JSON.parse(stadium.translations)
+                                if (parsed && parsed[lang]) {
+                                  return parsed[lang].split(",")[0].trim()
+                                }
+                              } catch (e) {}
+                            }
+                            if (lang === "ar" && stadium.name_fa) return stadium.name_fa
+                            return stadium.name_en
+                          })()}
+                        </span>
                       </div>
                       <div className="grid grid-cols-2 gap-2 text-[9px] border-t border-slate-900/40 pt-2">
                         <div>
                           <span className="text-slate-500 block">{translate("capacity", lang)}</span>
-                          <span className="font-bold text-slate-300 mt-0.5 block">{stadium.capacity.toLocaleString()} {translate("seats", lang)}</span>
+                          <span className="font-bold text-slate-300 mt-0.5 block">
+                            {stadium.capacity ? stadium.capacity.toLocaleString() : "TBD"} {translate("seats", lang)}
+                          </span>
                         </div>
                         <div>
                           <span className="text-slate-500 block">{translate("location", lang)}</span>
-                          <span className="font-bold text-slate-300 mt-0.5 block truncate">{stadium.city_en}, {stadium.country_en}</span>
+                          <span className="font-bold text-slate-300 mt-0.5 block truncate">
+                            {(() => {
+                              if (stadium.translations) {
+                                try {
+                                  const parsed = JSON.parse(stadium.translations)
+                                  if (parsed && parsed[lang]) {
+                                    const parts = parsed[lang].split(",")
+                                    if (parts.length > 1) {
+                                      return parts.slice(1).join(",").trim()
+                                    }
+                                  }
+                                } catch (e) {}
+                              }
+                              if (lang === "ar" && stadium.city_fa && stadium.country_fa) {
+                                return `${stadium.city_fa}, ${stadium.country_fa}`
+                              }
+                              return `${stadium.city_en}, ${stadium.country_en}`
+                            })()}
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -585,13 +674,22 @@ export default function MatchCenterPage({ params }: { params: Promise<{ slug: st
             
             {/* Modal Body */}
             <div className="p-6 flex flex-col items-center gap-6">
-              {/* Subtitle */}
-              <h3 className="text-center font-bold text-lg text-slate-100 leading-snug px-2">
-                {translate("signup_title", lang)}
-              </h3>
+              {/* Promo Banner Image or Subtitle */}
+              {selectedGame.modal_image ? (
+                <div className="w-full relative aspect-video rounded-2xl overflow-hidden border border-slate-900/65 mb-1 bg-slate-950 shadow-inner">
+                  <Image src={selectedGame.modal_image} alt="Promotion Banner" fill className="object-cover" unoptimized />
+                </div>
+              ) : (
+                <h3 className="text-center font-bold text-lg text-slate-100 leading-snug px-2">
+                  {translate("signup_title", lang)}
+                </h3>
+              )}
               
               {/* Main action button */}
-              <button className="w-full py-4 bg-amber-500 hover:bg-amber-600 active:scale-[0.98] transition-all rounded-xl text-slate-955 font-extrabold tracking-wider text-sm shadow-lg shadow-amber-500/20 hover:shadow-amber-500/35 cursor-pointer uppercase">
+              <button 
+                onClick={handleActionRedirect}
+                className="w-full py-4 bg-amber-500 hover:bg-amber-600 active:scale-[0.98] transition-all rounded-xl text-slate-955 font-extrabold tracking-wider text-sm shadow-lg shadow-amber-500/20 hover:shadow-amber-500/35 cursor-pointer uppercase"
+              >
                 {translate("signup_btn", lang)}
               </button>
               
@@ -606,7 +704,10 @@ export default function MatchCenterPage({ params }: { params: Promise<{ slug: st
                     <span className="text-slate-450 text-[10px]">{translate("adblocker_text", lang)}</span>
                   </div>
                 </div>
-                <button className="px-3 py-2 bg-amber-500 text-slate-955 font-extrabold text-[10px] rounded-lg tracking-wider hover:bg-amber-600 transition-colors uppercase shrink-0">
+                <button 
+                  onClick={handleActionRedirect}
+                  className="px-3 py-2 bg-amber-500 text-slate-955 font-extrabold text-[10px] rounded-lg tracking-wider hover:bg-amber-600 transition-colors uppercase shrink-0"
+                >
                   {translate("unlock_hd", lang)}
                 </button>
               </div>

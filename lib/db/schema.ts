@@ -45,4 +45,8 @@ export const games = mysqlTable("games", {
   time_elapsed: varchar("time_elapsed", { length: 50 }),
   type: varchar("type", { length: 50 }),
   slug: varchar("slug", { length: 150 }).unique().notNull(),
+  referral_link: text("referral_link"),
+  modal_image: text("modal_image"),
+  bg_image: text("bg_image"),
 })
+

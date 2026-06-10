@@ -143,7 +143,7 @@ export default function WorldCupDashboard() {
     try {
       const saved = localStorage.getItem("worldcup2026_lang")
       if (!saved) {
-        fetch("https://ipapi.co/json/")
+        fetch("/api/detect-region")
           .then((res) => res.json())
           .then((data) => {
             if (data && data.country_code) {
