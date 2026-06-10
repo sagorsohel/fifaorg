@@ -31,7 +31,8 @@ export async function ensureTablesExist() {
         \`flag\` varchar(255),
         \`fifa_code\` varchar(10),
         \`iso2\` varchar(10),
-        \`groups\` varchar(10)
+        \`groups\` varchar(10),
+        \`translations\` text
       )
     `)
 
@@ -47,7 +48,8 @@ export async function ensureTablesExist() {
         \`country_en\` varchar(100),
         \`country_fa\` varchar(100),
         \`capacity\` int,
-        \`region\` varchar(100)
+        \`region\` varchar(100),
+        \`translations\` text
       )
     `)
 
@@ -72,6 +74,20 @@ export async function ensureTablesExist() {
         \`slug\` varchar(150) UNIQUE NOT NULL
       )
     `)
+
+    // Self-healing columns for existing tables
+    try {
+      await poolConnection.query("ALTER TABLE `teams` ADD COLUMN `translations` TEXT NULL")
+    } catch (err) {
+      // Ignore if column already exists
+    }
+
+    try {
+      await poolConnection.query("ALTER TABLE `stadiums` ADD COLUMN `translations` TEXT NULL")
+    } catch (err) {
+      // Ignore if column already exists
+    }
+
     tablesEnsured = true
     console.log("Database tables verified/created successfully.")
   } catch (err) {

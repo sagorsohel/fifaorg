@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 import { db, ensureTablesExist } from "@/lib/db"
 import { teams, stadiums, games } from "@/lib/db/schema"
 import { getGameSlug } from "@/lib/services/apiSlice"
+import { teamTranslations, stadiumTranslations } from "@/lib/db/translations"
 
 async function fetchFromApi(endpoint: string) {
   let res
@@ -45,6 +46,9 @@ export async function GET(req: Request) {
     // 2. Sync Teams
     let syncedTeams = 0
     for (const team of teamsList) {
+      const teamTrans = teamTranslations[team.name_en] || null
+      const serializedTeamTrans = teamTrans ? JSON.stringify(teamTrans) : null
+
       await db
         .insert(teams)
         .values({
@@ -56,6 +60,7 @@ export async function GET(req: Request) {
           fifa_code: team.fifa_code || null,
           iso2: team.iso2 || null,
           groups: team.groups || null,
+          translations: serializedTeamTrans,
         })
         .onDuplicateKeyUpdate({
           set: {
@@ -65,6 +70,7 @@ export async function GET(req: Request) {
             fifa_code: team.fifa_code || null,
             iso2: team.iso2 || null,
             groups: team.groups || null,
+            translations: serializedTeamTrans,
           },
         })
       syncedTeams++
@@ -73,6 +79,9 @@ export async function GET(req: Request) {
     // 3. Sync Stadiums
     let syncedStadiums = 0
     for (const stadium of stadiumsList) {
+      const stadiumTrans = stadiumTranslations[stadium.name_en] || null
+      const serializedStadiumTrans = stadiumTrans ? JSON.stringify(stadiumTrans) : null
+
       await db
         .insert(stadiums)
         .values({
@@ -87,6 +96,7 @@ export async function GET(req: Request) {
           country_fa: stadium.country_fa || null,
           capacity: stadium.capacity ? Number(stadium.capacity) : null,
           region: stadium.region || null,
+          translations: serializedStadiumTrans,
         })
         .onDuplicateKeyUpdate({
           set: {
@@ -99,6 +109,7 @@ export async function GET(req: Request) {
             country_fa: stadium.country_fa || null,
             capacity: stadium.capacity ? Number(stadium.capacity) : null,
             region: stadium.region || null,
+            translations: serializedStadiumTrans,
           },
         })
       syncedStadiums++

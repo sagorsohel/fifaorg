@@ -9,6 +9,7 @@ export const teams = mysqlTable("teams", {
   fifa_code: varchar("fifa_code", { length: 10 }),
   iso2: varchar("iso2", { length: 10 }),
   groups: varchar("groups", { length: 10 }),
+  translations: text("translations"),
 })
 
 export const stadiums = mysqlTable("stadiums", {
@@ -23,6 +24,7 @@ export const stadiums = mysqlTable("stadiums", {
   country_fa: varchar("country_fa", { length: 100 }),
   capacity: int("capacity"),
   region: varchar("region", { length: 100 }),
+  translations: text("translations"),
 })
 
 export const games = mysqlTable("games", {

@@ -190,10 +190,10 @@ export default function WorldCupDashboard() {
 
   // Create a fast lookup map for team names from teams data
   const teamNamesMap = useMemo(() => {
-    const map: Record<string, { name_en: string; name_fa: string }> = {}
+    const map: Record<string, Team> = {}
     if (teamsData?.teams) {
       teamsData.teams.forEach((team) => {
-        map[team.id] = { name_en: team.name_en, name_fa: team.name_fa }
+        map[team.id] = team
       })
     }
     return map
@@ -202,20 +202,41 @@ export default function WorldCupDashboard() {
   const getTeamName = (teamId: string) => {
     const team = teamNamesMap[teamId]
     if (!team) return "TBD"
+    if (team.translations) {
+      try {
+        const parsed = JSON.parse(team.translations)
+        if (parsed && parsed[lang]) return parsed[lang]
+      } catch (e) {}
+    }
     if (lang === "ar" && team.name_fa) return team.name_fa
     return team.name_en
   }
 
   // Create a fast lookup map for stadiums
   const stadiumsMap = useMemo(() => {
-    const map: Record<string, string> = {}
+    const map: Record<string, any> = {}
     if (stadiumsData?.stadiums) {
       stadiumsData.stadiums.forEach((stadium) => {
-        map[stadium.id] = `${stadium.name_en}, ${stadium.city_en}`
+        map[stadium.id] = stadium
       })
     }
     return map
   }, [stadiumsData])
+
+  const getStadiumName = (stadiumId: string) => {
+    const stadium = stadiumsMap[stadiumId]
+    if (!stadium) return ""
+    if (stadium.translations) {
+      try {
+        const parsed = JSON.parse(stadium.translations)
+        if (parsed && parsed[lang]) return parsed[lang]
+      } catch (e) {}
+    }
+    if (lang === "ar" && stadium.name_fa && stadium.city_fa) {
+      return `${stadium.name_fa}, ${stadium.city_fa}`
+    }
+    return `${stadium.name_en}, ${stadium.city_en}`
+  }
 
   // Selected team lookup & match filtering
   const selectedTeam = useMemo(() => {
@@ -537,7 +558,7 @@ export default function WorldCupDashboard() {
 
                           <div className="text-[10px] text-slate-500 flex items-center gap-1.5 pt-1 border-t border-slate-900/30">
                             <MapPin className="w-3.5 h-3.5 text-slate-600" />
-                            <span>{translate("stadium", lang)}: {stadiumsMap[match.stadium_id] || `#${match.stadium_id}`} | {formatLocalTime(parseStadiumLocalDate(match.local_date, match.stadium_id), lang)}</span>
+                            <span>{translate("stadium", lang)}: {getStadiumName(match.stadium_id) || `#${match.stadium_id}`} | {formatLocalTime(parseStadiumLocalDate(match.local_date, match.stadium_id), lang)}</span>
                           </div>
                         </div>
                       )
@@ -600,7 +621,7 @@ export default function WorldCupDashboard() {
 
                           <div className="text-[10px] text-slate-500 flex items-center gap-1.5 pt-1 border-t border-slate-900/30 my-1">
                             <MapPin className="w-3 h-3 text-slate-600" />
-                            <span>{translate("stadium", lang)}: {stadiumsMap[match.stadium_id] || `#${match.stadium_id}`} | {formatLocalTime(parseStadiumLocalDate(match.local_date, match.stadium_id), lang)}</span>
+                            <span>{translate("stadium", lang)}: {getStadiumName(match.stadium_id) || `#${match.stadium_id}`} | {formatLocalTime(parseStadiumLocalDate(match.local_date, match.stadium_id), lang)}</span>
                           </div>
 
                           {((match.home_scorers && match.home_scorers !== "null") || (match.away_scorers && match.away_scorers !== "null")) && (
@@ -931,7 +952,7 @@ export default function WorldCupDashboard() {
                                   <div className="flex items-center gap-1.5 text-[11px] text-slate-505">
                                     <MapPin className="w-3.5 h-3.5 text-slate-600" />
                                     <span>
-                                      {translate("stadium", lang)}: {stadiumsMap[match.stadium_id] || `#${match.stadium_id}`}
+                                     {translate("stadium", lang)}: {getStadiumName(match.stadium_id) || `#${match.stadium_id}`}
                                     </span>
                                   </div>
 

@@ -139,14 +139,29 @@ export default function MatchCenterPage({ params }: { params: Promise<{ slug: st
   }, [teamsData])
 
   const stadiumsMap = useMemo(() => {
-    const map: Record<string, string> = {}
+    const map: Record<string, any> = {}
     if (stadiumsData?.stadiums) {
       stadiumsData.stadiums.forEach((stadium) => {
-        map[stadium.id] = `${stadium.name_en}, ${stadium.city_en}`
+        map[stadium.id] = stadium
       })
     }
     return map
   }, [stadiumsData])
+
+  const getStadiumName = (stadiumId: string) => {
+    const stadium = stadiumsMap[stadiumId]
+    if (!stadium) return ""
+    if (stadium.translations) {
+      try {
+        const parsed = JSON.parse(stadium.translations)
+        if (parsed && parsed[lang]) return parsed[lang]
+      } catch (e) {}
+    }
+    if (lang === "ar" && stadium.name_fa && stadium.city_fa) {
+      return `${stadium.name_fa}, ${stadium.city_fa}`
+    }
+    return `${stadium.name_en}, ${stadium.city_en}`
+  }
 
   const selectedGameHomeFlag = useMemo(() => {
     if (!selectedGame) return undefined
@@ -194,14 +209,21 @@ export default function MatchCenterPage({ params }: { params: Promise<{ slug: st
     )
   }
 
-  const isFinished = selectedGame.finished.toUpperCase() === "TRUE"
-  const homeName = selectedGameHomeTeam
-    ? (lang === "ar" && selectedGameHomeTeam.name_fa ? selectedGameHomeTeam.name_fa : selectedGameHomeTeam.name_en)
-    : (selectedGame.home_team_name_en || selectedGame.home_team_label || "TBD")
+  const getTeamName = (team: any, fallback: string) => {
+    if (!team) return fallback
+    if (team.translations) {
+      try {
+        const parsed = JSON.parse(team.translations)
+        if (parsed && parsed[lang]) return parsed[lang]
+      } catch (e) {}
+    }
+    if (lang === "ar" && team.name_fa) return team.name_fa
+    return team.name_en
+  }
 
-  const awayName = selectedGameAwayTeam
-    ? (lang === "ar" && selectedGameAwayTeam.name_fa ? selectedGameAwayTeam.name_fa : selectedGameAwayTeam.name_en)
-    : (selectedGame.away_team_name_en || selectedGame.away_team_label || "TBD")
+  const isFinished = selectedGame.finished.toUpperCase() === "TRUE"
+  const homeName = getTeamName(selectedGameHomeTeam, selectedGame.home_team_name_en || selectedGame.home_team_label || "TBD")
+  const awayName = getTeamName(selectedGameAwayTeam, selectedGame.away_team_name_en || selectedGame.away_team_label || "TBD")
 
   return (
     <div dir={LANGUAGES.find(l => l.code === lang)?.dir || "ltr"} className="min-h-screen bg-slate-950 text-slate-100 font-sans pb-16 transition-all duration-300">
@@ -320,7 +342,7 @@ export default function MatchCenterPage({ params }: { params: Promise<{ slug: st
           <div className="text-[10px] text-slate-400 flex items-center gap-1.5 border-t border-slate-900/40 pt-2.5">
             <MapPin className="w-3.5 h-3.5 text-cyan-500" />
             <span className="font-medium">
-              {translate("stadium", lang)}: {stadiumsMap[selectedGame.stadium_id] || `#${selectedGame.stadium_id}`}
+              {translate("stadium", lang)}: {getStadiumName(selectedGame.stadium_id) || `#${selectedGame.stadium_id}`}
             </span>
           </div>
         </div>
