@@ -6,6 +6,7 @@ export interface UiState {
   filterStatus: "all" | "finished" | "upcoming"
   activeTab: "matches" | "teams"
   selectedGroup: string // "all" or specific group name "A" - "L"
+  selectedTeamId: string | null
 }
 
 const initialState: UiState = {
@@ -14,6 +15,7 @@ const initialState: UiState = {
   filterStatus: "all",
   activeTab: "matches",
   selectedGroup: "all",
+  selectedTeamId: null,
 }
 
 export const uiSlice = createSlice({
@@ -35,10 +37,14 @@ export const uiSlice = createSlice({
     setSelectedGroup: (state, action: PayloadAction<string>) => {
       state.selectedGroup = action.payload
     },
+    setSelectedTeamId: (state, action: PayloadAction<string | null>) => {
+      state.selectedTeamId = action.payload
+    },
     resetFilters: (state) => {
       state.searchQuery = ""
       state.filterStatus = "all"
       state.selectedGroup = "all"
+      state.selectedTeamId = null
     },
   },
 })
@@ -49,7 +55,9 @@ export const {
   setFilterStatus,
   setActiveTab,
   setSelectedGroup,
+  setSelectedTeamId,
   resetFilters,
 } = uiSlice.actions
 
 export default uiSlice.reducer
+

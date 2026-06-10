@@ -9,6 +9,7 @@ export async function GET() {
     const data = await res.json()
     return NextResponse.json(data)
   } catch (error: any) {
+    console.error("Teams API Route Error details:", error)
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
 }
