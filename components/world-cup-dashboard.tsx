@@ -1,11 +1,12 @@
 "use client"
 
-import { useMemo } from "react"
+import { useMemo, useState, useEffect } from "react"
 import Image from "next/image"
 import { useTheme } from "next-themes"
 import {
   useGetTeamsQuery,
   useGetGamesQuery,
+  useGetStadiumsQuery,
   Game,
   Team,
 } from "@/lib/services/apiSlice"
@@ -14,7 +15,6 @@ import {
   useAppSelector,
 } from "@/lib/store"
 import {
-  setLanguage,
   setSearchQuery,
   setFilterStatus,
   setActiveTab,
@@ -24,7 +24,6 @@ import {
 } from "@/lib/features/uiSlice"
 import {
   Search,
-  Globe,
   Trophy,
   Calendar,
   Users,
@@ -49,80 +48,58 @@ function parseLocalDate(localDateStr: string): Date {
   }
 }
 
-// Translations dictionary for Persian/English language UI elements
-const translations = {
-  en: {
-    title: "FIFA World Cup 2026",
-    subtitle: "Teams & Matches Tracker",
-    matches: "Matches",
-    teams: "Teams & Groups",
-    searchPlaceholder: "Search teams, matchdays, groups...",
-    statusAll: "All Matches",
-    statusFinished: "Finished",
-    statusUpcoming: "Upcoming",
-    totalMatches: "Total Matches",
-    played: "Played",
-    remaining: "Upcoming",
-    participatingTeams: "Teams",
-    group: "Group",
-    matchday: "Matchday",
-    groupStage: "Group Stage",
-    stadium: "Stadium",
-    noMatches: "No matches found matching your filters.",
-    noTeams: "No teams found.",
-    reset: "Clear Filters",
-    allGroups: "All Groups",
-    scorers: "Scorers",
-    loading: "Loading World Cup details...",
-    errorTitle: "Failed to load tournament data",
-    errorDesc: "Please check your connection and try again.",
-    retry: "Retry Connection",
-    languageLabel: "Language",
-    fifaCode: "FIFA Code",
-    filterTitle: "Filter matches",
-    groupFilterTitle: "Group",
-    back: "Back to Dashboard",
-    upcomingMatchesList: "Upcoming Matches",
-    playedMatchesList: "Played Matches",
-    noUpcomingMatches: "No upcoming matches scheduled.",
-    noPlayedMatches: "No played matches recorded.",
-  },
-  fa: {
-    title: "جام جهانی فوتبال ۲۰۲۶",
-    subtitle: "پیگیری تیم‌ها و مسابقات",
-    matches: "مسابقات",
-    teams: "تیم‌ها و گروه‌ها",
-    searchPlaceholder: "جستجوی تیم‌ها، روزهای مسابقه، گروه‌ها...",
-    statusAll: "همه مسابقات",
-    statusFinished: "برگزار شده",
-    statusUpcoming: "پیش رو",
-    totalMatches: "کل مسابقات",
-    played: "بازی شده",
-    remaining: "پیش رو",
-    participatingTeams: "تیم‌ها",
-    group: "گروه",
-    matchday: "روز بازی",
-    groupStage: "مرحله گروهی",
-    stadium: "ورزشگاه",
-    noMatches: "هیچ مسابقه‌ای با فیلترهای شما مطابقت ندارد.",
-    noTeams: "تیم مسابقه‌ای یافت نشد.",
-    reset: "پاک کردن فیلترها",
-    allGroups: "همه گروه‌ها",
-    scorers: "گلزنان",
-    loading: "درحال بارگذاری اطلاعات جام جهانی...",
-    errorTitle: "خطا در دریافت اطلاعات مسابقات",
-    errorDesc: "لطفاً اتصال اینترنت خود را بررسی کرده و مجدداً تلاش کنید.",
-    retry: "تلاش مجدد",
-    languageLabel: "زبان",
-    fifaCode: "کد فیفا",
-    filterTitle: "فیلتر مسابقات",
-    groupFilterTitle: "گروه",
-    back: "بازگشت به داشبورد",
-    upcomingMatchesList: "مسابقات پیش رو",
-    playedMatchesList: "مسابقات برگزار شده",
-    noUpcomingMatches: "هیچ مسابقه پیش رویی برنامه‌ریزی نشده است.",
-    noPlayedMatches: "هنوز بازی انجام نشده است.",
-  },
+// Countdown Component for upcoming matches
+function Countdown({ dateStr }: { dateStr: string }) {
+  const [timeLeft, setTimeLeft] = useState<{
+    days: number
+    hours: number
+    minutes: number
+    seconds: number
+  } | null>(null)
+
+  useEffect(() => {
+    const targetDate = parseLocalDate(dateStr)
+
+    const calculateTimeLeft = () => {
+      const difference = targetDate.getTime() - Date.now()
+      if (difference <= 0) {
+        setTimeLeft(null)
+        return
+      }
+
+      setTimeLeft({
+        days: Math.floor(difference / (1000 * 60 * 60 * 24)),
+        hours: Math.floor((difference / (1000 * 60 * 60)) % 24),
+        minutes: Math.floor((difference / 1000 / 60) % 60),
+        seconds: Math.floor((difference / 1000) % 60),
+      })
+    }
+
+    calculateTimeLeft()
+    const timer = setInterval(calculateTimeLeft, 1000)
+
+    return () => clearInterval(timer)
+  }, [dateStr])
+
+  if (!timeLeft) {
+    return (
+      <span className="text-[9px] font-bold text-emerald-450 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20 font-mono tracking-wider">
+        LIVE / STARTED
+      </span>
+    )
+  }
+
+  return (
+    <div className="flex items-center gap-1 font-mono text-[9px] font-bold text-cyan-500/90 bg-cyan-500/5 px-2 py-0.5 rounded border border-cyan-500/10 shadow-xs">
+      <span>{timeLeft.days}d</span>
+      <span className="text-slate-700">:</span>
+      <span>{timeLeft.hours}h</span>
+      <span className="text-slate-700">:</span>
+      <span>{timeLeft.minutes}m</span>
+      <span className="text-slate-700">:</span>
+      <span>{timeLeft.seconds}s</span>
+    </div>
+  )
 }
 
 export default function WorldCupDashboard() {
@@ -130,7 +107,6 @@ export default function WorldCupDashboard() {
   const { theme, setTheme } = useTheme()
 
   // Selectors from Redux UI State
-  const language = useAppSelector((state) => state.ui.language)
   const searchQuery = useAppSelector((state) => state.ui.searchQuery)
   const filterStatus = useAppSelector((state) => state.ui.filterStatus)
   const activeTab = useAppSelector((state) => state.ui.activeTab)
@@ -152,12 +128,18 @@ export default function WorldCupDashboard() {
     refetch: refetchGames,
   } = useGetGamesQuery()
 
-  const t = translations[language]
+  const {
+    data: stadiumsData,
+    isLoading: isStadiumsLoading,
+    isError: isStadiumsError,
+    refetch: refetchStadiums,
+  } = useGetStadiumsQuery()
 
   // Combine refetches
   const handleRefetch = () => {
     refetchTeams()
     refetchGames()
+    refetchStadiums()
   }
 
   // Create a fast lookup map for team flags from teams data
@@ -167,11 +149,21 @@ export default function WorldCupDashboard() {
       teamsData.teams.forEach((team) => {
         map[team.id] = team.flag
         map[team.name_en.toLowerCase()] = team.flag
-        map[team.name_fa] = team.flag
       })
     }
     return map
   }, [teamsData])
+
+  // Create a fast lookup map for stadiums
+  const stadiumsMap = useMemo(() => {
+    const map: Record<string, string> = {}
+    if (stadiumsData?.stadiums) {
+      stadiumsData.stadiums.forEach((stadium) => {
+        map[stadium.id] = `${stadium.name_en}, ${stadium.city_en}`
+      })
+    }
+    return map
+  }, [stadiumsData])
 
   // Selected team lookup & match filtering
   const selectedTeam = useMemo(() => {
@@ -206,15 +198,11 @@ export default function WorldCupDashboard() {
       filtered = filtered.filter((game) => {
         return (
           (game.home_team_name_en && game.home_team_name_en.toLowerCase().includes(query)) ||
-          (game.home_team_name_fa && game.home_team_name_fa.includes(query)) ||
           (game.away_team_name_en && game.away_team_name_en.toLowerCase().includes(query)) ||
-          (game.away_team_name_fa && game.away_team_name_fa.includes(query)) ||
           (game.home_team_label && game.home_team_label.toLowerCase().includes(query)) ||
           (game.away_team_label && game.away_team_label.toLowerCase().includes(query)) ||
           `group ${game.group}`.toLowerCase().includes(query) ||
-          `گروه ${game.group}`.includes(query) ||
-          `matchday ${game.matchday}`.toLowerCase().includes(query) ||
-          `بازی ${game.matchday}`.includes(query)
+          `matchday ${game.matchday}`.toLowerCase().includes(query)
         )
       })
     }
@@ -245,18 +233,13 @@ export default function WorldCupDashboard() {
     const groups: Record<string, Game[]> = {}
 
     processedGames.forEach((game) => {
-      let dateKey = ""
-      if (language === "fa") {
-        dateKey = game.persian_date.split(" ")[0]
-      } else {
-        const parsed = parseLocalDate(game.local_date)
-        dateKey = parsed.toLocaleDateString("en-US", {
-          weekday: "long",
-          year: "numeric",
-          month: "long",
-          day: "numeric",
-        })
-      }
+      const parsed = parseLocalDate(game.local_date)
+      const dateKey = parsed.toLocaleDateString("en-US", {
+        weekday: "long",
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      })
 
       if (!groups[dateKey]) {
         groups[dateKey] = []
@@ -268,7 +251,7 @@ export default function WorldCupDashboard() {
       date,
       matches,
     }))
-  }, [processedGames, language])
+  }, [processedGames])
 
   // Group teams by their respective groups A to L
   const teamsGroupedByGroup = useMemo(() => {
@@ -283,7 +266,7 @@ export default function WorldCupDashboard() {
       groups[groupName].push(team)
     })
 
-    // Sort teams within each group alphabetically by English name
+    // Sort teams within each group alphabetically
     Object.keys(groups).forEach((key) => {
       groups[key].sort((a, b) => a.name_en.localeCompare(b.name_en))
     })
@@ -301,34 +284,34 @@ export default function WorldCupDashboard() {
   }, [gamesData])
 
   // Handle Loading State
-  if (isTeamsLoading || isGamesLoading) {
+  if (isTeamsLoading || isGamesLoading || isStadiumsLoading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-linear-to-b from-slate-900 via-slate-950 to-black text-white p-6">
         <div className="relative w-24 h-24 mb-6">
-          <div className="absolute inset-0 rounded-full border-4 border-t-amber-500 border-r-transparent border-b-emerald-500 border-l-transparent animate-spin"></div>
+          <div className="absolute inset-0 rounded-full border-4 border-t-cyan-500 border-r-transparent border-b-emerald-500 border-l-transparent animate-spin"></div>
           <div className="absolute inset-3 rounded-full bg-slate-900 flex items-center justify-center">
             <span className="text-3xl">⚽</span>
           </div>
         </div>
-        <p className="text-lg font-medium text-slate-300 animate-pulse">{t.loading}</p>
+        <p className="text-lg font-medium text-slate-300 animate-pulse">Loading World Cup details...</p>
       </div>
     )
   }
 
   // Handle Error State
-  if (isTeamsError || isGamesError) {
+  if (isTeamsError || isGamesError || isStadiumsError) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-slate-950 text-white p-6">
         <div className="p-8 max-w-md w-full bg-slate-900/80 backdrop-blur-md rounded-2xl border border-red-500/30 text-center shadow-2xl">
           <XCircle className="w-16 h-16 text-red-500 mx-auto mb-4 animate-bounce" />
-          <h2 className="text-2xl font-bold mb-2 text-red-400">{t.errorTitle}</h2>
-          <p className="text-slate-400 mb-6 text-sm">{t.errorDesc}</p>
+          <h2 className="text-2xl font-bold mb-2 text-red-400">Failed to load tournament data</h2>
+          <p className="text-slate-400 mb-6 text-sm">Please check your connection and try again.</p>
           <button
             onClick={handleRefetch}
             className="flex items-center justify-center gap-2 w-full py-3 bg-red-600 hover:bg-red-700 transition-colors rounded-xl font-medium cursor-pointer shadow-lg shadow-red-600/20"
           >
             <RefreshCw className="w-4 h-4" />
-            {t.retry}
+            Retry Connection
           </button>
         </div>
       </div>
@@ -338,12 +321,9 @@ export default function WorldCupDashboard() {
   const allGroupLetters = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"]
 
   return (
-    <div
-      dir={language === "fa" ? "rtl" : "ltr"}
-      className="min-h-screen bg-slate-950 text-slate-100 font-sans transition-all duration-300"
-    >
+    <div className="min-h-screen bg-slate-950 text-slate-100 font-sans transition-all duration-300">
       {/* Background Glows */}
-      <div className="fixed -top-40 -left-40 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl pointer-events-none"></div>
+      <div className="fixed -top-40 -left-40 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none"></div>
       <div className="fixed top-1/2 -right-40 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
 
       {/* Top Banner Header */}
@@ -351,29 +331,20 @@ export default function WorldCupDashboard() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col sm:flex-row items-center justify-between gap-4">
           {/* Logo & Brand */}
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-xl bg-linear-to-br from-amber-500 to-emerald-500 flex items-center justify-center shadow-lg shadow-amber-500/15">
+            <div className="w-12 h-12 rounded-xl bg-linear-to-br from-cyan-500 to-emerald-500 flex items-center justify-center shadow-lg shadow-cyan-500/15">
               <Trophy className="w-6 h-6 text-slate-950" />
             </div>
             <div>
-              <h1 className="text-xl font-bold tracking-tight bg-linear-to-r from-amber-400 to-emerald-400 bg-clip-text text-transparent">
-                {t.title}
+              <h1 className="text-xl font-bold tracking-tight bg-linear-to-r from-cyan-400 to-emerald-400 bg-clip-text text-transparent">
+                FIFA World Cup 2026
               </h1>
-              <p className="text-xs text-slate-400">{t.subtitle}</p>
+              <p className="text-xs text-slate-400">Teams & Matches Tracker</p>
             </div>
           </div>
 
-          {/* Action Filters / Theme / Language */}
+          {/* Action Filters / Theme */}
           <div className="flex items-center gap-3">
-            {/* Language Switcher */}
-            <button
-              onClick={() => dispatch(setLanguage(language === "en" ? "fa" : "en"))}
-              className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-xs font-semibold hover:bg-slate-800 transition-colors shadow-xs cursor-pointer"
-            >
-              <Globe className="w-3.5 h-3.5 text-amber-500" />
-              <span>{language === "en" ? "فارسی" : "English"}</span>
-            </button>
-
-            {/* Dark Mode toggle (Simple presentation hook) */}
+            {/* Dark Mode toggle */}
             <button
               onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
               className="p-2 rounded-lg bg-slate-900 border border-slate-800 hover:bg-slate-800 transition-colors cursor-pointer"
@@ -403,14 +374,14 @@ export default function WorldCupDashboard() {
                 onClick={() => dispatch(setSelectedTeamId(null))}
                 className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-xs font-semibold hover:bg-slate-800 transition-colors shadow-xs cursor-pointer text-slate-300"
               >
-                <ArrowLeft className="w-4 h-4 text-amber-500" />
-                <span>{t.back}</span>
+                <ArrowLeft className="w-4 h-4 text-cyan-500" />
+                <span>Back to Dashboard</span>
               </button>
             </div>
 
             {/* Team details card */}
             <div className="p-6 sm:p-8 rounded-3xl bg-linear-to-r from-slate-900/60 to-slate-950/60 border border-slate-900 shadow-xl flex flex-col md:flex-row items-center justify-between gap-6 relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-64 h-64 bg-amber-500/5 rounded-full blur-3xl pointer-events-none"></div>
+              <div className="absolute top-0 right-0 w-64 h-64 bg-cyan-500/5 rounded-full blur-3xl pointer-events-none"></div>
               <div className="flex flex-col sm:flex-row items-center gap-6 z-10">
                 {selectedTeam.flag ? (
                   <div className="relative w-28 h-20 overflow-hidden rounded-2xl border-2 border-slate-800 shadow-2xl shrink-0">
@@ -426,11 +397,11 @@ export default function WorldCupDashboard() {
                   <div className="w-28 h-20 bg-slate-850 rounded-2xl shrink-0 flex items-center justify-center text-3xl shadow-inner">🏴</div>
                 )}
                 <div className="text-center sm:text-left">
-                  <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight bg-linear-to-r from-amber-400 to-amber-300 bg-clip-text text-transparent">
-                    {language === "fa" ? selectedTeam.name_fa : selectedTeam.name_en}
+                  <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight bg-linear-to-r from-cyan-400 to-cyan-300 bg-clip-text text-transparent">
+                    {selectedTeam.name_en}
                   </h2>
                   <p className="text-sm text-slate-400 mt-1 font-mono font-medium">
-                    {t.fifaCode}: {selectedTeam.fifa_code} | {t.group}: {selectedTeam.groups}
+                    FIFA Code: {selectedTeam.fifa_code} | Group: {selectedTeam.groups}
                   </p>
                 </div>
               </div>
@@ -438,12 +409,12 @@ export default function WorldCupDashboard() {
               {/* Quick statistics row */}
               <div className="grid grid-cols-2 gap-4 w-full md:w-auto shrink-0 z-10">
                 <div className="p-4 rounded-2xl bg-slate-950/80 border border-slate-900 text-center min-w-[120px]">
-                  <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">{t.playedMatchesList}</p>
+                  <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Played Matches</p>
                   <p className="text-2xl font-bold text-emerald-400 mt-1 font-mono">{selectedTeamPlayedMatches.length}</p>
                 </div>
                 <div className="p-4 rounded-2xl bg-slate-950/80 border border-slate-900 text-center min-w-[120px]">
-                  <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">{t.upcomingMatchesList}</p>
-                  <p className="text-2xl font-bold text-amber-400 mt-1 font-mono">{selectedTeamUpcomingMatches.length}</p>
+                  <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Upcoming Matches</p>
+                  <p className="text-2xl font-bold text-cyan-400 mt-1 font-mono">{selectedTeamUpcomingMatches.length}</p>
                 </div>
               </div>
             </div>
@@ -452,9 +423,9 @@ export default function WorldCupDashboard() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               {/* Upcoming Matches */}
               <div className="space-y-4">
-                <h3 className="text-lg font-bold text-amber-400 flex items-center gap-2 border-b border-slate-900 pb-2">
-                  <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
-                  {t.upcomingMatchesList}
+                <h3 className="text-lg font-bold text-cyan-400 flex items-center gap-2 border-b border-slate-900 pb-2">
+                  <span className="w-2 h-2 rounded-full bg-cyan-500 animate-pulse"></span>
+                  Upcoming Matches
                 </h3>
                 {selectedTeamUpcomingMatches.length > 0 ? (
                   <div className="space-y-4">
@@ -462,10 +433,10 @@ export default function WorldCupDashboard() {
                       const homeFlag = flagMap[match.home_team_id] || (match.home_team_name_en ? flagMap[match.home_team_name_en.toLowerCase()] : undefined)
                       const awayFlag = flagMap[match.away_team_id] || (match.away_team_name_en ? flagMap[match.away_team_name_en.toLowerCase()] : undefined)
                       return (
-                        <div key={match._id} className="p-5 rounded-2xl bg-slate-900/30 border border-slate-900 hover:border-slate-800 transition-all flex flex-col justify-between gap-4 group shadow-xs">
+                        <div key={match._id} className="p-5 rounded-2xl bg-slate-900/30 border border-slate-900 hover:border-slate-805 transition-all flex flex-col justify-between gap-4 group shadow-xs">
                           <div className="flex items-center justify-between text-[10px] text-slate-500 pb-1 border-b border-slate-900/30">
-                            <span>{t.group} {match.group} • {t.matchday} {match.matchday}</span>
-                            <span className="font-mono text-amber-500 font-bold bg-amber-500/10 px-2.5 py-0.5 rounded border border-amber-500/10 text-xs">{match.local_date.split(" ")[1]}</span>
+                            <span>Group {match.group} • Matchday {match.matchday}</span>
+                            <Countdown dateStr={match.local_date} />
                           </div>
 
                           <div className="flex items-center justify-between my-1">
@@ -475,16 +446,16 @@ export default function WorldCupDashboard() {
                                   <Image src={homeFlag} alt="" fill className="object-cover" unoptimized />
                                 </div>
                               ) : <span className="text-xs">🏴</span>}
-                              <span className="font-semibold text-xs text-slate-200 truncate group-hover:text-amber-400 transition-colors">
-                                {(language === "fa" ? match.home_team_name_fa : match.home_team_name_en) || match.home_team_label || ""}
+                              <span className="font-semibold text-xs text-slate-200 truncate group-hover:text-cyan-400 transition-colors">
+                                {match.home_team_name_en || match.home_team_label || ""}
                               </span>
                             </div>
 
                             <span className="text-[10px] text-slate-600 font-bold font-mono px-3">VS</span>
 
                             <div className="flex items-center justify-end gap-2 flex-1 min-w-0">
-                              <span className="font-semibold text-xs text-slate-200 truncate group-hover:text-amber-400 transition-colors">
-                                {(language === "fa" ? match.away_team_name_fa : match.away_team_name_en) || match.away_team_label || ""}
+                              <span className="font-semibold text-xs text-slate-200 truncate group-hover:text-cyan-400 transition-colors">
+                                {match.away_team_name_en || match.away_team_label || ""}
                               </span>
                               {awayFlag ? (
                                 <div className="relative w-8 h-5.5 overflow-hidden rounded border border-slate-850 shrink-0">
@@ -496,7 +467,7 @@ export default function WorldCupDashboard() {
 
                           <div className="text-[10px] text-slate-500 flex items-center gap-1.5 pt-1 border-t border-slate-900/30">
                             <MapPin className="w-3.5 h-3.5 text-slate-600" />
-                            <span>{t.stadium}: #{match.stadium_id} | {language === "fa" ? match.persian_date : match.local_date}</span>
+                            <span>Stadium: {stadiumsMap[match.stadium_id] || `#${match.stadium_id}`} | {match.local_date}</span>
                           </div>
                         </div>
                       )
@@ -504,7 +475,7 @@ export default function WorldCupDashboard() {
                   </div>
                 ) : (
                   <div className="text-center py-12 bg-slate-900/10 rounded-2xl border border-slate-900/40 text-slate-500 text-xs">
-                    {t.noUpcomingMatches}
+                    No upcoming matches scheduled.
                   </div>
                 )}
               </div>
@@ -513,7 +484,7 @@ export default function WorldCupDashboard() {
               <div className="space-y-4">
                 <h3 className="text-lg font-bold text-emerald-400 flex items-center gap-2 border-b border-slate-900 pb-2">
                   <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-                  {t.playedMatchesList}
+                  Played Matches
                 </h3>
                 {selectedTeamPlayedMatches.length > 0 ? (
                   <div className="space-y-4">
@@ -521,21 +492,21 @@ export default function WorldCupDashboard() {
                       const homeFlag = flagMap[match.home_team_id] || (match.home_team_name_en ? flagMap[match.home_team_name_en.toLowerCase()] : undefined)
                       const awayFlag = flagMap[match.away_team_id] || (match.away_team_name_en ? flagMap[match.away_team_name_en.toLowerCase()] : undefined)
                       return (
-                        <div key={match._id} className="p-5 rounded-2xl bg-slate-900/30 border border-slate-900 hover:border-slate-805 transition-all flex flex-col justify-between gap-4 group shadow-xs">
+                        <div key={match._id} className="p-5 rounded-2xl bg-slate-900/30 border border-slate-900 hover:border-slate-850 transition-all flex flex-col justify-between gap-4 group shadow-xs">
                           <div className="flex items-center justify-between text-[10px] text-slate-500 pb-1 border-b border-slate-900/30">
-                            <span>{t.group} {match.group} • {t.matchday} {match.matchday}</span>
+                            <span>Group {match.group} • Matchday {match.matchday}</span>
                             <span className="font-bold text-emerald-400 bg-emerald-500/10 px-2.5 py-0.5 rounded border border-emerald-500/10 font-mono text-xs">{match.home_score} : {match.away_score}</span>
                           </div>
 
                           <div className="flex items-center justify-between my-1">
                             <div className="flex items-center gap-2 flex-1 min-w-0">
                               {homeFlag ? (
-                                <div className="relative w-8 h-5.5 overflow-hidden rounded border border-slate-850 shrink-0">
+                                <div className="relative w-8 h-5.5 overflow-hidden rounded border border-slate-855 shrink-0">
                                   <Image src={homeFlag} alt="" fill className="object-cover" unoptimized />
                                 </div>
                               ) : <span className="text-xs">🏴</span>}
                               <span className="font-semibold text-xs text-slate-200 truncate group-hover:text-emerald-400 transition-colors">
-                                {(language === "fa" ? match.home_team_name_fa : match.home_team_name_en) || match.home_team_label || ""}
+                                {match.home_team_name_en || match.home_team_label || ""}
                               </span>
                             </div>
 
@@ -543,18 +514,23 @@ export default function WorldCupDashboard() {
 
                             <div className="flex items-center justify-end gap-2 flex-1 min-w-0">
                               <span className="font-semibold text-xs text-slate-200 truncate group-hover:text-emerald-400 transition-colors">
-                                {(language === "fa" ? match.away_team_name_fa : match.away_team_name_en) || match.away_team_label || ""}
+                                {match.away_team_name_en || match.away_team_label || ""}
                               </span>
                               {awayFlag ? (
-                                <div className="relative w-8 h-5.5 overflow-hidden rounded border border-slate-850 shrink-0">
+                                <div className="relative w-8 h-5.5 overflow-hidden rounded border border-slate-855 shrink-0">
                                   <Image src={awayFlag} alt="" fill className="object-cover" unoptimized />
                                 </div>
                               ) : <span className="text-xs">🏴</span>}
                             </div>
                           </div>
 
+                          <div className="text-[10px] text-slate-500 flex items-center gap-1.5 pt-1 border-t border-slate-900/30 my-1">
+                            <MapPin className="w-3 h-3 text-slate-600" />
+                            <span>Stadium: {stadiumsMap[match.stadium_id] || `#${match.stadium_id}`} | {match.local_date}</span>
+                          </div>
+
                           {((match.home_scorers && match.home_scorers !== "null") || (match.away_scorers && match.away_scorers !== "null")) && (
-                            <div className="bg-slate-950/40 p-2.5 rounded-xl border border-slate-950/80 flex flex-col gap-1 text-[9px] text-slate-500">
+                            <div className="bg-slate-950/40 p-2.5 rounded-xl border border-slate-950/80 flex flex-col gap-1 text-[9px] text-slate-550">
                               <div className="flex justify-between gap-4">
                                 <div className="truncate flex-1">
                                   {match.home_scorers && match.home_scorers !== "null" ? match.home_scorers : ""}
@@ -570,8 +546,8 @@ export default function WorldCupDashboard() {
                     })}
                   </div>
                 ) : (
-                  <div className="text-center py-12 bg-slate-900/10 rounded-2xl border border-slate-900/40 text-slate-500 text-xs">
-                    {t.noPlayedMatches}
+                  <div className="text-center py-12 bg-slate-900/10 rounded-2xl border border-slate-900/40 text-slate-505 text-xs">
+                    No played matches recorded.
                   </div>
                 )}
               </div>
@@ -583,17 +559,17 @@ export default function WorldCupDashboard() {
             <section className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div className="p-5 rounded-2xl bg-slate-900/40 border border-slate-900 flex items-center justify-between shadow-xs hover:border-slate-800 transition-all duration-300">
                 <div>
-                  <p className="text-xs text-slate-400 font-medium">{t.totalMatches}</p>
+                  <p className="text-xs text-slate-400 font-medium">Total Matches</p>
                   <h3 className="text-2xl font-bold mt-1 text-slate-100">{stats.total}</h3>
                 </div>
-                <div className="p-3 bg-amber-500/10 rounded-xl text-amber-500">
+                <div className="p-3 bg-cyan-500/10 rounded-xl text-cyan-500">
                   <Calendar className="w-6 h-6" />
                 </div>
               </div>
 
               <div className="p-5 rounded-2xl bg-slate-900/40 border border-slate-900 flex items-center justify-between shadow-xs hover:border-slate-800 transition-all duration-300">
                 <div>
-                  <p className="text-xs text-slate-400 font-medium">{t.played}</p>
+                  <p className="text-xs text-slate-400 font-medium">Played</p>
                   <h3 className="text-2xl font-bold mt-1 text-emerald-400">{stats.played}</h3>
                 </div>
                 <div className="p-3 bg-emerald-500/10 rounded-xl text-emerald-500">
@@ -603,7 +579,7 @@ export default function WorldCupDashboard() {
 
               <div className="p-5 rounded-2xl bg-slate-900/40 border border-slate-900 flex items-center justify-between shadow-xs hover:border-slate-800 transition-all duration-300">
                 <div>
-                  <p className="text-xs text-slate-400 font-medium">{t.remaining}</p>
+                  <p className="text-xs text-slate-400 font-medium">Upcoming</p>
                   <h3 className="text-2xl font-bold mt-1 text-sky-400">{stats.remaining}</h3>
                 </div>
                 <div className="p-3 bg-sky-500/10 rounded-xl text-sky-500">
@@ -613,7 +589,7 @@ export default function WorldCupDashboard() {
 
               <div className="p-5 rounded-2xl bg-slate-900/40 border border-slate-900 flex items-center justify-between shadow-xs hover:border-slate-800 transition-all duration-300">
                 <div>
-                  <p className="text-xs text-slate-400 font-medium">{t.participatingTeams}</p>
+                  <p className="text-xs text-slate-400 font-medium">Teams</p>
                   <h3 className="text-2xl font-bold mt-1 text-slate-100">
                     {teamsData?.teams?.length || 48}
                   </h3>
@@ -630,37 +606,35 @@ export default function WorldCupDashboard() {
               <div className="flex p-1 bg-slate-950 rounded-xl border border-slate-900">
                 <button
                   onClick={() => dispatch(setActiveTab("matches"))}
-                  className={`flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-semibold transition-all duration-200 cursor-pointer ${
-                    activeTab === "matches"
-                      ? "bg-linear-to-r from-amber-500 to-amber-600 text-slate-950 shadow-md font-bold"
+                  className={`flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-semibold transition-all duration-200 cursor-pointer ${activeTab === "matches"
+                      ? "bg-linear-to-r from-cyan-500 to-cyan-600 text-slate-950 shadow-md font-bold"
                       : "text-slate-400 hover:text-slate-200"
-                  }`}
+                    }`}
                 >
                   <Calendar className="w-4 h-4" />
-                  {t.matches}
+                  Matches
                 </button>
                 <button
                   onClick={() => dispatch(setActiveTab("teams"))}
-                  className={`flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-semibold transition-all duration-200 cursor-pointer ${
-                    activeTab === "teams"
+                  className={`flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-semibold transition-all duration-200 cursor-pointer ${activeTab === "teams"
                       ? "bg-linear-to-r from-emerald-500 to-emerald-600 text-slate-950 shadow-md font-bold"
                       : "text-slate-400 hover:text-slate-200"
-                  }`}
+                    }`}
                 >
                   <Users className="w-4 h-4" />
-                  {t.teams}
+                  Teams & Groups
                 </button>
               </div>
 
               {/* Search Box */}
               <div className="relative flex-1 max-w-md">
-                <Search className={`absolute ${language === "fa" ? "right-3" : "left-3"} top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500`} />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
                 <input
                   type="text"
                   value={searchQuery}
                   onChange={(e) => dispatch(setSearchQuery(e.target.value))}
-                  placeholder={t.searchPlaceholder}
-                  className={`w-full ${language === "fa" ? "pr-10 pl-4" : "pl-10 pr-4"} py-2.5 bg-slate-950 rounded-xl border border-slate-900 focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/30 text-sm outline-hidden transition-all placeholder:text-slate-500`}
+                  placeholder="Search teams, matchdays, groups..."
+                  className="w-full pl-10 pr-4 py-2.5 bg-slate-950 rounded-xl border border-slate-900 focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/30 text-sm outline-hidden transition-all placeholder:text-slate-500"
                 />
               </div>
             </section>
@@ -673,7 +647,7 @@ export default function WorldCupDashboard() {
                   <div className="flex flex-wrap items-center gap-3">
                     <span className="text-xs text-slate-400 flex items-center gap-1">
                       <SlidersHorizontal className="w-3.5 h-3.5" />
-                      {t.filterTitle}:
+                      Filter matches:
                     </span>
 
                     {/* Status Selector */}
@@ -682,19 +656,16 @@ export default function WorldCupDashboard() {
                         <button
                           key={status}
                           onClick={() => dispatch(setFilterStatus(status))}
-                          className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors cursor-pointer ${
-                            filterStatus === status
+                          className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors cursor-pointer ${filterStatus === status
                               ? "bg-slate-800 text-slate-100 font-semibold"
                               : "text-slate-500 hover:text-slate-300"
-                          }`}
+                            }`}
                         >
                           {status === "all"
-                            ? t.statusAll
+                            ? "All Matches"
                             : status === "finished"
-                            ? t.statusFinished
-                            : status === "upcoming"
-                            ? t.statusUpcoming
-                            : ""}
+                              ? "Finished"
+                              : "Upcoming"}
                         </button>
                       ))}
                     </div>
@@ -705,10 +676,10 @@ export default function WorldCupDashboard() {
                       onChange={(e) => dispatch(setSelectedGroup(e.target.value))}
                       className="px-3 py-1.5 text-xs font-medium bg-slate-950 rounded-lg border border-slate-900 text-slate-300 outline-hidden hover:border-slate-850 cursor-pointer"
                     >
-                      <option value="all">{t.allGroups}</option>
+                      <option value="all">All Groups</option>
                       {allGroupLetters.map((group) => (
                         <option key={group} value={group}>
-                          {t.group} {group}
+                          Group {group}
                         </option>
                       ))}
                     </select>
@@ -718,9 +689,9 @@ export default function WorldCupDashboard() {
                   {(searchQuery || filterStatus !== "all" || selectedGroup !== "all") && (
                     <button
                       onClick={() => dispatch(resetFilters())}
-                      className="text-xs text-amber-500 hover:text-amber-400 font-semibold flex items-center gap-1 bg-amber-500/5 px-2.5 py-1.5 rounded-lg border border-amber-500/20 hover:border-amber-500/30 transition-all cursor-pointer"
+                      className="text-xs text-cyan-500 hover:text-cyan-400 font-semibold flex items-center gap-1 bg-cyan-500/5 px-2.5 py-1.5 rounded-lg border border-cyan-500/20 hover:border-cyan-500/30 transition-all cursor-pointer"
                     >
-                      {t.reset}
+                      Clear Filters
                     </button>
                   )}
                 </div>
@@ -754,16 +725,18 @@ export default function WorldCupDashboard() {
                                 {/* Card Header info */}
                                 <div className="flex items-center justify-between text-slate-400 text-xs mb-4 pb-2 border-b border-slate-900/40">
                                   <span className="bg-slate-950 px-2.5 py-1 rounded-md border border-slate-900 font-medium">
-                                    {t.group} {match.group} • {t.matchday} {match.matchday}
+                                    Group {match.group} • Matchday {match.matchday}
                                   </span>
+
+                                  {!isFinished && <Countdown dateStr={match.local_date} />}
+
                                   <span
-                                    className={`px-2 py-0.5 rounded font-semibold text-[10px] tracking-wide uppercase ${
-                                      isFinished
+                                    className={`px-2 py-0.5 rounded font-semibold text-[10px] tracking-wide uppercase ${isFinished
                                         ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
-                                        : "bg-amber-500/10 text-amber-400 border border-amber-500/20"
-                                    }`}
+                                        : "bg-cyan-500/10 text-cyan-400 border border-cyan-500/20"
+                                      }`}
                                   >
-                                    {isFinished ? t.statusFinished : t.statusUpcoming}
+                                    {isFinished ? "Finished" : "Upcoming"}
                                   </span>
                                 </div>
 
@@ -787,22 +760,22 @@ export default function WorldCupDashboard() {
                                     ) : (
                                       <div className="w-9 h-6 bg-slate-800 rounded-md shrink-0 flex items-center justify-center text-xs">🏴</div>
                                     )}
-                                    <span className="font-semibold text-slate-100 truncate text-sm sm:text-base group-hover:text-amber-400 transition-colors">
-                                      {(language === "fa" ? match.home_team_name_fa : match.home_team_name_en) || match.home_team_label || ""}
+                                    <span className="font-semibold text-slate-100 truncate text-sm sm:text-base group-hover:text-cyan-400 transition-colors">
+                                      {match.home_team_name_en || match.home_team_label || ""}
                                     </span>
                                   </div>
 
                                   {/* Match Center: Score / Time */}
                                   <div className="px-4 flex flex-col items-center shrink-0">
                                     {isFinished ? (
-                                      <div className="flex items-center gap-2 bg-slate-950 px-4 py-1.5 rounded-xl border border-slate-850 shadow-inner font-mono font-bold text-lg text-emerald-400">
+                                      <div className="flex items-center gap-2 bg-slate-950 px-4 py-1.5 rounded-xl border border-slate-855 shadow-inner font-mono font-bold text-lg text-emerald-400">
                                         <span>{match.home_score}</span>
-                                        <span className="text-slate-600 text-sm font-sans">:</span>
+                                        <span className="text-slate-650 text-sm font-sans">:</span>
                                         <span>{match.away_score}</span>
                                       </div>
                                     ) : (
-                                      <div className="text-center bg-slate-950 px-3 py-1.5 rounded-xl border border-slate-850">
-                                        <p className="font-mono text-xs font-bold text-amber-500">
+                                      <div className="text-center bg-slate-950 px-3 py-1.5 rounded-xl border border-slate-855">
+                                        <p className="font-mono text-xs font-bold text-cyan-500">
                                           {match.local_date.split(" ")[1]}
                                         </p>
                                       </div>
@@ -812,10 +785,10 @@ export default function WorldCupDashboard() {
                                   {/* Away Team */}
                                   <div
                                     onClick={() => dispatch(setSelectedTeamId(match.away_team_id))}
-                                    className="flex flex-1 items-center justify-end gap-3 min-w-0 cursor-pointer hover:bg-slate-855/40 p-1.5 rounded-xl transition-all"
+                                    className="flex flex-1 items-center justify-end gap-3 min-w-0 cursor-pointer hover:bg-slate-850/40 p-1.5 rounded-xl transition-all"
                                   >
-                                    <span className="font-semibold text-slate-100 truncate text-sm sm:text-base group-hover:text-amber-400 transition-colors">
-                                      {(language === "fa" ? match.away_team_name_fa : match.away_team_name_en) || match.away_team_label || ""}
+                                    <span className="font-semibold text-slate-100 truncate text-sm sm:text-base group-hover:text-cyan-400 transition-colors">
+                                      {match.away_team_name_en || match.away_team_label || ""}
                                     </span>
                                     {awayFlag ? (
                                       <div className="relative w-9 h-6 overflow-hidden rounded-md border border-slate-800 shrink-0 shadow-xs">
@@ -836,10 +809,10 @@ export default function WorldCupDashboard() {
                                 {/* Stadium & Scorers footer info */}
                                 <div className="mt-4 pt-3 border-t border-slate-900/40 flex flex-col gap-2 text-slate-400 text-xs">
                                   {/* Stadium */}
-                                  <div className="flex items-center gap-1.5 text-[11px] text-slate-500">
+                                  <div className="flex items-center gap-1.5 text-[11px] text-slate-505">
                                     <MapPin className="w-3.5 h-3.5 text-slate-600" />
                                     <span>
-                                      {t.stadium}: #{match.stadium_id}
+                                      Stadium: {stadiumsMap[match.stadium_id] || `#${match.stadium_id}`}
                                     </span>
                                   </div>
 
@@ -849,7 +822,7 @@ export default function WorldCupDashboard() {
                                       (match.away_scorers && match.away_scorers !== "null")) && (
                                       <div className="bg-slate-950/50 p-2.5 rounded-xl border border-slate-950/80 flex flex-col gap-1 text-[10px]">
                                         <span className="font-semibold text-slate-500 uppercase tracking-wider text-[9px]">
-                                          ⚽ {t.scorers}
+                                          ⚽ Scorers
                                         </span>
                                         <div className="flex justify-between gap-4">
                                           <div className="text-slate-400 font-medium truncate flex-1">
@@ -875,12 +848,12 @@ export default function WorldCupDashboard() {
                   </div>
                 ) : (
                   <div className="text-center py-16 bg-slate-900/10 rounded-2xl border border-slate-900/40">
-                    <p className="text-slate-500 text-sm mb-4">{t.noMatches}</p>
+                    <p className="text-slate-505 text-sm mb-4">No matches found matching your filters.</p>
                     <button
                       onClick={() => dispatch(resetFilters())}
                       className="px-4 py-2 bg-slate-900 hover:bg-slate-800 transition-colors border border-slate-800 text-xs font-semibold rounded-lg cursor-pointer"
                     >
-                      {t.reset}
+                      Clear Filters
                     </button>
                   </div>
                 )}
@@ -905,10 +878,10 @@ export default function WorldCupDashboard() {
                           <div className="bg-linear-to-r from-emerald-500/10 to-emerald-600/5 px-5 py-4 border-b border-slate-900 flex justify-between items-center">
                             <h3 className="font-bold text-base text-slate-100 flex items-center gap-2">
                               <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-md shadow-emerald-500/20"></span>
-                              {t.group} {groupLetter}
+                              Group {groupLetter}
                             </h3>
                             <span className="text-[10px] font-bold text-slate-400 bg-slate-950 px-2 py-0.5 rounded border border-slate-900">
-                              {teams.length} {t.participatingTeams}
+                              {teams.length} Teams
                             </span>
                           </div>
 
@@ -921,7 +894,7 @@ export default function WorldCupDashboard() {
                                   dispatch(setSelectedTeamId(team.id))
                                 }}
                                 className="flex items-center justify-between py-3 px-1 hover:bg-slate-900/50 rounded-xl transition-all cursor-pointer group"
-                                title={`Filter matches for ${team.name_en}`}
+                                title={`View details for ${team.name_en}`}
                               >
                                 <div className="flex items-center gap-3">
                                   {team.flag ? (
@@ -938,7 +911,7 @@ export default function WorldCupDashboard() {
                                     <div className="w-8 h-5.5 bg-slate-850 rounded-md shrink-0 flex items-center justify-center text-xs">🏴</div>
                                   )}
                                   <span className="text-sm font-semibold text-slate-200 group-hover:text-emerald-400 transition-colors">
-                                    {language === "fa" ? team.name_fa : team.name_en}
+                                    {team.name_en}
                                   </span>
                                 </div>
 
@@ -957,7 +930,7 @@ export default function WorldCupDashboard() {
                   </div>
                 ) : (
                   <div className="text-center py-16 bg-slate-900/10 rounded-2xl border border-slate-900/40">
-                    <p className="text-slate-500 text-sm">{t.noTeams}</p>
+                    <p className="text-slate-505 text-sm">No teams found.</p>
                   </div>
                 )}
               </div>

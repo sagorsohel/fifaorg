@@ -44,6 +44,24 @@ export interface GamesResponse {
   games: Game[]
 }
 
+export interface Stadium {
+  _id: string
+  id: string
+  name_en: string
+  name_fa: string
+  fifa_name: string
+  city_en: string
+  city_fa: string
+  country_en: string
+  country_fa: string
+  capacity: number
+  region: string
+}
+
+export interface StadiumsResponse {
+  stadiums: Stadium[]
+}
+
 export const apiSlice = createApi({
   reducerPath: "api",
   baseQuery: fetchBaseQuery({ baseUrl: "" }),
@@ -54,7 +72,11 @@ export const apiSlice = createApi({
     getGames: builder.query<GamesResponse, void>({
       query: () => "/api/games",
     }),
+    getStadiums: builder.query<StadiumsResponse, void>({
+      query: () => "/api/stadiums",
+    }),
   }),
 })
 
-export const { useGetTeamsQuery, useGetGamesQuery } = apiSlice
+export const { useGetTeamsQuery, useGetGamesQuery, useGetStadiumsQuery } = apiSlice
+
