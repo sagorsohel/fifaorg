@@ -20,6 +20,7 @@ import {
   setActiveTab,
   setSelectedGroup,
   setSelectedTeamId,
+  setSelectedGameId,
   resetFilters,
 } from "@/lib/features/uiSlice"
 import {
@@ -34,6 +35,17 @@ import {
   SlidersHorizontal,
   XCircle,
   ArrowLeft,
+  Play,
+  Volume2,
+  Settings,
+  Maximize2,
+  Tv,
+  X,
+  ShieldAlert,
+  Film,
+  Infinity,
+  Ban,
+  Smartphone,
 } from "lucide-react"
 
 // Date parsing helper to format game times
@@ -112,6 +124,10 @@ export default function WorldCupDashboard() {
   const activeTab = useAppSelector((state) => state.ui.activeTab)
   const selectedGroup = useAppSelector((state) => state.ui.selectedGroup)
   const selectedTeamId = useAppSelector((state) => state.ui.selectedTeamId)
+  const selectedGameId = useAppSelector((state) => state.ui.selectedGameId)
+
+  // Local state for streaming modal
+  const [showStreamModal, setShowStreamModal] = useState(false)
 
   // API Queries via RTK Query
   const {
@@ -185,6 +201,32 @@ export default function WorldCupDashboard() {
   const selectedTeamPlayedMatches = useMemo(() => {
     return selectedTeamMatches.filter((m) => m.finished.toUpperCase() === "TRUE")
   }, [selectedTeamMatches])
+
+  // Selected game lookup
+  const selectedGame = useMemo(() => {
+    if (!selectedGameId || !gamesData?.games) return null
+    return gamesData.games.find((g) => g._id === selectedGameId || g.id === selectedGameId)
+  }, [selectedGameId, gamesData])
+
+  const selectedGameHomeTeam = useMemo(() => {
+    if (!selectedGame || !teamsData?.teams) return null
+    return teamsData.teams.find((t) => t.id === selectedGame.home_team_id || t._id === selectedGame.home_team_id)
+  }, [selectedGame, teamsData])
+
+  const selectedGameAwayTeam = useMemo(() => {
+    if (!selectedGame || !teamsData?.teams) return null
+    return teamsData.teams.find((t) => t.id === selectedGame.away_team_id || t._id === selectedGame.away_team_id)
+  }, [selectedGame, teamsData])
+
+  const selectedGameHomeFlag = useMemo(() => {
+    if (!selectedGame) return undefined
+    return selectedGameHomeTeam?.flag || flagMap[selectedGame.home_team_id] || (selectedGame.home_team_name_en ? flagMap[selectedGame.home_team_name_en.toLowerCase()] : undefined)
+  }, [selectedGame, selectedGameHomeTeam, flagMap])
+
+  const selectedGameAwayFlag = useMemo(() => {
+    if (!selectedGame) return undefined
+    return selectedGameAwayTeam?.flag || flagMap[selectedGame.away_team_id] || (selectedGame.away_team_name_en ? flagMap[selectedGame.away_team_name_en.toLowerCase()] : undefined)
+  }, [selectedGame, selectedGameAwayTeam, flagMap])
 
   // Process and group matches for the dashboard matches timeline
   const processedGames = useMemo(() => {
@@ -366,7 +408,326 @@ export default function WorldCupDashboard() {
       </header>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-        {selectedTeam ? (
+        {selectedGame ? (
+          <div className="space-y-8 animate-fade-in">
+            {/* Header / Back row */}
+            <div className="flex items-center justify-between">
+              <button
+                onClick={() => dispatch(setSelectedGameId(null))}
+                className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-xs font-semibold hover:bg-slate-800 transition-colors shadow-xs cursor-pointer text-slate-300"
+              >
+                <ArrowLeft className="w-4 h-4 text-cyan-500" />
+                <span>Back to Timeline</span>
+              </button>
+            </div>
+
+            {/* Match Header Versus Card */}
+            {(() => {
+              const match = selectedGame;
+              const isFinished = match.finished.toUpperCase() === "TRUE";
+              const homeFlag = selectedGameHomeFlag;
+              const awayFlag = selectedGameAwayFlag;
+              const homeName = match.home_team_name_en || match.home_team_label || "TBD";
+              const awayName = match.away_team_name_en || match.away_team_label || "TBD";
+
+              return (
+                <div className="p-6 sm:p-8 rounded-3xl bg-linear-to-r from-slate-900/60 to-slate-950/60 border border-slate-900 shadow-xl flex flex-col gap-6 relative overflow-hidden">
+                  <div className="absolute top-0 right-0 w-64 h-64 bg-cyan-500/5 rounded-full blur-3xl pointer-events-none"></div>
+
+                  {/* Top info */}
+                  <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-900/60 pb-4">
+                    <span className="bg-slate-950 px-3 py-1.5 rounded-full border border-slate-900 font-semibold text-xs text-slate-400">
+                      Group {match.group} • Matchday {match.matchday}
+                    </span>
+
+                    {!isFinished && <Countdown dateStr={match.local_date} />}
+
+                    <span
+                      className={`px-3 py-1 rounded-lg font-bold text-xs tracking-wide uppercase ${isFinished
+                        ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                        : "bg-cyan-500/10 text-cyan-400 border border-cyan-500/20"
+                        }`}
+                    >
+                      {isFinished ? "Finished" : "Upcoming"}
+                    </span>
+                  </div>
+
+                  {/* Main Versus Row */}
+                  <div className="flex flex-col md:flex-row items-center justify-between gap-6 py-2">
+                    {/* Home Team */}
+                    <div
+                      onClick={() => {
+                        if (match.home_team_id) {
+                          dispatch(setSelectedTeamId(match.home_team_id));
+                          dispatch(setSelectedGameId(null));
+                        }
+                      }}
+                      className="flex flex-1 flex-col sm:flex-row items-center gap-4 cursor-pointer hover:bg-slate-900/40 p-3 rounded-2xl transition-all w-full justify-start"
+                    >
+                      {homeFlag ? (
+                        <div className="relative w-20 h-14 overflow-hidden rounded-xl border border-slate-800 shadow-lg shrink-0">
+                          <Image src={homeFlag} alt={homeName} fill className="object-cover" unoptimized />
+                        </div>
+                      ) : (
+                        <div className="w-20 h-14 bg-slate-800 rounded-xl shrink-0 flex items-center justify-center text-3xl">🏴</div>
+                      )}
+                      <span className="font-extrabold text-slate-100 text-lg sm:text-2xl hover:text-cyan-400 transition-colors text-center sm:text-left">
+                        {homeName}
+                      </span>
+                    </div>
+
+                    {/* score/time */}
+                    <div className="px-6 py-2 flex flex-col items-center shrink-0">
+                      {isFinished ? (
+                        <div className="flex items-center gap-4 bg-slate-950 px-6 py-3 rounded-2xl border border-slate-900 shadow-inner font-mono font-bold text-2xl sm:text-3xl text-emerald-400">
+                          <span>{match.home_score}</span>
+                          <span className="text-slate-600 text-xl font-sans">:</span>
+                          <span>{match.away_score}</span>
+                        </div>
+                      ) : (
+                        <div className="text-center bg-slate-950 px-5 py-3 rounded-2xl border border-slate-900 min-w-[100px]">
+                          <p className="font-mono text-sm sm:text-base font-bold text-cyan-500">
+                            {match.local_date.split(" ")[1] || match.local_date}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Away Team */}
+                    <div
+                      onClick={() => {
+                        if (match.away_team_id) {
+                          dispatch(setSelectedTeamId(match.away_team_id));
+                          dispatch(setSelectedGameId(null));
+                        }
+                      }}
+                      className="flex flex-1 flex-col sm:flex-row-reverse items-center gap-4 cursor-pointer hover:bg-slate-900/40 p-3 rounded-2xl transition-all w-full justify-start sm:justify-end"
+                    >
+                      {awayFlag ? (
+                        <div className="relative w-20 h-14 overflow-hidden rounded-xl border border-slate-800 shadow-lg shrink-0">
+                          <Image src={awayFlag} alt={awayName} fill className="object-cover" unoptimized />
+                        </div>
+                      ) : (
+                        <div className="w-20 h-14 bg-slate-800 rounded-xl shrink-0 flex items-center justify-center text-3xl">🏴</div>
+                      )}
+                      <span className="font-extrabold text-slate-100 text-lg sm:text-2xl hover:text-cyan-400 transition-colors text-center sm:text-right">
+                        {awayName}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Stadium Name */}
+                  <div className="text-xs sm:text-sm text-slate-400 flex items-center gap-2 border-t border-slate-900/60 pt-4">
+                    <MapPin className="w-4 h-4 text-cyan-500" />
+                    <span className="font-medium">
+                      Stadium: {stadiumsMap[match.stadium_id] || `#${match.stadium_id}`}
+                    </span>
+                  </div>
+                </div>
+              );
+            })()}
+
+            {/* Stream Player & Stats */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              {/* Stream Video Player container */}
+              <div className="lg:col-span-2 space-y-4">
+                <h3 className="text-lg font-bold text-slate-100 flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
+                  Live Match Stream
+                </h3>
+
+                <div
+                  onClick={() => setShowStreamModal(true)}
+                  className="w-full aspect-video rounded-3xl overflow-hidden border border-slate-900 bg-slate-950 relative group cursor-pointer shadow-2xl hover:border-cyan-500/20 transition-all duration-300"
+                >
+                  {/* Split Screen Image */}
+                  <div className="absolute inset-0 flex select-none">
+                    <div className="w-1/2 h-full relative overflow-hidden">
+                      {selectedGameHomeFlag ? (
+                        <Image
+                          src={selectedGameHomeFlag}
+                          alt=""
+                          fill
+                          className="object-cover blur-md opacity-35 scale-110"
+                          unoptimized
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-slate-900" />
+                      )}
+                      <div className="absolute inset-0 bg-linear-to-r from-slate-955 via-slate-955/20 to-transparent"></div>
+                    </div>
+                    <div className="w-1/2 h-full relative overflow-hidden">
+                      {selectedGameAwayFlag ? (
+                        <Image
+                          src={selectedGameAwayFlag}
+                          alt=""
+                          fill
+                          className="object-cover blur-md opacity-35 scale-110"
+                          unoptimized
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-slate-900" />
+                      )}
+                      <div className="absolute inset-0 bg-linear-to-l from-slate-955 via-slate-955/20 to-transparent"></div>
+                    </div>
+                  </div>
+
+                  {/* Dark mask overlay */}
+                  <div className="absolute inset-0 bg-black/40 group-hover:bg-black/30 transition-colors"></div>
+
+                  {/* Center Overlay */}
+                  <div className="absolute inset-0 flex flex-col items-center justify-center">
+                    {/* Golden Play button */}
+                    <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full border-[3px] border-cyan-500 bg-cyan-500/15 flex items-center justify-center transition-all duration-300 group-hover:scale-110 group-hover:bg-cyan-500/25 group-hover:shadow-[0_0_30px_rgba(245,158,11,0.4)] z-10">
+                      <Play className="w-7 h-7 sm:w-9 sm:h-9 text-cyan-500 fill-cyan-500 translate-x-0.5" />
+                    </div>
+
+                    {/* loading spinner text */}
+                    <div className="mt-4 bg-slate-950/95 border border-slate-900/80 px-4 py-2 rounded-full flex items-center gap-2.5 z-10 shadow-xl">
+                      <div className="w-3.5 h-3.5 rounded-full border-2 border-t-cyan-500 border-r-transparent border-b-cyan-500 border-l-transparent animate-spin"></div>
+                      <span className="text-[10px] sm:text-xs font-black font-mono tracking-widest text-slate-100 uppercase">
+                        LOADING STREAM...
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* bottom strip */}
+                  <div className="absolute bottom-0 inset-x-0 bg-slate-950/90 backdrop-blur-xs border-t border-slate-900/60 px-5 py-3 flex items-center justify-between text-slate-400 text-xs z-10">
+                    <div className="flex items-center gap-4">
+                      <Play className="w-4 h-4 cursor-pointer hover:text-white transition-colors" />
+                      <Volume2 className="w-4 h-4 cursor-pointer hover:text-white transition-colors" />
+                    </div>
+                    <div className="flex items-center gap-4">
+                      <span className="border border-red-500/35 text-red-500 bg-red-500/10 px-2.5 py-0.5 rounded font-black tracking-widest text-[9px] uppercase font-mono">
+                        LIVE
+                      </span>
+                      <Settings className="w-4 h-4 cursor-pointer hover:text-white transition-colors" />
+                      <Maximize2 className="w-4 h-4 cursor-pointer hover:text-white transition-colors" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Right Column: Smart details */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-bold text-cyan-400 flex items-center gap-2">
+                  <span>📊</span>
+                  Smart Details
+                </h3>
+
+                <div className="bg-slate-900/20 border border-slate-900 rounded-3xl p-6 space-y-6">
+                  {/* Schedule */}
+                  <div className="space-y-2">
+                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">Match Schedule</span>
+                    <div className="flex items-center gap-3 bg-slate-950/50 p-3 rounded-xl border border-slate-900/60 text-xs">
+                      <Calendar className="w-4 h-4 text-cyan-500" />
+                      <div className="flex flex-col">
+                        <span className="font-semibold text-slate-200">{selectedGame.local_date}</span>
+                        <span className="text-[10px] text-slate-450">Local Kickoff Time</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Stadium Details */}
+                  {(() => {
+                    const stadium = stadiumsData?.stadiums?.find(
+                      (s) => s.id === selectedGame.stadium_id || s._id === selectedGame.stadium_id
+                    );
+                    if (!stadium) return null;
+                    return (
+                      <div className="space-y-2">
+                        <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">Stadium Stats</span>
+                        <div className="bg-slate-950/50 p-4 rounded-xl border border-slate-900/60 text-xs space-y-3">
+                          <div className="flex items-center gap-2">
+                            <span className="text-cyan-500 font-bold">🏟️</span>
+                            <span className="font-bold text-slate-200 text-sm">{stadium.name_en}</span>
+                          </div>
+                          <div className="grid grid-cols-2 gap-3 text-[10px] border-t border-slate-900/40 pt-2.5">
+                            <div>
+                              <span className="text-slate-500 block">Capacity</span>
+                              <span className="font-bold text-slate-300 mt-0.5 block">{stadium.capacity.toLocaleString()} seats</span>
+                            </div>
+                            <div>
+                              <span className="text-slate-500 block">Location</span>
+                              <span className="font-bold text-slate-300 mt-0.5 block">{stadium.city_en}, {stadium.country_en}</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })()}
+
+                  {/* Goal Scorers */}
+                  {selectedGame.finished.toUpperCase() === "TRUE" &&
+                    ((selectedGame.home_scorers && selectedGame.home_scorers !== "null") ||
+                      (selectedGame.away_scorers && selectedGame.away_scorers !== "null")) && (
+                      <div className="space-y-2">
+                        <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">⚽ Goal Scorers</span>
+                        <div className="bg-slate-950/60 p-4 rounded-xl border border-slate-900/60 text-xs space-y-3 font-sans">
+                          <div className="flex justify-between gap-4">
+                            <div className="text-slate-300 font-semibold truncate flex-1 flex flex-col gap-1">
+                              <span className="text-[8px] text-slate-500 uppercase tracking-wider font-bold mb-0.5">{selectedGame.home_team_name_en || "HOME"}</span>
+                              {selectedGame.home_scorers && selectedGame.home_scorers !== "null" ? selectedGame.home_scorers : "-"}
+                            </div>
+                            <div className="text-slate-300 font-semibold truncate flex-1 text-right flex flex-col gap-1">
+                              <span className="text-[8px] text-slate-500 uppercase tracking-wider font-bold mb-0.5">{selectedGame.away_team_name_en || "AWAY"}</span>
+                              {selectedGame.away_scorers && selectedGame.away_scorers !== "null" ? selectedGame.away_scorers : "-"}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                  {/* Interactive Stats */}
+                  <div className="space-y-3">
+                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">Match Statistics</span>
+
+                    <div className="space-y-3 bg-slate-950/50 p-4 rounded-xl border border-slate-900/60 text-xs">
+                      {/* Stat 1: Possession */}
+                      <div className="space-y-1">
+                        <div className="flex justify-between text-[10px] font-bold text-slate-400">
+                          <span>{selectedGame.finished.toUpperCase() === "TRUE" ? "53%" : "50%"}</span>
+                          <span className="text-slate-505 uppercase text-[9px] tracking-wider">Possession</span>
+                          <span>{selectedGame.finished.toUpperCase() === "TRUE" ? "47%" : "50%"}</span>
+                        </div>
+                        <div className="w-full h-1.5 bg-slate-900 rounded-full overflow-hidden flex">
+                          <div className="h-full bg-cyan-500" style={{ width: selectedGame.finished.toUpperCase() === "TRUE" ? "53%" : "50%" }}></div>
+                          <div className="h-full bg-emerald-500" style={{ width: selectedGame.finished.toUpperCase() === "TRUE" ? "47%" : "50%" }}></div>
+                        </div>
+                      </div>
+
+                      {/* Stat 2: Shots */}
+                      <div className="space-y-1">
+                        <div className="flex justify-between text-[10px] font-bold text-slate-400">
+                          <span>{selectedGame.finished.toUpperCase() === "TRUE" ? "14" : "0"}</span>
+                          <span className="text-slate-505 uppercase text-[9px] tracking-wider">Shots</span>
+                          <span>{selectedGame.finished.toUpperCase() === "TRUE" ? "8" : "0"}</span>
+                        </div>
+                        <div className="w-full h-1.5 bg-slate-900 rounded-full overflow-hidden flex">
+                          <div className="h-full bg-cyan-500" style={{ width: selectedGame.finished.toUpperCase() === "TRUE" ? "63%" : "50%" }}></div>
+                          <div className="h-full bg-emerald-500" style={{ width: selectedGame.finished.toUpperCase() === "TRUE" ? "37%" : "50%" }}></div>
+                        </div>
+                      </div>
+
+                      {/* Stat 3: Fouls */}
+                      <div className="space-y-1">
+                        <div className="flex justify-between text-[10px] font-bold text-slate-400">
+                          <span>{selectedGame.finished.toUpperCase() === "TRUE" ? "9" : "0"}</span>
+                          <span className="text-slate-505 uppercase text-[9px] tracking-wider">Fouls</span>
+                          <span>{selectedGame.finished.toUpperCase() === "TRUE" ? "11" : "0"}</span>
+                        </div>
+                        <div className="w-full h-1.5 bg-slate-900 rounded-full overflow-hidden flex">
+                          <div className="h-full bg-cyan-500" style={{ width: selectedGame.finished.toUpperCase() === "TRUE" ? "45%" : "50%" }}></div>
+                          <div className="h-full bg-emerald-500" style={{ width: selectedGame.finished.toUpperCase() === "TRUE" ? "55%" : "50%" }}></div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        ) : selectedTeam ? (
           <div className="space-y-8 animate-fade-in">
             {/* Header / Back row */}
             <div className="flex items-center justify-between">
@@ -433,7 +794,11 @@ export default function WorldCupDashboard() {
                       const homeFlag = flagMap[match.home_team_id] || (match.home_team_name_en ? flagMap[match.home_team_name_en.toLowerCase()] : undefined)
                       const awayFlag = flagMap[match.away_team_id] || (match.away_team_name_en ? flagMap[match.away_team_name_en.toLowerCase()] : undefined)
                       return (
-                        <div key={match._id} className="p-5 rounded-2xl bg-slate-900/30 border border-slate-900 hover:border-slate-805 transition-all flex flex-col justify-between gap-4 group shadow-xs">
+                        <div
+                          key={match._id}
+                          onClick={() => dispatch(setSelectedGameId(match._id))}
+                          className="p-5 rounded-2xl bg-slate-900/30 border border-slate-900 hover:border-slate-805 hover:bg-slate-900/50 transition-all flex flex-col justify-between gap-4 group shadow-xs cursor-pointer"
+                        >
                           <div className="flex items-center justify-between text-[10px] text-slate-500 pb-1 border-b border-slate-900/30">
                             <span>Group {match.group} • Matchday {match.matchday}</span>
                             <Countdown dateStr={match.local_date} />
@@ -492,7 +857,11 @@ export default function WorldCupDashboard() {
                       const homeFlag = flagMap[match.home_team_id] || (match.home_team_name_en ? flagMap[match.home_team_name_en.toLowerCase()] : undefined)
                       const awayFlag = flagMap[match.away_team_id] || (match.away_team_name_en ? flagMap[match.away_team_name_en.toLowerCase()] : undefined)
                       return (
-                        <div key={match._id} className="p-5 rounded-2xl bg-slate-900/30 border border-slate-900 hover:border-slate-850 transition-all flex flex-col justify-between gap-4 group shadow-xs">
+                        <div
+                          key={match._id}
+                          onClick={() => dispatch(setSelectedGameId(match._id))}
+                          className="p-5 rounded-2xl bg-slate-900/30 border border-slate-900 hover:border-slate-850 hover:bg-slate-900/50 transition-all flex flex-col justify-between gap-4 group shadow-xs cursor-pointer"
+                        >
                           <div className="flex items-center justify-between text-[10px] text-slate-500 pb-1 border-b border-slate-900/30">
                             <span>Group {match.group} • Matchday {match.matchday}</span>
                             <span className="font-bold text-emerald-400 bg-emerald-500/10 px-2.5 py-0.5 rounded border border-emerald-500/10 font-mono text-xs">{match.home_score} : {match.away_score}</span>
@@ -607,8 +976,8 @@ export default function WorldCupDashboard() {
                 <button
                   onClick={() => dispatch(setActiveTab("matches"))}
                   className={`flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-semibold transition-all duration-200 cursor-pointer ${activeTab === "matches"
-                      ? "bg-linear-to-r from-cyan-500 to-cyan-600 text-slate-950 shadow-md font-bold"
-                      : "text-slate-400 hover:text-slate-200"
+                    ? "bg-linear-to-r from-cyan-500 to-cyan-600 text-slate-950 shadow-md font-bold"
+                    : "text-slate-400 hover:text-slate-200"
                     }`}
                 >
                   <Calendar className="w-4 h-4" />
@@ -617,8 +986,8 @@ export default function WorldCupDashboard() {
                 <button
                   onClick={() => dispatch(setActiveTab("teams"))}
                   className={`flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-semibold transition-all duration-200 cursor-pointer ${activeTab === "teams"
-                      ? "bg-linear-to-r from-emerald-500 to-emerald-600 text-slate-950 shadow-md font-bold"
-                      : "text-slate-400 hover:text-slate-200"
+                    ? "bg-linear-to-r from-emerald-500 to-emerald-600 text-slate-950 shadow-md font-bold"
+                    : "text-slate-400 hover:text-slate-200"
                     }`}
                 >
                   <Users className="w-4 h-4" />
@@ -657,8 +1026,8 @@ export default function WorldCupDashboard() {
                           key={status}
                           onClick={() => dispatch(setFilterStatus(status))}
                           className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors cursor-pointer ${filterStatus === status
-                              ? "bg-slate-800 text-slate-100 font-semibold"
-                              : "text-slate-500 hover:text-slate-300"
+                            ? "bg-slate-800 text-slate-100 font-semibold"
+                            : "text-slate-500 hover:text-slate-300"
                             }`}
                         >
                           {status === "all"
@@ -720,7 +1089,8 @@ export default function WorldCupDashboard() {
                             return (
                               <div
                                 key={match._id}
-                                className="bg-slate-900/30 hover:bg-slate-900/60 backdrop-blur-xs border border-slate-900 hover:border-slate-800 rounded-2xl p-5 flex flex-col justify-between transition-all duration-300 hover:-translate-y-0.5 group shadow-xs hover:shadow-md"
+                                onClick={() => dispatch(setSelectedGameId(match._id))}
+                                className="bg-slate-900/30 hover:bg-slate-900/60 backdrop-blur-xs border border-slate-900 hover:border-slate-800 rounded-2xl p-5 flex flex-col justify-between transition-all duration-300 hover:-translate-y-0.5 group shadow-xs hover:shadow-md cursor-pointer"
                               >
                                 {/* Card Header info */}
                                 <div className="flex items-center justify-between text-slate-400 text-xs mb-4 pb-2 border-b border-slate-900/40">
@@ -732,8 +1102,8 @@ export default function WorldCupDashboard() {
 
                                   <span
                                     className={`px-2 py-0.5 rounded font-semibold text-[10px] tracking-wide uppercase ${isFinished
-                                        ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
-                                        : "bg-cyan-500/10 text-cyan-400 border border-cyan-500/20"
+                                      ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                                      : "bg-cyan-500/10 text-cyan-400 border border-cyan-500/20"
                                       }`}
                                   >
                                     {isFinished ? "Finished" : "Upcoming"}
@@ -744,7 +1114,10 @@ export default function WorldCupDashboard() {
                                 <div className="flex items-center justify-between my-2">
                                   {/* Home Team */}
                                   <div
-                                    onClick={() => dispatch(setSelectedTeamId(match.home_team_id))}
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      dispatch(setSelectedTeamId(match.home_team_id));
+                                    }}
                                     className="flex flex-1 items-center gap-3 min-w-0 cursor-pointer hover:bg-slate-850/40 p-1.5 rounded-xl transition-all"
                                   >
                                     {homeFlag ? (
@@ -784,7 +1157,10 @@ export default function WorldCupDashboard() {
 
                                   {/* Away Team */}
                                   <div
-                                    onClick={() => dispatch(setSelectedTeamId(match.away_team_id))}
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      dispatch(setSelectedTeamId(match.away_team_id));
+                                    }}
                                     className="flex flex-1 items-center justify-end gap-3 min-w-0 cursor-pointer hover:bg-slate-850/40 p-1.5 rounded-xl transition-all"
                                   >
                                     <span className="font-semibold text-slate-100 truncate text-sm sm:text-base group-hover:text-cyan-400 transition-colors">
@@ -945,6 +1321,94 @@ export default function WorldCupDashboard() {
           FIFA World Cup 2026 Dashboard • Integrated with worldcup26.ir APIs
         </p>
       </footer>
+
+      {/* SIGN-UP STREAM MODAL */}
+      {showStreamModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          {/* Backdrop */}
+          <div
+            onClick={() => setShowStreamModal(false)}
+            className="absolute inset-0 bg-slate-955/80 backdrop-blur-md transition-opacity"
+          ></div>
+
+          {/* Modal Content */}
+          <div className="bg-[#050b14] border border-slate-900 rounded-3xl w-full max-w-md overflow-hidden relative shadow-2xl z-10 animate-fade-in">
+            {/* Header */}
+            <div className="px-6 py-4 flex items-center justify-between border-b border-slate-900/60">
+              <div className="flex items-center gap-2 text-cyan-500">
+                <Tv className="w-5 h-5 text-cyan-500" />
+                <span className="font-bold text-sm tracking-wider uppercase text-slate-100">
+                  FOOTBALL LIVE STREAM
+                </span>
+              </div>
+              <button
+                onClick={() => setShowStreamModal(false)}
+                className="p-1 rounded-md text-slate-500 hover:text-white transition-colors cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-6 flex flex-col items-center gap-6">
+              {/* Subtitle */}
+              <h3 className="text-center font-bold text-lg text-slate-100 leading-snug px-2">
+                Please Sign Up to Watch <span className="text-cyan-500">Football</span> Match Live
+              </h3>
+
+              {/* Main action button */}
+              <button className="w-full py-4 bg-cyan-500 hover:bg-cyan-600 active:scale-[0.98] transition-all rounded-xl text-slate-955 font-extrabold tracking-wider text-sm shadow-lg shadow-cyan-500/20 hover:shadow-cyan-500/35 cursor-pointer uppercase">
+                SIGN UP & WATCH NOW!
+              </button>
+
+              {/* Adblocker warning section */}
+              <div className="w-full bg-[#081324] border border-slate-900/65 rounded-2xl p-4 flex items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-cyan-500/10 rounded-xl text-cyan-500">
+                    <ShieldAlert className="w-6 h-6 text-cyan-500" />
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-slate-100 font-bold text-sm">Ad Blocker Detected</span>
+                    <span className="text-slate-450 text-[10px]">Unlock all high speed HD streams below</span>
+                  </div>
+                </div>
+                <button className="px-3 py-2 bg-cyan-500 text-slate-955 font-extrabold text-[10px] rounded-lg tracking-wider hover:bg-cyan-600 transition-colors uppercase shrink-0">
+                  UNLOCK HD
+                </button>
+              </div>
+
+              {/* Features grid */}
+              <div className="w-full grid grid-cols-2 gap-3">
+                {/* Feature 1 */}
+                <div className="flex items-center gap-2.5 p-3 bg-slate-900/20 border border-slate-900/60 rounded-xl">
+                  <Film className="w-4 h-4 text-cyan-500 shrink-0" />
+                  <span className="text-[10px] font-semibold text-slate-300">High Quality Streaming</span>
+                </div>
+                {/* Feature 2 */}
+                <div className="flex items-center gap-2.5 p-3 bg-slate-900/20 border border-slate-900/60 rounded-xl">
+                  <Infinity className="w-4 h-4 text-cyan-500 shrink-0" />
+                  <span className="text-[10px] font-semibold text-slate-300">Watch Without Limits</span>
+                </div>
+                {/* Feature 3 */}
+                <div className="flex items-center gap-2.5 p-3 bg-slate-900/20 border border-slate-900/60 rounded-xl">
+                  <Ban className="w-4 h-4 text-cyan-500 shrink-0" />
+                  <span className="text-[10px] font-semibold text-slate-300">No Ads, 100% Free Access</span>
+                </div>
+                {/* Feature 4 */}
+                <div className="flex items-center gap-2.5 p-3 bg-slate-900/20 border border-slate-900/60 rounded-xl">
+                  <Smartphone className="w-4 h-4 text-cyan-500 shrink-0" />
+                  <span className="text-[10px] font-semibold text-slate-300">Watch on any device</span>
+                </div>
+              </div>
+
+              {/* Footer account login */}
+              <p className="text-slate-400 text-xs font-semibold mt-2">
+                Already Have Account? <span className="text-cyan-500 hover:text-cyan-400 cursor-pointer font-bold transition-colors">Login</span>
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
