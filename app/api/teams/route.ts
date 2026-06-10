@@ -2,7 +2,14 @@ import { NextResponse } from "next/server"
 
 export async function GET() {
   try {
-    const res = await fetch("http://worldcup26.ir:3050/get/teams")
+    let res;
+    try {
+      res = await fetch("http://worldcup26.ir:3050/get/teams")
+    } catch (err) {
+      console.warn("Teams route DNS resolution failed, falling back to direct IP address.")
+      res = await fetch("http://82.115.13.31:3050/get/teams")
+    }
+    
     if (!res.ok) {
       throw new Error(`Failed to fetch teams: ${res.status}`)
     }
