@@ -5,6 +5,12 @@ import Image from "next/image"
 import { useTheme } from "next-themes"
 import { useRouter } from "next/navigation"
 import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from "@/components/ui/dropdown-menu"
+import {
   useGetTeamsQuery,
   useGetGamesQuery,
   useGetStadiumsQuery,
@@ -454,22 +460,31 @@ export default function WorldCupDashboard() {
           {/* Action Filters / Theme */}
           <div className="flex items-center gap-3">
             {/* Language Selector Dropdown */}
-            <div className="flex items-center gap-2">
-              <select
-                value={lang}
-                onChange={(e) => {
-                  const newLang = e.target.value as LanguageCode
-                  setLang(newLang)
-                  localStorage.setItem("worldcup2026_lang", newLang)
-                }}
-                className="bg-slate-900 border border-slate-800 text-xs font-semibold text-slate-200 px-3 py-2 rounded-xl focus:outline-hidden focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/30 transition-all cursor-pointer shadow-xs"
-              >
-                {LANGUAGES.map((l) => (
-                  <option key={l.code} value={l.code} className="bg-slate-950 text-slate-200">
-                    {l.name}
-                  </option>
-                ))}
-              </select>
+            <div className="flex items-center gap-2 z-50">
+              <DropdownMenu>
+                <DropdownMenuTrigger className="bg-slate-900 border border-slate-800 text-xs font-bold text-slate-200 px-3.5 py-2.5 rounded-xl hover:border-cyan-500/30 focus:outline-hidden transition-all cursor-pointer shadow-xs flex items-center gap-1.5 capitalize">
+                  <span>{LANGUAGES.find((l) => l.code === lang)?.name || "Language"}</span>
+                  <span className="text-[10px] text-slate-500">▼</span>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="bg-slate-900 border border-slate-800 text-slate-200 rounded-xl min-w-[120px] shadow-xl p-1 z-50">
+                  {LANGUAGES.map((l) => (
+                    <DropdownMenuItem
+                      key={l.code}
+                      onClick={() => {
+                        setLang(l.code)
+                        try {
+                          localStorage.setItem("worldcup2026_lang", l.code)
+                        } catch (err) {}
+                      }}
+                      className={`cursor-pointer px-3 py-2 text-xs rounded-lg transition-all focus:bg-cyan-500/15 focus:text-cyan-400 font-bold ${
+                        lang === l.code ? "bg-cyan-500/10 text-cyan-400" : "text-slate-300"
+                      }`}
+                    >
+                      {l.name}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
 
             {/* Refresh indicator */}
