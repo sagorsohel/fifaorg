@@ -50,3 +50,9 @@ export const games = mysqlTable("games", {
   bg_image: text("bg_image"),
 })
 
+export const ads = mysqlTable("ads", {
+  id: varchar("id", { length: 50 }).primaryKey(),
+  hero_ads: text("hero_ads"),
+  modal_ads: text("modal_ads"),
+  header_ads: text("header_ads"),
+})

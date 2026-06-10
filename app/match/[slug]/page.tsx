@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo, useState, useEffect, use } from "react"
+import { useMemo, useState, useEffect, use, useRef } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
@@ -92,10 +92,41 @@ const getTeamName = (team: any, fallback: string, activeLang: LanguageCode) => {
     try {
       const parsed = JSON.parse(team.translations)
       if (parsed && parsed[activeLang]) return parsed[activeLang]
-    } catch (e) {}
+    } catch (e) { }
   }
   if (activeLang === "ar" && team.name_fa) return team.name_fa
   return team.name_en
+}
+
+function AdScriptContainer({ scriptHtml, className }: { scriptHtml?: string; className?: string }) {
+  const ref = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!ref.current || !scriptHtml) return
+    ref.current.innerHTML = scriptHtml
+    
+    // Find all script tags and execute them
+    const scripts = ref.current.getElementsByTagName("script")
+    for (let i = 0; i < scripts.length; i++) {
+      const script = scripts[i]
+      const newScript = document.createElement("script")
+      if (script.src) {
+        newScript.src = script.src
+      }
+      if (script.innerHTML) {
+        newScript.innerHTML = script.innerHTML
+      }
+      // Copy attributes if any
+      Array.from(script.attributes).forEach(attr => {
+        newScript.setAttribute(attr.name, attr.value)
+      })
+      script.parentNode?.replaceChild(newScript, script)
+    }
+  }, [scriptHtml])
+
+  if (!scriptHtml) return null
+
+  return <div ref={ref} className={className} />
 }
 
 export default function MatchCenterPage({ params }: { params: Promise<{ slug: string }> }) {
@@ -105,9 +136,26 @@ export default function MatchCenterPage({ params }: { params: Promise<{ slug: st
 
   // Local state for streamer actions
   const [isBuffering, setIsBuffering] = useState(false)
-  const [showStreamModal, setShowStreamModal] = useState(false)
+  const [showInlineSignup, setShowInlineSignup] = useState(false)
 
   const [lang, setLang] = useState<LanguageCode>("en")
+
+  const [adsConfig, setAdsConfig] = useState<{
+    header_ads?: string
+    hero_ads?: string
+    modal_ads?: string
+  } | null>(null)
+
+  useEffect(() => {
+    fetch("/api/manage/ads")
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.ads) {
+          setAdsConfig(data.ads)
+        }
+      })
+      .catch(() => {})
+  }, [])
 
   useEffect(() => {
     const detected = detectBrowserLanguage()
@@ -133,9 +181,9 @@ export default function MatchCenterPage({ params }: { params: Promise<{ slug: st
               }
             }
           })
-          .catch(() => {})
+          .catch(() => { })
       }
-    } catch (e) {}
+    } catch (e) { }
   }, [])
 
   // API Queries via RTK Query
@@ -195,7 +243,7 @@ export default function MatchCenterPage({ params }: { params: Promise<{ slug: st
       try {
         const parsed = JSON.parse(stadium.translations)
         if (parsed && parsed[lang]) return parsed[lang]
-      } catch (e) {}
+      } catch (e) { }
     }
     if (lang === "ar" && stadium.name_fa && stadium.city_fa) {
       return `${stadium.name_fa}, ${stadium.city_fa}`
@@ -215,11 +263,11 @@ export default function MatchCenterPage({ params }: { params: Promise<{ slug: st
 
   // Play button click simulation
   const handlePlayClick = () => {
-    if (isBuffering || showStreamModal) return
+    if (isBuffering || showInlineSignup) return
     setIsBuffering(true)
     setTimeout(() => {
       setIsBuffering(false)
-      setShowStreamModal(true)
+      setShowInlineSignup(true)
     }, 1500)
   }
 
@@ -262,10 +310,27 @@ export default function MatchCenterPage({ params }: { params: Promise<{ slug: st
   const awayName = getTeamName(selectedGameAwayTeam, selectedGame.away_team_name_en || selectedGame.away_team_label || "TBD", lang)
 
   return (
-    <div dir={LANGUAGES.find(l => l.code === lang)?.dir || "ltr"} className="min-h-screen bg-slate-950 text-slate-100 font-sans pb-16 transition-all duration-300">
+    <div dir={LANGUAGES.find(l => l.code === lang)?.dir || "ltr"} className="min-h-screen bg-slate-955 text-slate-100 font-sans pb-16 transition-all duration-300 relative overflow-x-hidden">
+      {/* Page Background Image */}
+      {selectedGame.bg_image && (
+        <div className="fixed inset-0 z-0 select-none pointer-events-none">
+          <Image
+            src={selectedGame.bg_image}
+            alt=""
+            fill
+            className="object-cover "
+            unoptimized
+          />
+          <div className="absolute inset-0 bg-linear-to-b from-slate-600/70 via-slate-950 to-slate-950"></div>
+        </div>
+      )}
+
       {/* Background Glows */}
-      <div className="fixed -top-40 -left-40 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none"></div>
-      <div className="fixed top-1/2 -right-40 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
+      <div className="fixed -top-40 -left-40 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none z-0"></div>
+      <div className="fixed top-1/2 -right-40 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none z-0"></div>
+
+      {/* Header Ads */}
+      <AdScriptContainer scriptHtml={adsConfig?.header_ads} className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 flex justify-center z-10 relative" />
 
       {/* Header Banner */}
       <header className="sticky top-0 z-40 bg-slate-955/80 backdrop-blur-md border-b border-slate-900 mb-8">
@@ -291,7 +356,7 @@ export default function MatchCenterPage({ params }: { params: Promise<{ slug: st
                 setLang(newLang)
                 try {
                   localStorage.setItem("worldcup2026_lang", newLang)
-                } catch (err) {}
+                } catch (err) { }
               }}
               className="bg-slate-900 border border-slate-800 text-xs font-semibold text-slate-200 px-3 py-2 rounded-xl focus:outline-hidden focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/30 transition-all cursor-pointer shadow-xs"
             >
@@ -305,11 +370,11 @@ export default function MatchCenterPage({ params }: { params: Promise<{ slug: st
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8 animate-fade-in">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8 animate-fade-in relative z-10">
         {/* Match Scoreboard Header Card (Sleek and compact) */}
         <div className="p-4 rounded-2xl bg-linear-to-r from-slate-900/60 to-slate-955/60 border border-slate-900 shadow-xl flex flex-col gap-4 relative overflow-hidden max-w-4xl mx-auto">
           <div className="absolute top-0 right-0 w-64 h-64 bg-cyan-500/5 rounded-full blur-3xl pointer-events-none"></div>
-          
+
           {/* Top info and badge row */}
           <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-900/40 pb-2.5">
             <span className="bg-slate-955 px-2.5 py-1 rounded-full border border-slate-900 font-semibold text-[10px] text-slate-400">
@@ -320,8 +385,8 @@ export default function MatchCenterPage({ params }: { params: Promise<{ slug: st
 
             <span
               className={`px-2.5 py-0.5 rounded-md font-bold text-[10px] tracking-wide uppercase ${isFinished
-                  ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
-                  : "bg-cyan-500/10 text-cyan-400 border border-cyan-500/20"
+                ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                : "bg-cyan-500/10 text-cyan-400 border border-cyan-500/20"
                 }`}
             >
               {isFinished ? translate("finished", lang) : translate("upcoming", lang)}
@@ -389,94 +454,168 @@ export default function MatchCenterPage({ params }: { params: Promise<{ slug: st
           </div>
         </div>
 
+        {/* Hero Ads */}
+        <AdScriptContainer scriptHtml={adsConfig?.hero_ads} className="max-w-4xl mx-auto w-full flex justify-center" />
+
         {/* Stream Player Container (Centered) */}
         <div className="max-w-4xl mx-auto w-full">
-          <div 
-            onClick={handlePlayClick}
-            className="w-full aspect-video rounded-3xl overflow-hidden border border-slate-900 bg-slate-955 relative group cursor-pointer shadow-2xl hover:border-amber-500/20 transition-all duration-300"
-          >
-            {/* Split Screen Image or Custom Background */}
-            <div className="absolute inset-0 flex select-none">
-              {selectedGame.bg_image ? (
-                <div className="relative w-full h-full">
-                  <Image
-                    src={selectedGame.bg_image}
-                    alt=""
-                    fill
-                    className="object-cover opacity-40 scale-100"
-                    unoptimized
-                  />
+          {!showInlineSignup ? (
+            <div
+              onClick={handlePlayClick}
+              className="w-full aspect-video rounded-3xl overflow-hidden border border-slate-900 bg-slate-955 relative group cursor-pointer shadow-2xl hover:border-cyan-500/20 transition-all duration-300"
+            >
+              {/* Split Screen Image or Custom Background */}
+              <div className="absolute inset-0 flex select-none">
+                {selectedGame.modal_image ? (
+                  <div className="relative w-full h-full">
+                    <Image
+                      src={selectedGame.modal_image}
+                      alt=""
+                      fill
+                      className="object-cover opacity-45 scale-100"
+                      unoptimized
+                    />
+                  </div>
+                ) : (
+                  <>
+                    <div className="w-1/2 h-full relative overflow-hidden">
+                      {selectedGameHomeFlag ? (
+                        <Image
+                          src={selectedGameHomeFlag}
+                          alt=""
+                          fill
+                          className="object-cover blur-md opacity-35 scale-110"
+                          unoptimized
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-slate-900" />
+                      )}
+                      <div className="absolute inset-0 bg-linear-to-r from-slate-955 via-slate-955/20 to-transparent"></div>
+                    </div>
+                    <div className="w-1/2 h-full relative overflow-hidden">
+                      {selectedGameAwayFlag ? (
+                        <Image
+                          src={selectedGameAwayFlag}
+                          alt=""
+                          fill
+                          className="object-cover blur-md opacity-35 scale-110"
+                          unoptimized
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-slate-900" />
+                      )}
+                      <div className="absolute inset-0 bg-linear-to-l from-slate-955 via-slate-955/20 to-transparent"></div>
+                    </div>
+                  </>
+                )}
+              </div>
+
+              {/* Dark mask overlay */}
+              <div className="absolute inset-0 bg-black/40 group-hover:bg-black/30 transition-colors"></div>
+
+              {/* Center Overlays */}
+              <div className="absolute inset-0 flex flex-col items-center justify-center">
+                {!isBuffering ? (
+                  /* Golden Play button (shown initially) */
+                  <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full border-[3px] border-cyan-500 bg-cyan-500/15 flex items-center justify-center transition-all duration-300 group-hover:scale-110 group-hover:bg-cyan-500/25 group-hover:shadow-[0_0_30px_rgba(245,158,11,0.4)] z-10">
+                    <Play className="w-7 h-7 sm:w-9 sm:h-9 text-cyan-500 fill-cyan-500 translate-x-0.5" />
+                  </div>
+                ) : (
+                  /* rotating loading spinner text (shown during buffering delay) */
+                  <div className="bg-slate-955/95 border border-slate-900/80 px-5 py-3 rounded-full flex items-center gap-3 z-10 shadow-xl animate-pulse">
+                    <div className="w-4 h-4 rounded-full border-2 border-t-cyan-500 border-r-transparent border-b-cyan-500 border-l-transparent animate-spin"></div>
+                    <span className="text-[10px] sm:text-xs font-black font-mono tracking-widest text-slate-100 uppercase">
+                      {translate("loading", lang).toUpperCase()}
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              {/* bottom strip */}
+              <div className="absolute bottom-0 inset-x-0 bg-slate-955/90 backdrop-blur-xs border-t border-slate-900/60 px-5 py-3 flex items-center justify-between text-slate-400 text-xs z-10">
+                <div className="flex items-center gap-4">
+                  <Play className="w-4 h-4 cursor-pointer hover:text-white transition-colors" />
+                  <Volume2 className="w-4 h-4 cursor-pointer hover:text-white transition-colors" />
                 </div>
-              ) : (
-                <>
-                  <div className="w-1/2 h-full relative overflow-hidden">
-                    {selectedGameHomeFlag ? (
-                      <Image
-                        src={selectedGameHomeFlag}
-                        alt=""
-                        fill
-                        className="object-cover blur-md opacity-35 scale-110"
-                        unoptimized
-                      />
-                    ) : (
-                      <div className="w-full h-full bg-slate-900" />
-                    )}
-                    <div className="absolute inset-0 bg-linear-to-r from-slate-955 via-slate-955/20 to-transparent"></div>
-                  </div>
-                  <div className="w-1/2 h-full relative overflow-hidden">
-                    {selectedGameAwayFlag ? (
-                      <Image
-                        src={selectedGameAwayFlag}
-                        alt=""
-                        fill
-                        className="object-cover blur-md opacity-35 scale-110"
-                        unoptimized
-                      />
-                    ) : (
-                      <div className="w-full h-full bg-slate-900" />
-                    )}
-                    <div className="absolute inset-0 bg-linear-to-l from-slate-955 via-slate-955/20 to-transparent"></div>
-                  </div>
-                </>
-              )}
+                <div className="flex items-center gap-4">
+                  <span className="border border-red-500/35 text-red-500 bg-red-500/10 px-2.5 py-0.5 rounded font-black tracking-widest text-[9px] uppercase font-mono">
+                    {lang === "ar" ? "مباشر" : "LIVE"}
+                  </span>
+                  <Settings className="w-4 h-4 cursor-pointer hover:text-white transition-colors" />
+                  <Maximize2 className="w-4 h-4 cursor-pointer hover:text-white transition-colors" />
+                </div>
+              </div>
             </div>
-
-            {/* Dark mask overlay */}
-            <div className="absolute inset-0 bg-black/40 group-hover:bg-black/30 transition-colors"></div>
-
-            {/* Center Overlays */}
-            <div className="absolute inset-0 flex flex-col items-center justify-center">
-              {!isBuffering ? (
-                /* Golden Play button (shown initially) */
-                <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full border-[3px] border-amber-500 bg-amber-500/15 flex items-center justify-center transition-all duration-300 group-hover:scale-110 group-hover:bg-amber-500/25 group-hover:shadow-[0_0_30px_rgba(245,158,11,0.4)] z-10">
-                  <Play className="w-7 h-7 sm:w-9 sm:h-9 text-amber-500 fill-amber-500 translate-x-0.5" />
-                </div>
-              ) : (
-                /* rotating loading spinner text (shown during buffering delay) */
-                <div className="bg-slate-955/95 border border-slate-900/80 px-5 py-3 rounded-full flex items-center gap-3 z-10 shadow-xl animate-pulse">
-                  <div className="w-4 h-4 rounded-full border-2 border-t-amber-500 border-r-transparent border-b-amber-500 border-l-transparent animate-spin"></div>
-                  <span className="text-[10px] sm:text-xs font-black font-mono tracking-widest text-slate-100 uppercase">
-                    {translate("loading", lang).toUpperCase()}
+          ) : (
+            <div className="w-full min-h-[420px] md:aspect-video rounded-3xl overflow-hidden border border-cyan-500/25 bg-[#050b14]/90 backdrop-blur-md relative shadow-[0_0_60px_rgba(245,158,11,0.15)] transition-all duration-300 flex flex-col justify-between p-6 animate-fade-in z-10">
+              {/* Header */}
+              <div className="flex items-center justify-between border-b border-slate-900/60 pb-3">
+                <div className="flex items-center gap-2 text-cyan-500">
+                  <Tv className="w-5 h-5 text-cyan-500" />
+                  <span className="font-bold text-sm tracking-wider uppercase text-slate-100">
+                    {translate("live_stream", lang)}
                   </span>
                 </div>
-              )}
-            </div>
+                <button
+                  onClick={() => setShowInlineSignup(false)}
+                  className="p-1 rounded-md text-slate-505 hover:text-white transition-colors cursor-pointer"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
 
-            {/* bottom strip */}
-            <div className="absolute bottom-0 inset-x-0 bg-slate-955/90 backdrop-blur-xs border-t border-slate-900/60 px-5 py-3 flex items-center justify-between text-slate-400 text-xs z-10">
-              <div className="flex items-center gap-4">
-                <Play className="w-4 h-4 cursor-pointer hover:text-white transition-colors" />
-                <Volume2 className="w-4 h-4 cursor-pointer hover:text-white transition-colors" />
+              {/* Body */}
+              <div className="flex-1 flex flex-col justify-center items-center gap-4 my-2">
+                <h3 className="text-center font-bold text-sm sm:text-base text-slate-100 leading-snug px-2">
+                  {translate("signup_title", lang)}
+                </h3>
+
+                {/* Main action button */}
+                <button
+                  onClick={handleActionRedirect}
+                  className="w-full max-w-sm py-3 bg-cyan-700 hover:bg-cyan-600 active:scale-[0.98] transition-all rounded-xl text-slate-955 font-extrabold tracking-wider text-xs sm:text-sm shadow-lg shadow-cyan-500/20 hover:shadow-cyan-500/35 cursor-pointer uppercase"
+                >
+                  {translate("signup_btn", lang)}
+                </button>
+
+                {/* Adblocker warning section */}
+
+
+                {/* Features list */}
+                <div className="w-full max-w-sm grid grid-cols-2 gap-2 text-[8px] sm:text-[9px]">
+                  <div className="flex items-center gap-2 p-2 bg-slate-900/25 border border-slate-900/60 rounded-lg">
+                    <Film className="w-3.5 h-3.5 text-cyan-500 shrink-0" />
+                    <span className="font-semibold text-slate-300 truncate">{translate("feature_1", lang)}</span>
+                  </div>
+                  <div className="flex items-center gap-2 p-2 bg-slate-900/25 border border-slate-900/60 rounded-lg">
+                    <Infinity className="w-3.5 h-3.5 text-cyan-500 shrink-0" />
+                    <span className="font-semibold text-slate-300 truncate">{translate("feature_2", lang)}</span>
+                  </div>
+                  <div className="flex items-center gap-2 p-2 bg-slate-900/25 border border-slate-900/60 rounded-lg">
+                    <Ban className="w-3.5 h-3.5 text-cyan-500 shrink-0" />
+                    <span className="font-semibold text-slate-300 truncate">{translate("feature_3", lang)}</span>
+                  </div>
+                  <div className="flex items-center gap-2 p-2 bg-slate-900/25 border border-slate-900/60 rounded-lg">
+                    <Smartphone className="w-3.5 h-3.5 text-cyan-500 shrink-0" />
+                    <span className="font-semibold text-slate-300 truncate">{translate("feature_4", lang)}</span>
+                  </div>
+                </div>
               </div>
-              <div className="flex items-center gap-4">
-                <span className="border border-red-500/35 text-red-500 bg-red-500/10 px-2.5 py-0.5 rounded font-black tracking-widest text-[9px] uppercase font-mono">
-                  {lang === "ar" ? "مباشر" : "LIVE"}
-                </span>
-                <Settings className="w-4 h-4 cursor-pointer hover:text-white transition-colors" />
-                <Maximize2 className="w-4 h-4 cursor-pointer hover:text-white transition-colors" />
+
+              {/* Modal Ads */}
+              <AdScriptContainer scriptHtml={adsConfig?.modal_ads} className="w-full max-w-sm flex justify-center mt-2 shrink-0" />
+
+              {/* Footer */}
+              <div className="text-center pt-2 border-t border-slate-900/60 shrink-0">
+                <p className="text-slate-400 text-[10px] font-semibold">
+                  {translate("already_account", lang)}{" "}
+                  <span className="text-cyan-500 hover:text-cyan-400 cursor-pointer font-bold transition-colors">
+                    {translate("login", lang)}
+                  </span>
+                </p>
               </div>
             </div>
-          </div>
+          )}
         </div>
 
         {/* Smart Details (Below Video Player) */}
@@ -538,7 +677,7 @@ export default function MatchCenterPage({ params }: { params: Promise<{ slug: st
                                 if (parsed && parsed[lang]) {
                                   return parsed[lang].split(",")[0].trim()
                                 }
-                              } catch (e) {}
+                              } catch (e) { }
                             }
                             if (lang === "ar" && stadium.name_fa) return stadium.name_fa
                             return stadium.name_en
@@ -565,7 +704,7 @@ export default function MatchCenterPage({ params }: { params: Promise<{ slug: st
                                       return parts.slice(1).join(",").trim()
                                     }
                                   }
-                                } catch (e) {}
+                                } catch (e) { }
                               }
                               if (lang === "ar" && stadium.city_fa && stadium.country_fa) {
                                 return `${stadium.city_fa}, ${stadium.country_fa}`
@@ -588,7 +727,7 @@ export default function MatchCenterPage({ params }: { params: Promise<{ slug: st
             {/* Column 3: Interactive Statistics */}
             <div className="bg-slate-905/30 border border-slate-905 rounded-2xl p-5 space-y-3">
               <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">{translate("match_statistics", lang)}</span>
-              
+
               <div className="space-y-3 bg-slate-955/50 p-3.5 rounded-xl border border-slate-900/60 text-xs">
                 {/* Stat 1: Possession */}
                 <div className="space-y-1">
@@ -644,109 +783,6 @@ export default function MatchCenterPage({ params }: { params: Promise<{ slug: st
           </Link>
         </div>
       </main>
-
-      {/* SIGN-UP STREAM MODAL */}
-      {showStreamModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          {/* Backdrop (Darker and highly blurred for focus) */}
-          <div 
-            onClick={() => setShowStreamModal(false)}
-            className="absolute inset-0 bg-slate-955/95 backdrop-blur-xl transition-opacity duration-300"
-          ></div>
-          
-          {/* Modal Content (Focused with golden border glow) */}
-          <div className="bg-[#050b14] border border-amber-500/25 rounded-3xl w-full max-w-md overflow-hidden relative shadow-[0_0_60px_rgba(245,158,11,0.18)] z-10 animate-fade-in">
-            {/* Header */}
-            <div className="px-6 py-4 flex items-center justify-between border-b border-slate-900/60">
-              <div className="flex items-center gap-2 text-amber-500">
-                <Tv className="w-5 h-5 text-amber-500" />
-                <span className="font-bold text-sm tracking-wider uppercase text-slate-100">
-                  {translate("live_stream", lang)}
-                </span>
-              </div>
-              <button 
-                onClick={() => setShowStreamModal(false)}
-                className="p-1 rounded-md text-slate-500 hover:text-white transition-colors cursor-pointer"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-            
-            {/* Modal Body */}
-            <div className="p-6 flex flex-col items-center gap-6">
-              {/* Promo Banner Image or Subtitle */}
-              {selectedGame.modal_image ? (
-                <div className="w-full relative aspect-video rounded-2xl overflow-hidden border border-slate-900/65 mb-1 bg-slate-950 shadow-inner">
-                  <Image src={selectedGame.modal_image} alt="Promotion Banner" fill className="object-cover" unoptimized />
-                </div>
-              ) : (
-                <h3 className="text-center font-bold text-lg text-slate-100 leading-snug px-2">
-                  {translate("signup_title", lang)}
-                </h3>
-              )}
-              
-              {/* Main action button */}
-              <button 
-                onClick={handleActionRedirect}
-                className="w-full py-4 bg-amber-500 hover:bg-amber-600 active:scale-[0.98] transition-all rounded-xl text-slate-955 font-extrabold tracking-wider text-sm shadow-lg shadow-amber-500/20 hover:shadow-amber-500/35 cursor-pointer uppercase"
-              >
-                {translate("signup_btn", lang)}
-              </button>
-              
-              {/* Adblocker warning section */}
-              <div className="w-full bg-[#081324] border border-slate-900/65 rounded-2xl p-4 flex items-center justify-between gap-4">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-amber-500/10 rounded-xl text-amber-500">
-                    <ShieldAlert className="w-6 h-6 text-amber-500" />
-                  </div>
-                  <div className="flex flex-col">
-                    <span className="text-slate-100 font-bold text-sm">{translate("adblocker_title", lang)}</span>
-                    <span className="text-slate-450 text-[10px]">{translate("adblocker_text", lang)}</span>
-                  </div>
-                </div>
-                <button 
-                  onClick={handleActionRedirect}
-                  className="px-3 py-2 bg-amber-500 text-slate-955 font-extrabold text-[10px] rounded-lg tracking-wider hover:bg-amber-600 transition-colors uppercase shrink-0"
-                >
-                  {translate("unlock_hd", lang)}
-                </button>
-              </div>
-              
-              {/* Features grid */}
-              <div className="w-full grid grid-cols-2 gap-3">
-                {/* Feature 1 */}
-                <div className="flex items-center gap-2.5 p-3 bg-slate-900/20 border border-slate-900/60 rounded-xl">
-                  <Film className="w-4 h-4 text-amber-500 shrink-0" />
-                  <span className="text-[10px] font-semibold text-slate-300">{translate("feature_1", lang)}</span>
-                </div>
-                {/* Feature 2 */}
-                <div className="flex items-center gap-2.5 p-3 bg-slate-900/20 border border-slate-900/60 rounded-xl">
-                  <Infinity className="w-4 h-4 text-amber-500 shrink-0" />
-                  <span className="text-[10px] font-semibold text-slate-300">{translate("feature_2", lang)}</span>
-                </div>
-                {/* Feature 3 */}
-                <div className="flex items-center gap-2.5 p-3 bg-slate-900/20 border border-slate-900/60 rounded-xl">
-                  <Ban className="w-4 h-4 text-amber-500 shrink-0" />
-                  <span className="text-[10px] font-semibold text-slate-300">{translate("feature_3", lang)}</span>
-                </div>
-                {/* Feature 4 */}
-                <div className="flex items-center gap-2.5 p-3 bg-slate-900/20 border border-slate-900/60 rounded-xl">
-                  <Smartphone className="w-4 h-4 text-amber-500 shrink-0" />
-                  <span className="text-[10px] font-semibold text-slate-300">{translate("feature_4", lang)}</span>
-                </div>
-              </div>
-              
-              {/* Footer account login */}
-              <p className="text-slate-400 text-xs font-semibold mt-2">
-                {translate("already_account", lang)}{" "}
-                <span className="text-amber-500 hover:text-amber-400 cursor-pointer font-bold transition-colors">
-                  {translate("login", lang)}
-                </span>
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   )
 }

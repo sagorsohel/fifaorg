@@ -52,7 +52,14 @@ export default function AdminDashboardPage() {
   const [authorized, setAuthorized] = useState(false)
   
   // Navigation State
-  const [activeView, setActiveView] = useState<"matches" | "teams">("matches")
+  const [activeView, setActiveView] = useState<"matches" | "teams" | "ads">("matches")
+
+  // Ads Control State
+  const [heroAds, setHeroAds] = useState("")
+  const [modalAds, setModalAds] = useState("")
+  const [headerAds, setHeaderAds] = useState("")
+  const [adsSaving, setAdsSaving] = useState(false)
+  const [adsMessage, setAdsMessage] = useState({ text: "", type: "success" })
 
   // Edit Modal State
   const [editingGame, setEditingGame] = useState<Game | null>(null)
@@ -277,6 +284,48 @@ export default function AdminDashboardPage() {
     }
   }
 
+  // Fetch Ads settings
+  useEffect(() => {
+    if (!authorized) return
+    fetch("/api/manage/ads")
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.ads) {
+          setHeroAds(data.ads.hero_ads || "")
+          setModalAds(data.ads.modal_ads || "")
+          setHeaderAds(data.ads.header_ads || "")
+        }
+      })
+      .catch(() => {})
+  }, [authorized])
+
+  const handleSaveAds = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setAdsSaving(true)
+    setAdsMessage({ text: "", type: "success" })
+
+    try {
+      const res = await fetch("/api/manage/ads", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          hero_ads: heroAds,
+          modal_ads: modalAds,
+          header_ads: headerAds
+        })
+      })
+      if (res.ok) {
+        setAdsMessage({ text: "Ads configurations saved successfully!", type: "success" })
+      } else {
+        setAdsMessage({ text: "Failed to save ads configuration.", type: "error" })
+      }
+    } catch (err: any) {
+      setAdsMessage({ text: err.message || "Network error.", type: "error" })
+    } finally {
+      setAdsSaving(false)
+    }
+  }
+
   if (!authorized) {
     return null
   }
@@ -333,6 +382,21 @@ export default function AdminDashboardPage() {
                 <span>Manage Teams</span>
               </div>
               {activeView === "teams" && <ChevronRight className="w-3.5 h-3.5" />}
+            </button>
+
+            <button
+              onClick={() => setActiveView("ads")}
+              className={`w-full flex items-center justify-between px-4 py-3 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                activeView === "ads"
+                  ? "bg-slate-900/60 border border-slate-800/80 text-cyan-455 shadow-xs"
+                  : "text-slate-400 hover:bg-slate-900/30 hover:text-slate-200 border border-transparent"
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <SlidersHorizontal className="w-4 h-4" />
+                <span>Ads Control</span>
+              </div>
+              {activeView === "ads" && <ChevronRight className="w-3.5 h-3.5" />}
             </button>
           </nav>
         </div>
@@ -608,6 +672,102 @@ export default function AdminDashboardPage() {
                   )}
                 </>
               )}
+            </div>
+          )}
+
+          {/* VIEW 3: ADS CONTROL */}
+          {activeView === "ads" && (
+            <div className="space-y-6 max-w-4xl">
+              {/* Header */}
+              <div className="bg-slate-905/20 border border-slate-905 p-6 rounded-2xl shadow-xs space-y-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-linear-to-br from-cyan-500 to-emerald-500 flex items-center justify-center shadow-lg shadow-cyan-500/10">
+                    <SlidersHorizontal className="w-5 h-5 text-slate-955" />
+                  </div>
+                  <div>
+                    <h3 className="text-base font-extrabold text-slate-100">Global Ads Configuration</h3>
+                    <p className="text-xs text-slate-500 font-medium">Inject advertisement or tracking scripts dynamically into header, hero, or modal spots.</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Form Card */}
+              <form onSubmit={handleSaveAds} className="bg-[#050b14] border border-slate-900 rounded-3xl p-6 space-y-6 shadow-xl">
+                {adsMessage.text && (
+                  <div
+                    className={`p-4 rounded-xl border text-xs font-semibold flex items-center gap-2.5 ${
+                      adsMessage.type === "success"
+                        ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400"
+                        : "bg-red-500/10 border-red-500/20 text-red-400"
+                    }`}
+                  >
+                    {adsMessage.type === "success" ? <CheckCircle className="w-4 h-4 shrink-0" /> : <AlertTriangle className="w-4 h-4 shrink-0" />}
+                    <span>{adsMessage.text}</span>
+                  </div>
+                )}
+
+                {/* Header Ads Input */}
+                <div className="space-y-2">
+                  <label className="text-[10px] uppercase tracking-wider font-bold text-slate-400 flex items-center gap-1.5 font-mono">
+                    Header Ads (Script / HTML Code)
+                  </label>
+                  <textarea
+                    value={headerAds}
+                    onChange={(e) => setHeaderAds(e.target.value)}
+                    placeholder="<!-- Paste Google AdSense or other header ad scripts here -->"
+                    rows={6}
+                    className="w-full bg-slate-950 border border-slate-900 rounded-xl px-4 py-3 text-xs text-slate-200 placeholder-slate-600 focus:outline-hidden focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/20 font-mono transition-all"
+                  />
+                  <p className="text-[9px] text-slate-550 leading-relaxed font-sans">
+                    This script renders at the very top of the match details and homepage views (header section).
+                  </p>
+                </div>
+
+                {/* Hero Ads Input */}
+                <div className="space-y-2">
+                  <label className="text-[10px] uppercase tracking-wider font-bold text-slate-400 flex items-center gap-1.5 font-mono">
+                    Hero Ads (Script / HTML Code)
+                  </label>
+                  <textarea
+                    value={heroAds}
+                    onChange={(e) => setHeroAds(e.target.value)}
+                    placeholder="<!-- Paste banner script or custom HTML here -->"
+                    rows={6}
+                    className="w-full bg-slate-950 border border-slate-900 rounded-xl px-4 py-3 text-xs text-slate-200 placeholder-slate-600 focus:outline-hidden focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/20 font-mono transition-all"
+                  />
+                  <p className="text-[9px] text-slate-550 leading-relaxed font-sans">
+                    This script renders in the primary hero slot, directly below/above the score banner.
+                  </p>
+                </div>
+
+                {/* Modal Ads Input */}
+                <div className="space-y-2">
+                  <label className="text-[10px] uppercase tracking-wider font-bold text-slate-400 flex items-center gap-1.5 font-mono">
+                    Modal / Player Ads (Script / HTML Code)
+                  </label>
+                  <textarea
+                    value={modalAds}
+                    onChange={(e) => setModalAds(e.target.value)}
+                    placeholder="<!-- Paste modal or player ad scripts here -->"
+                    rows={6}
+                    className="w-full bg-slate-950 border border-slate-900 rounded-xl px-4 py-3 text-xs text-slate-200 placeholder-slate-600 focus:outline-hidden focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/20 font-mono transition-all"
+                  />
+                  <p className="text-[9px] text-slate-550 leading-relaxed font-sans">
+                    This script is injected inside the Stream Player box inline signup container.
+                  </p>
+                </div>
+
+                {/* Save button */}
+                <div className="pt-2 border-t border-slate-900/60 flex items-center justify-end">
+                  <button
+                    type="submit"
+                    disabled={adsSaving}
+                    className="px-6 py-3 bg-linear-to-r from-cyan-500 to-emerald-500 hover:from-cyan-400 hover:to-emerald-400 text-slate-955 font-extrabold rounded-xl text-xs tracking-wider transition-all shadow-md shadow-cyan-500/10 active:scale-[0.98] cursor-pointer disabled:opacity-50 font-sans"
+                  >
+                    {adsSaving ? "Saving..." : "Save Configuration"}
+                  </button>
+                </div>
+              </form>
             </div>
           )}
         </div>

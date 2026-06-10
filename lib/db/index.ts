@@ -78,6 +78,19 @@ export async function ensureTablesExist() {
       )
     `)
 
+    await poolConnection.query(`
+      CREATE TABLE IF NOT EXISTS \`ads\` (
+        \`id\` varchar(50) PRIMARY KEY,
+        \`hero_ads\` text,
+        \`modal_ads\` text,
+        \`header_ads\` text
+      )
+    `)
+
+    try {
+      await poolConnection.query("INSERT IGNORE INTO `ads` (`id`, `hero_ads`, `modal_ads`, `header_ads`) VALUES ('global', '', '', '')")
+    } catch (err) {}
+
     // Self-healing columns for existing tables
     try {
       await poolConnection.query("ALTER TABLE `teams` ADD COLUMN `translations` TEXT NULL")
