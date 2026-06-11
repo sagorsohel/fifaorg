@@ -324,7 +324,13 @@ export default function TeamPage({ params }: { params: Promise<{ id: string }> }
                             </span>
                           </div>
                           <div className="flex items-center justify-between my-1">
-                            <div className="flex items-center gap-2 flex-1 min-w-0">
+                            <div
+                              onClick={(e) => {
+                                  e.stopPropagation()
+                                  router.push(`/team/${match.home_team_id}`)
+                              }}
+                              className="flex items-center gap-2 flex-1 min-w-0 cursor-pointer hover:bg-slate-850/40 p-1.5 rounded-xl transition-all group/team"
+                            >
                               {homeFlag ? (
                                 <div className="relative w-8 h-5.5 overflow-hidden rounded border border-slate-800 shrink-0">
                                   <Image src={homeFlag} alt="" fill className="object-cover" unoptimized />
@@ -332,13 +338,19 @@ export default function TeamPage({ params }: { params: Promise<{ id: string }> }
                               ) : (
                                 <div className="w-8 h-5.5 bg-slate-800 rounded shrink-0 flex items-center justify-center text-[10px]">🏴</div>
                               )}
-                              <span className="font-bold text-slate-205 text-xs truncate group-hover:text-cyan-400 transition-colors">
+                              <span className="font-bold text-slate-205 text-xs truncate group-hover/team:text-cyan-400 transition-colors">
                                 {lang === "ar" && match.home_team_name_fa ? match.home_team_name_fa : match.home_team_name_en}
                               </span>
                             </div>
                             <span className="text-slate-500 text-[10px] px-2 font-black shrink-0 font-mono">VS</span>
-                            <div className="flex items-center gap-2 flex-1 min-w-0 justify-end">
-                              <span className="font-bold text-slate-205 text-xs truncate group-hover:text-cyan-400 transition-colors">
+                            <div
+                              onClick={(e) => {
+                                  e.stopPropagation()
+                                  router.push(`/team/${match.away_team_id}`)
+                              }}
+                              className="flex items-center gap-2 flex-1 min-w-0 justify-end cursor-pointer hover:bg-slate-850/40 p-1.5 rounded-xl transition-all group/team"
+                            >
+                              <span className="font-bold text-slate-205 text-xs truncate group-hover/team:text-cyan-400 transition-colors">
                                 {lang === "ar" && match.away_team_name_fa ? match.away_team_name_fa : match.away_team_name_en}
                               </span>
                               {awayFlag ? (
@@ -380,7 +392,13 @@ export default function TeamPage({ params }: { params: Promise<{ id: string }> }
                             <span className="font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/10 font-mono text-xs">{match.home_score} : {match.away_score}</span>
                           </div>
                           <div className="flex items-center justify-between my-1">
-                            <div className="flex items-center gap-2 flex-1 min-w-0">
+                            <div
+                              onClick={(e) => {
+                                  e.stopPropagation()
+                                  router.push(`/team/${match.home_team_id}`)
+                              }}
+                              className="flex items-center gap-2 flex-1 min-w-0 cursor-pointer hover:bg-slate-850/40 p-1.5 rounded-xl transition-all group/team"
+                            >
                               {homeFlag ? (
                                 <div className="relative w-8 h-5.5 overflow-hidden rounded border border-slate-800 shrink-0">
                                   <Image src={homeFlag} alt="" fill className="object-cover" unoptimized />
@@ -388,13 +406,19 @@ export default function TeamPage({ params }: { params: Promise<{ id: string }> }
                               ) : (
                                 <div className="w-8 h-5.5 bg-slate-800 rounded shrink-0 flex items-center justify-center text-[10px]">🏴</div>
                               )}
-                              <span className="font-bold text-slate-205 text-xs truncate group-hover:text-cyan-400 transition-colors">
+                              <span className="font-bold text-slate-205 text-xs truncate group-hover/team:text-emerald-400 transition-colors">
                                 {lang === "ar" && match.home_team_name_fa ? match.home_team_name_fa : match.home_team_name_en}
                               </span>
                             </div>
                             <span className="text-slate-500 text-[10px] px-2 font-black shrink-0 font-mono">VS</span>
-                            <div className="flex items-center gap-2 flex-1 min-w-0 justify-end">
-                              <span className="font-bold text-slate-205 text-xs truncate group-hover:text-cyan-400 transition-colors">
+                            <div
+                              onClick={(e) => {
+                                  e.stopPropagation()
+                                  router.push(`/team/${match.away_team_id}`)
+                              }}
+                              className="flex items-center gap-2 flex-1 min-w-0 justify-end cursor-pointer hover:bg-slate-850/40 p-1.5 rounded-xl transition-all group/team"
+                            >
+                              <span className="font-bold text-slate-205 text-xs truncate group-hover/team:text-emerald-400 transition-colors">
                                 {lang === "ar" && match.away_team_name_fa ? match.away_team_name_fa : match.away_team_name_en}
                               </span>
                               {awayFlag ? (

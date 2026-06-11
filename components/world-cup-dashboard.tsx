@@ -1,7 +1,6 @@
 "use client"
 
 import { useMemo, useState, useEffect } from "react"
-import Image from "next/image"
 import { useRouter } from "next/navigation"
 import {
   DropdownMenu,
@@ -16,46 +15,28 @@ import {
   Game,
   Team,
   Stadium,
-  getGameSlug,
-  useGetPlayersQuery,
-  Player
 } from "@/lib/services/apiSlice"
+import { useAppDispatch, useAppSelector } from "@/lib/store"
 import {
-  useAppDispatch,
-  useAppSelector,
-} from "@/lib/store"
-import {
-  setSearchQuery,
-  setFilterStatus,
-  setActiveTab,
-  setSelectedGroup,
   setSelectedTeamId,
   setLanguage,
-  resetFilters,
 } from "@/lib/features/uiSlice"
-import {
-  Search,
-  Trophy,
-  Calendar,
-  Users,
-  RefreshCw,
-  Clock,
-  MapPin,
-  ChevronRight,
-  SlidersHorizontal,
-  XCircle,
-  ArrowLeft,
-  Play,
-} from "lucide-react"
+import { Trophy, RefreshCw, XCircle } from "lucide-react"
 
 import {
   LanguageCode,
   LANGUAGES,
   translate,
   parseStadiumLocalDate,
-  formatLocalTime,
-  formatCountdownTime,
 } from "@/lib/i18n"
+
+// Import sub-components
+import DashboardSkeleton from "@/components/dashboard/dashboard-skeleton"
+import StatsSection from "@/components/dashboard/stats-section"
+import FilterSection from "@/components/dashboard/filter-section"
+import MatchesView from "@/components/dashboard/matches-view"
+import TeamsView from "@/components/dashboard/teams-view"
+import TeamDetailView from "@/components/dashboard/team-detail-view"
 
 // Localized Date formatter helper for grouped headings
 function formatLocalDateOnly(date: Date, lang: LanguageCode): string {
@@ -77,57 +58,26 @@ function formatLocalDateOnly(date: Date, lang: LanguageCode): string {
   }
 }
 
-// Countdown Component for upcoming matches
-function Countdown({ dateStr, stadiumId, lang }: { dateStr: string; stadiumId: string; lang: LanguageCode }) {
-  const [timeLeft, setTimeLeft] = useState<{
-    days: number
-    hours: number
-    minutes: number
-    seconds: number
-  } | null>(null)
-
-  useEffect(() => {
-    const targetDate = parseStadiumLocalDate(dateStr, stadiumId)
-
-    const calculateTimeLeft = () => {
-      const difference = targetDate.getTime() - Date.now()
-      if (difference <= 0) {
-        setTimeLeft(null)
-        return
-      }
-
-      setTimeLeft({
-        days: Math.floor(difference / (1000 * 60 * 60 * 24)),
-        hours: Math.floor((difference / (1000 * 60 * 60)) % 24),
-        minutes: Math.floor((difference / 1000 / 60) % 60),
-        seconds: Math.floor((difference / 1000) % 60),
-      })
-    }
-
-    calculateTimeLeft()
-    const timer = setInterval(calculateTimeLeft, 1000)
-
-    return () => clearInterval(timer)
-  }, [dateStr, stadiumId])
-
-  if (!timeLeft) {
-    return (
-      <span className="text-[9px] font-bold text-emerald-450 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20 font-mono tracking-wider animate-pulse">
-        {formatCountdownTime(null, lang)}
-      </span>
-    )
-  }
-
-  return (
-    <div className="flex items-center gap-1 font-mono text-[9px] font-bold text-cyan-500/90 bg-cyan-500/5 px-2 py-0.5 rounded border border-cyan-500/10 shadow-xs">
-      <span>{formatCountdownTime(timeLeft, lang)}</span>
-    </div>
-  )
-}
-
 export default function WorldCupDashboard() {
   const dispatch = useAppDispatch()
   const router = useRouter()
+
+  const [adsConfig, setAdsConfig] = useState<{
+    header_ads?: string
+    hero_ads?: string
+    modal_ads?: string
+  } | null>(null)
+
+  useEffect(() => {
+    fetch("/api/manage/ads")
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.ads) {
+          setAdsConfig(data.ads)
+        }
+      })
+      .catch(() => { })
+  }, [])
 
   useEffect(() => {
     document.title = "World Cup 2026 Dashboard"
@@ -170,61 +120,6 @@ export default function WorldCupDashboard() {
     refetchStadiums()
   }
 
-  // Selected Team Active Sub-Tab State ("matches" | "squad")
-  const [teamTab, setTeamTab] = useState<"matches" | "squad">("matches")
-  const [prevTeamId, setPrevTeamId] = useState(selectedTeamId)
-  if (selectedTeamId !== prevTeamId) {
-    setPrevTeamId(selectedTeamId)
-    setTeamTab("matches")
-  }
-
-  // Fetch players for the selected team
-  const { data: teamPlayersData, isLoading: isPlayersLoading } = useGetPlayersQuery(
-    selectedTeamId || "",
-    { skip: !selectedTeamId }
-  )
-
-  // Group players by position (Goalkeepers, Defenders, Midfielders, Forwards)
-  const groupedPlayers = useMemo(() => {
-    const groups = {
-      Goalkeeper: [] as Player[],
-      Defender: [] as Player[],
-      Midfielder: [] as Player[],
-      Forward: [] as Player[],
-    }
-
-    if (teamPlayersData?.players) {
-      teamPlayersData.players.forEach((player) => {
-        const pos = (player.position || "Goalkeeper").toLowerCase()
-        if (pos.includes("goalkeeper") || pos.includes("gk")) {
-          groups.Goalkeeper.push(player)
-        } else if (pos.includes("defender") || pos.includes("df") || pos.includes("back")) {
-          groups.Defender.push(player)
-        } else if (pos.includes("midfielder") || pos.includes("mf") || pos.includes("mid")) {
-          groups.Midfielder.push(player)
-        } else if (
-          pos.includes("forward") ||
-          pos.includes("fw") ||
-          pos.includes("striker") ||
-          pos.includes("attacker") ||
-          pos.includes("winger")
-        ) {
-          groups.Forward.push(player)
-        } else {
-          groups.Midfielder.push(player)
-        }
-      })
-    }
-
-    // Sort players in each group by jersey number
-    Object.keys(groups).forEach((key) => {
-      groups[key as keyof typeof groups].sort((a, b) => (a.jersey_num || 99) - (b.jersey_num || 99))
-    })
-
-    return groups
-  }, [teamPlayersData])
-
-
   // Create a fast lookup map for team flags from teams data
   const flagMap = useMemo(() => {
     const map: Record<string, string> = {}
@@ -247,19 +142,6 @@ export default function WorldCupDashboard() {
     }
     return map
   }, [teamsData])
-
-  const getTeamName = (teamId: string) => {
-    const team = teamNamesMap[teamId]
-    if (!team) return "TBD"
-    if (team.translations) {
-      try {
-        const parsed = typeof team.translations === "string" ? JSON.parse(team.translations) : team.translations
-        if (parsed && parsed[lang]) return parsed[lang]
-      } catch { }
-    }
-    if (lang === "ar" && team.name_fa) return team.name_fa
-    return team.name_en
-  }
 
   // Create a fast lookup map for stadiums
   const stadiumsMap = useMemo(() => {
@@ -292,23 +174,6 @@ export default function WorldCupDashboard() {
     if (!selectedTeamId || !teamsData?.teams) return null
     return teamsData.teams.find((t) => t.id === selectedTeamId || t._id === selectedTeamId)
   }, [selectedTeamId, teamsData])
-
-  const selectedTeamMatches = useMemo(() => {
-    if (!selectedTeamId || !gamesData?.games) return []
-    return gamesData.games.filter(
-      (game) => game.home_team_id === selectedTeamId || game.away_team_id === selectedTeamId
-    ).sort((a, b) => parseStadiumLocalDate(a.local_date, a.stadium_id).getTime() - parseStadiumLocalDate(b.local_date, b.stadium_id).getTime())
-  }, [selectedTeamId, gamesData])
-
-  const selectedTeamUpcomingMatches = useMemo(() => {
-    return selectedTeamMatches.filter((m) => m.finished.toUpperCase() === "FALSE")
-  }, [selectedTeamMatches])
-
-  const selectedTeamPlayedMatches = useMemo(() => {
-    return selectedTeamMatches.filter((m) => m.finished.toUpperCase() === "TRUE")
-  }, [selectedTeamMatches])
-
-
 
   // Process and group matches for the dashboard matches timeline
   const processedGames = useMemo(() => {
@@ -405,22 +270,39 @@ export default function WorldCupDashboard() {
   // Handle Loading State
   if (isTeamsLoading || isGamesLoading || isStadiumsLoading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-linear-to-b from-slate-900 via-slate-950 to-black text-white p-6">
-        <div className="relative w-24 h-24 mb-6">
-          <div className="absolute inset-0 rounded-full border-4 border-t-cyan-500 border-r-transparent border-b-emerald-500 border-l-transparent animate-spin"></div>
-          <div className="absolute inset-3 rounded-full bg-slate-900 flex items-center justify-center">
-            <span className="text-3xl">⚽</span>
+      <>
+        {/* Background Glows */}
+        <div className="fixed -top-40 -left-40 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none"></div>
+        <div className="fixed top-1/2 -right-40 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+        {/* Top Banner Header */}
+        <header className="sticky top-0 z-40 bg-slate-950/80 backdrop-blur-md border-b border-slate-900">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-xl bg-linear-to-br from-cyan-500 to-emerald-500 flex items-center justify-center shadow-lg shadow-cyan-500/15">
+                <Trophy className="w-6 h-6 text-slate-950" />
+              </div>
+              <div>
+                <h1 className="text-xl font-bold tracking-tight bg-linear-to-r from-cyan-400 to-emerald-400 bg-clip-text text-transparent">
+                  {translate("title", lang)}
+                </h1>
+                <p className="text-xs text-slate-400">{translate("subtitle", lang)}</p>
+              </div>
+            </div>
           </div>
-        </div>
-        <p className="text-lg font-medium text-slate-300 animate-pulse">Loading World Cup details...</p>
-      </div>
+        </header>
+
+        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <DashboardSkeleton />
+        </main>
+      </>
     )
   }
 
   // Handle Error State
   if (isTeamsError || isGamesError || isStadiumsError) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-slate-950 text-white p-6">
+      <div className="flex flex-col items-center justify-center min-h-screen bg-slate-955 text-white p-6">
         <div className="p-8 max-w-md w-full bg-slate-900/80 backdrop-blur-md rounded-2xl border border-red-500/30 text-center shadow-2xl">
           <XCircle className="w-16 h-16 text-red-500 mx-auto mb-4 animate-bounce" />
           <h2 className="text-2xl font-bold mb-2 text-red-400">Failed to load tournament data</h2>
@@ -437,19 +319,6 @@ export default function WorldCupDashboard() {
     )
   }
 
-  const allGroupLetters = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"]
-
-  const stages = [
-    { id: "all", label: translate("all_matches", lang) },
-
-    { id: "R32", label: translate("round_32", lang) },
-    { id: "R16", label: translate("round_16", lang) },
-    { id: "QF", label: translate("quarter_finals", lang) },
-    { id: "SF", label: translate("semi_finals", lang) },
-    { id: "3RD", label: translate("third_place", lang) },
-    { id: "FINAL", label: translate("final", lang) },
-  ]
-
   return (
     <>
       {/* Background Glows */}
@@ -457,7 +326,7 @@ export default function WorldCupDashboard() {
       <div className="fixed top-1/2 -right-40 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
 
       {/* Top Banner Header */}
-      <header className="sticky top-0 z-40 bg-slate-950/80 backdrop-blur-md border-b border-slate-900">
+      <header className="sticky top-0 z-40 bg-slate-955/80 backdrop-blur-md border-b border-slate-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col sm:flex-row items-center justify-between gap-4">
           {/* Logo & Brand */}
           <div className="flex items-center gap-3">
@@ -491,8 +360,9 @@ export default function WorldCupDashboard() {
                           localStorage.setItem("worldcup2026_lang", l.code)
                         } catch { }
                       }}
-                      className={`cursor-pointer px-3 py-2 text-xs rounded-lg transition-all focus:bg-cyan-500/15 focus:text-cyan-400 font-bold ${lang === l.code ? "bg-cyan-500/10 text-cyan-400" : "text-slate-300"
-                        }`}
+                      className={`cursor-pointer px-3 py-2 text-xs rounded-lg transition-all focus:bg-cyan-500/15 focus:text-cyan-400 font-bold ${
+                        lang === l.code ? "bg-cyan-500/10 text-cyan-400" : "text-slate-300"
+                      }`}
                     >
                       {l.name}
                     </DropdownMenuItem>
@@ -515,761 +385,39 @@ export default function WorldCupDashboard() {
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 pb-28 sm:pb-8">
         {selectedTeam ? (
-          <div className="space-y-8 animate-fade-in">
-            {/* Header / Back row */}
-            <div className="flex items-center justify-between">
-              <button
-                onClick={() => dispatch(setSelectedTeamId(null))}
-                className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-xs font-semibold hover:bg-slate-800 transition-colors shadow-xs cursor-pointer text-slate-300"
-              >
-                <ArrowLeft className="w-4 h-4 text-cyan-500" />
-                <span>{translate("back_dashboard", lang)}</span>
-              </button>
-            </div>
-
-            {/* Team details card */}
-            <div className="p-6 sm:p-8 rounded-3xl bg-linear-to-r from-slate-900/60 to-slate-950/60 border border-slate-900 shadow-xl flex flex-col md:flex-row items-center justify-between gap-6 relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-64 h-64 bg-cyan-500/5 rounded-full blur-3xl pointer-events-none"></div>
-              <div className="flex flex-col sm:flex-row items-center gap-6 z-10">
-                {selectedTeam.flag ? (
-                  <div className="relative w-28 h-20 overflow-hidden rounded-2xl border-2 border-slate-800 shadow-2xl shrink-0">
-                    <Image
-                      src={selectedTeam.flag}
-                      alt={selectedTeam.name_en}
-                      fill
-                      className="object-cover"
-                      unoptimized
-                    />
-                  </div>
-                ) : (
-                  <div className="w-28 h-20 bg-slate-850 rounded-2xl shrink-0 flex items-center justify-center text-3xl shadow-inner">🏴</div>
-                )}
-                <div className="text-center sm:text-left">
-                  <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight bg-linear-to-r from-cyan-400 to-cyan-300 bg-clip-text text-transparent">
-                    {selectedTeam.name_en}
-                  </h2>
-                  <p className="text-sm text-slate-400 mt-1 font-mono font-medium">
-                    FIFA Code: {selectedTeam.fifa_code} | {translate("group", lang)}: {selectedTeam.groups}
-                  </p>
-                </div>
-              </div>
-
-              {/* Quick statistics row */}
-              <div className="grid grid-cols-2 gap-4 w-full md:w-auto shrink-0 z-10">
-                <div className="p-4 rounded-2xl bg-slate-950/80 border border-slate-900 text-center min-w-[120px]">
-                  <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">{translate("played_matches", lang)}</p>
-                  <p className="text-2xl font-bold text-emerald-400 mt-1 font-mono">{selectedTeamPlayedMatches.length}</p>
-                </div>
-                <div className="p-4 rounded-2xl bg-slate-950/80 border border-slate-900 text-center min-w-[120px]">
-                  <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">{translate("upcoming_matches", lang)}</p>
-                  <p className="text-2xl font-bold text-cyan-400 mt-1 font-mono">{selectedTeamUpcomingMatches.length}</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Tab Switcher for Team Details */}
-            <div className="flex bg-slate-900/40 p-1 rounded-xl border border-slate-900 max-w-xs font-sans">
-              <button
-                onClick={() => setTeamTab("matches")}
-                className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all duration-200 cursor-pointer ${teamTab === "matches"
-                  ? "bg-linear-to-r from-cyan-500 to-cyan-600 text-slate-950 shadow-md font-extrabold"
-                  : "text-slate-400 hover:text-slate-205"
-                  }`}
-              >
-                <Calendar className="w-3.5 h-3.5" />
-                <span>Matches</span>
-              </button>
-              <button
-                onClick={() => setTeamTab("squad")}
-                className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all duration-200 cursor-pointer ${teamTab === "squad"
-                  ? "bg-linear-to-r from-emerald-500 to-emerald-600 text-slate-955 shadow-md font-extrabold"
-                  : "text-slate-400 hover:text-slate-205"
-                  }`}
-              >
-                <Users className="w-3.5 h-3.5" />
-                <span>Squad / Lineup</span>
-              </button>
-            </div>
-
-            {teamTab === "matches" ? (
-              /* Matches list for this team */
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 font-sans">
-                {/* Upcoming Matches */}
-                <div className="space-y-4">
-                  <h3 className="text-lg font-bold text-cyan-400 flex items-center gap-2 border-b border-slate-900 pb-2">
-                    <span className="w-2 h-2 rounded-full bg-cyan-500 animate-pulse"></span>
-                    {translate("upcoming_matches", lang)}
-                  </h3>
-                  {selectedTeamUpcomingMatches.length > 0 ? (
-                    <div className="space-y-4">
-                      {selectedTeamUpcomingMatches.map((match) => {
-                        const homeFlag = flagMap[match.home_team_id] || (match.home_team_name_en ? flagMap[match.home_team_name_en.toLowerCase()] : undefined)
-                        const awayFlag = flagMap[match.away_team_id] || (match.away_team_name_en ? flagMap[match.away_team_name_en.toLowerCase()] : undefined)
-                        return (
-                          <div
-                            key={match._id}
-                            onClick={() => router.push(`/match/${getGameSlug(match)}`)}
-                            className="p-5 rounded-2xl bg-slate-900/30 border border-slate-900 hover:border-slate-805 hover:bg-slate-900/50 transition-all flex flex-col justify-between gap-4 group shadow-xs cursor-pointer"
-                          >
-                            <div className="flex items-center justify-between text-[10px] text-slate-500 pb-1 border-b border-slate-900/30">
-                              <span>{translate("group", lang)} {match.group} • {translate("matchday", lang)} {match.matchday}</span>
-                              <Countdown dateStr={match.local_date} stadiumId={match.stadium_id} lang={lang} />
-                            </div>
-
-                            <div className="flex items-center justify-between my-1">
-                              <div className="flex items-center gap-2 flex-1 min-w-0">
-                                {homeFlag ? (
-                                  <div className="relative w-8 h-5.5 overflow-hidden rounded border border-slate-855 shrink-0">
-                                    <Image src={homeFlag} alt="" fill className="object-cover" unoptimized />
-                                  </div>
-                                ) : <span className="text-xs">🏴</span>}
-                                <span className="font-semibold text-xs text-slate-200 truncate group-hover:text-cyan-400 transition-colors">
-                                  {getTeamName(match.home_team_id)}
-                                </span>
-                              </div>
-
-                              <span className="text-[10px] text-slate-605 font-bold font-mono px-3">VS</span>
-
-                              <div className="flex items-center justify-end gap-2 flex-1 min-w-0">
-                                <span className="font-semibold text-xs text-slate-200 truncate group-hover:text-cyan-400 transition-colors">
-                                  {getTeamName(match.away_team_id)}
-                                </span>
-                                {awayFlag ? (
-                                  <div className="relative w-8 h-5.5 overflow-hidden rounded border border-slate-855 shrink-0">
-                                    <Image src={awayFlag} alt="" fill className="object-cover" unoptimized />
-                                  </div>
-                                ) : <span className="text-xs">🏴</span>}
-                              </div>
-                            </div>
-
-                            <div className="text-[10px] text-slate-505 flex items-center gap-1.5 pt-1 border-t border-slate-900/30">
-                              <MapPin className="w-3.5 h-3.5 text-slate-600" />
-                              <span>{translate("stadium", lang)}: {getStadiumName(match.stadium_id) || `#${match.stadium_id}`} | {formatLocalTime(parseStadiumLocalDate(match.local_date, match.stadium_id), lang)}</span>
-                            </div>
-                          </div>
-                        )
-                      })}
-                    </div>
-                  ) : (
-                    <div className="text-center py-12 bg-slate-900/10 rounded-2xl border border-slate-900/40 text-slate-505 text-xs">
-                      {translate("no_upcoming_matches", lang)}
-                    </div>
-                  )}
-                </div>
-
-                {/* Played Matches */}
-                <div className="space-y-4">
-                  <h3 className="text-lg font-bold text-emerald-400 flex items-center gap-2 border-b border-slate-900 pb-2">
-                    <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-                    {translate("played_matches", lang)}
-                  </h3>
-                  {selectedTeamPlayedMatches.length > 0 ? (
-                    <div className="space-y-4">
-                      {selectedTeamPlayedMatches.map((match) => {
-                        const homeFlag = flagMap[match.home_team_id] || (match.home_team_name_en ? flagMap[match.home_team_name_en.toLowerCase()] : undefined)
-                        const awayFlag = flagMap[match.away_team_id] || (match.away_team_name_en ? flagMap[match.away_team_name_en.toLowerCase()] : undefined)
-                        return (
-                          <div
-                            key={match._id}
-                            onClick={() => router.push(`/match/${getGameSlug(match)}`)}
-                            className="p-5 rounded-2xl bg-slate-900/30 border border-slate-900 hover:border-slate-855 hover:bg-slate-900/50 transition-all flex flex-col justify-between gap-4 group shadow-xs cursor-pointer"
-                          >
-                            <div className="flex items-center justify-between text-[10px] text-slate-500 pb-1 border-b border-slate-900/30">
-                              <span>{translate("group", lang)} {match.group} • {translate("matchday", lang)} {match.matchday}</span>
-                              <span className="font-bold text-emerald-400 bg-emerald-500/10 px-2.5 py-0.5 rounded border border-emerald-500/10 font-mono text-xs">{match.home_score} : {match.away_score}</span>
-                            </div>
-
-                            <div className="flex items-center justify-between my-1">
-                              <div className="flex items-center gap-2 flex-1 min-w-0">
-                                {homeFlag ? (
-                                  <div className="relative w-8 h-5.5 overflow-hidden rounded border border-slate-855 shrink-0">
-                                    <Image src={homeFlag} alt="" fill className="object-cover" unoptimized />
-                                  </div>
-                                ) : <span className="text-xs">🏴</span>}
-                                <span className="font-semibold text-xs text-slate-200 truncate group-hover:text-emerald-400 transition-colors">
-                                  {getTeamName(match.home_team_id)}
-                                </span>
-                              </div>
-
-                              <span className="text-[10px] text-slate-605 font-bold font-mono px-3">VS</span>
-
-                              <div className="flex items-center justify-end gap-2 flex-1 min-w-0">
-                                <span className="font-semibold text-xs text-slate-200 truncate group-hover:text-emerald-400 transition-colors">
-                                  {getTeamName(match.away_team_id)}
-                                </span>
-                                {awayFlag ? (
-                                  <div className="relative w-8 h-5.5 overflow-hidden rounded border border-slate-855 shrink-0">
-                                    <Image src={awayFlag} alt="" fill className="object-cover" unoptimized />
-                                  </div>
-                                ) : <span className="text-xs">🏴</span>}
-                              </div>
-                            </div>
-
-                            <div className="text-[10px] text-slate-505 flex items-center gap-1.5 pt-1 border-t border-slate-900/30 my-1">
-                              <MapPin className="w-3 h-3 text-slate-600" />
-                              <span>{translate("stadium", lang)}: {getStadiumName(match.stadium_id) || `#${match.stadium_id}`} | {formatLocalTime(parseStadiumLocalDate(match.local_date, match.stadium_id), lang)}</span>
-                            </div>
-
-                            {((match.home_scorers && match.home_scorers !== "null") || (match.away_scorers && match.away_scorers !== "null")) && (
-                              <div className="bg-slate-955/40 p-2.5 rounded-xl border border-slate-955/80 flex flex-col gap-1 text-[9px] text-slate-550">
-                                <div className="flex justify-between gap-4">
-                                  <div className="truncate flex-1">
-                                    {match.home_scorers && match.home_scorers !== "null" ? match.home_scorers : ""}
-                                  </div>
-                                  <div className="truncate flex-1 text-right">
-                                    {match.away_scorers && match.away_scorers !== "null" ? match.away_scorers : ""}
-                                  </div>
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                        )
-                      })}
-                    </div>
-                  ) : (
-                    <div className="text-center py-12 bg-slate-900/10 rounded-2xl border border-slate-900/40 text-slate-505 text-xs">
-                      {translate("no_played_matches", lang)}
-                    </div>
-                  )}
-                </div>
-              </div>
-            ) : (
-              /* Squad list for this team */
-              <div className="space-y-8 animate-fade-in font-sans">
-                {isPlayersLoading ? (
-                  <div className="py-20 flex flex-col items-center justify-center gap-3">
-                    <div className="w-10 h-10 rounded-full border-2 border-t-cyan-500 border-r-transparent border-b-cyan-500 border-l-transparent animate-spin"></div>
-                    <span className="text-xs text-slate-500 font-bold uppercase tracking-wider animate-pulse font-mono">Loading squad...</span>
-                  </div>
-                ) : !teamPlayersData?.players || teamPlayersData.players.length === 0 ? (
-                  <div className="py-20 border border-dashed border-slate-900 rounded-2xl flex flex-col items-center justify-center gap-2 text-slate-550 text-xs">
-                    <span className="text-xl">🏃‍♂️</span>
-                    <span className="font-bold uppercase tracking-wider text-slate-400">No squad players registered yet.</span>
-                    <span className="text-slate-600 text-[10px]">Please synchronize this squad from the admin console.</span>
-                  </div>
-                ) : (
-                  <div className="space-y-10">
-                    {(["Goalkeeper", "Defender", "Midfielder", "Forward"] as const).map((positionKey) => {
-                      const playersInGroup = groupedPlayers[positionKey]
-                      if (playersInGroup.length === 0) return null
-
-                      return (
-                        <div key={positionKey} className="space-y-4 animate-fade-in">
-                          {/* Position Group Header */}
-                          <div className="flex items-center gap-3">
-                            <h4 className="text-xs font-black uppercase tracking-wider text-cyan-400 font-mono">
-                              {positionKey === "Goalkeeper" ? translate("goalkeepers", lang) || "Goalkeepers" :
-                                positionKey === "Defender" ? translate("defenders", lang) || "Defenders" :
-                                  positionKey === "Midfielder" ? translate("midfielders", lang) || "Midfielders" :
-                                    translate("forwards", lang) || "Forwards"}
-                            </h4>
-                            <div className="h-[1px] bg-slate-900 flex-1"></div>
-                          </div>
-
-                          {/* Players Grid */}
-                          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                            {playersInGroup.map((player) => (
-                              <div
-                                key={player.id}
-                                className="relative p-4 rounded-2xl bg-linear-to-b from-slate-900/60 to-slate-950/60 border border-slate-900 hover:border-slate-800 transition-all duration-350 flex flex-col items-center text-center gap-3 group overflow-hidden shadow-xs hover:shadow-cyan-500/5 hover:-translate-y-0.5"
-                              >
-                                <div className="absolute -top-10 -left-10 w-24 h-24 bg-cyan-500/5 rounded-full blur-2xl pointer-events-none group-hover:bg-cyan-500/10 transition-colors"></div>
-
-                                {/* Player Photo */}
-                                <div className="relative w-16 h-16 rounded-full border border-slate-850 overflow-hidden shrink-0 flex items-center justify-center bg-slate-950 shadow-inner">
-                                  {player.picture_url ? (
-                                    <Image
-                                      src={player.picture_url}
-                                      alt={player.name}
-                                      width={64}
-                                      height={64}
-                                      unoptimized
-                                      className="w-full h-full object-cover scale-100 group-hover:scale-105 transition-transform duration-300"
-                                    />
-                                  ) : (
-                                    <span className="text-xs font-black text-slate-700 font-mono">{player.name.substring(0, 2).toUpperCase()}</span>
-                                  )}
-                                </div>
-
-                                {/* Info block */}
-                                <div className="space-y-1 w-full min-w-0">
-                                  <div className="flex items-center justify-center gap-1.5 min-w-0">
-                                    {player.jersey_num !== null && (
-                                      <span className="px-1.5 py-0.5 rounded-xs bg-cyan-500/15 border border-cyan-500/25 text-cyan-400 font-mono text-[9px] font-black leading-none">
-                                        {player.jersey_num}
-                                      </span>
-                                    )}
-                                    <span className="font-extrabold text-slate-205 text-xs truncate block group-hover:text-cyan-400 transition-colors font-sans" title={player.name}>
-                                      {player.name}
-                                    </span>
-                                  </div>
-                                  <span className="text-[10px] text-slate-500 font-semibold block">{player.position}</span>
-                                  {(player.height || player.weight) && (
-                                    <span className="text-[9px] font-mono text-slate-550 font-bold block mt-1">
-                                      {player.height ? `${player.height}cm` : "-"} / {player.weight ? `${player.weight}kg` : "-"}
-                                    </span>
-                                  )}
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )
-                    })}
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
+          <TeamDetailView
+            selectedTeam={selectedTeam}
+            allMatches={gamesData?.games || []}
+            flagMap={flagMap}
+            teamNamesMap={teamNamesMap}
+            stadiumNameGetter={getStadiumName}
+          />
         ) : (
           <>
             {/* Tournament Statistics Cards */}
-            <section className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="p-5 rounded-2xl bg-slate-900/40 border border-slate-900 flex items-center justify-between shadow-xs hover:border-slate-800 transition-all duration-300">
-                <div>
-                  <p className="text-xs text-slate-400 font-medium">{translate("total_matches", lang)}</p>
-                  <h3 className="text-2xl font-bold mt-1 text-slate-100">{stats.total}</h3>
-                </div>
-                <div className="p-3 bg-cyan-500/10 rounded-xl text-cyan-500">
-                  <Calendar className="w-6 h-6" />
-                </div>
-              </div>
-
-              <div className="p-5 rounded-2xl bg-slate-900/40 border border-slate-900 flex items-center justify-between shadow-xs hover:border-slate-800 transition-all duration-300">
-                <div>
-                  <p className="text-xs text-slate-400 font-medium">{translate("played", lang)}</p>
-                  <h3 className="text-2xl font-bold mt-1 text-emerald-400">{stats.played}</h3>
-                </div>
-                <div className="p-3 bg-emerald-500/10 rounded-xl text-emerald-500">
-                  <Trophy className="w-6 h-6" />
-                </div>
-              </div>
-
-              <div className="p-5 rounded-2xl bg-slate-900/40 border border-slate-900 flex items-center justify-between shadow-xs hover:border-slate-800 transition-all duration-300">
-                <div>
-                  <p className="text-xs text-slate-400 font-medium">{translate("upcoming", lang)}</p>
-                  <h3 className="text-2xl font-bold mt-1 text-sky-400">{stats.remaining}</h3>
-                </div>
-                <div className="p-3 bg-sky-500/10 rounded-xl text-sky-500">
-                  <Clock className="w-6 h-6" />
-                </div>
-              </div>
-
-              <div className="p-5 rounded-2xl bg-slate-900/40 border border-slate-900 flex items-center justify-between shadow-xs hover:border-slate-800 transition-all duration-300">
-                <div>
-                  <p className="text-xs text-slate-400 font-medium">{translate("teams", lang)}</p>
-                  <h3 className="text-2xl font-bold mt-1 text-slate-100">
-                    {teamsData?.teams?.length || 48}
-                  </h3>
-                </div>
-                <div className="p-3 bg-indigo-500/10 rounded-xl text-indigo-500">
-                  <Users className="w-6 h-6" />
-                </div>
-              </div>
-            </section>
+            <StatsSection
+              stats={stats}
+              teamsCount={teamsData?.teams?.length || 48}
+              lang={lang}
+            />
 
             {/* Search, Main Tab Switcher & Filters */}
-            <section className="flex flex-col lg:flex-row justify-between items-stretch lg:items-center gap-3 bg-slate-950/20 p-3 rounded-2xl border border-slate-900/60 shadow-inner">
-              {/* Left Side: Tabs */}
-              <div className="flex p-1 bg-slate-950 rounded-xl border border-slate-900 shrink-0 w-full lg:w-auto">
-                <button
-                  onClick={() => dispatch(setActiveTab("matches"))}
-                  className={`flex-1 lg:flex-initial flex items-center justify-center gap-2 px-4 py-2 lg:px-6 lg:py-2.5 rounded-lg text-xs lg:text-sm font-semibold transition-all duration-200 cursor-pointer ${activeTab === "matches"
-                    ? "bg-linear-to-r from-cyan-500 to-cyan-600 text-slate-950 shadow-md font-bold"
-                    : "text-slate-400 hover:text-slate-200"
-                    }`}
-                >
-                  <Calendar className="w-3.5 h-3.5 lg:w-4 lg:h-4" />
-                  {translate("matches", lang)}
-                </button>
-                <button
-                  onClick={() => dispatch(setActiveTab("teams"))}
-                  className={`flex-1 lg:flex-initial flex items-center justify-center gap-2 px-4 py-2 lg:px-6 lg:py-2.5 rounded-lg text-xs lg:text-sm font-semibold transition-all duration-200 cursor-pointer ${activeTab === "teams"
-                    ? "bg-linear-to-r from-emerald-500 to-emerald-600 text-slate-950 shadow-md font-bold"
-                    : "text-slate-400 hover:text-slate-200"
-                    }`}
-                >
-                  <Users className="w-3.5 h-3.5 lg:w-4 lg:h-4" />
-                  {translate("teams_groups", lang)}
-                </button>
-              </div>
-
-              {/* Right Side: Unified Filters and Search */}
-              <div className="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-3 flex-1 justify-start lg:justify-end w-full lg:w-auto">
-                {activeTab === "matches" && (
-                  <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
-                    <span className="hidden sm:inline-flex text-xs text-slate-400 items-center gap-1 shrink-0">
-                      <SlidersHorizontal className="w-3.5 h-3.5 text-slate-500" />
-                      {translate("filter_matches", lang)}
-                    </span>
-
-                    {/* Status Selector Dropdown */}
-                    <div className="flex z-20 flex-1 sm:flex-none">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger className="w-full sm:w-auto bg-slate-950 border border-slate-905 text-xs font-bold text-slate-200 px-3 py-2 sm:py-1.5 rounded-lg hover:border-cyan-500/30 focus:outline-hidden transition-all cursor-pointer shadow-xs flex items-center justify-between sm:justify-start gap-1.5 capitalize">
-                          <span>
-                            {filterStatus === "all"
-                              ? translate("all_matches", lang)
-                              : filterStatus === "finished"
-                                ? translate("finished", lang)
-                                : translate("upcoming", lang)}
-                          </span>
-                          <span className="text-[10px] text-slate-500">▼</span>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent className="bg-slate-900 border border-slate-800 text-slate-200 rounded-xl min-w-[120px] shadow-xl p-1 z-50">
-                          {(["all", "finished", "upcoming"] as const).map((status) => (
-                            <DropdownMenuItem
-                              key={status}
-                              onClick={() => dispatch(setFilterStatus(status))}
-                              className={`cursor-pointer px-3 py-2 text-xs rounded-lg transition-all focus:bg-cyan-500/15 focus:text-cyan-400 font-bold ${filterStatus === status ? "bg-cyan-500/10 text-cyan-400" : "text-slate-300"
-                                }`}
-                            >
-                              {status === "all"
-                                ? translate("all_matches", lang)
-                                : status === "finished"
-                                  ? translate("finished", lang)
-                                  : translate("upcoming", lang)}
-                            </DropdownMenuItem>
-                          ))}
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </div>
-
-                    <span className="hidden sm:inline-flex text-xs text-slate-400 font-bold uppercase tracking-wider items-center gap-1 ml-1 shrink-0">
-                      {translate("select_group_stage", lang)}
-                    </span>
-
-                    {/* Stage Selector Dropdown */}
-                    <div className="flex z-20 flex-1 sm:flex-none">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger className="w-full sm:w-auto bg-slate-950 border border-slate-905 text-xs font-bold text-slate-200 px-3 py-2 sm:py-1.5 rounded-lg hover:border-cyan-500/30 focus:outline-hidden transition-all cursor-pointer shadow-xs flex items-center justify-between sm:justify-start gap-1.5 capitalize">
-                          <span className="truncate max-w-[110px] sm:max-w-none">
-                            {stages.find((s) => s.id === selectedGroup)?.label || translate("all_matches", lang)}
-                          </span>
-                          <span className="text-[10px] text-slate-500">▼</span>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent className="bg-slate-900 border border-slate-800 text-slate-200 rounded-xl min-w-[200px] max-h-[300px] overflow-y-auto shadow-xl p-1 z-50">
-                          {stages.map((stage) => {
-                            const isSelected = selectedGroup === stage.id
-                            return (
-                              <DropdownMenuItem
-                                key={stage.id}
-                                onClick={() => dispatch(setSelectedGroup(stage.id))}
-                                className={`cursor-pointer px-3 py-2 text-xs rounded-lg transition-all focus:bg-cyan-500/15 focus:text-cyan-400 font-bold ${isSelected ? "bg-cyan-500/10 text-cyan-400" : "text-slate-300"
-                                  }`}
-                              >
-                                {stage.label}
-                              </DropdownMenuItem>
-                            )
-                          })}
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </div>
-
-                    {/* Reset Filters button */}
-                    {(searchQuery || filterStatus !== "all" || selectedGroup !== "all") && (
-                      <button
-                        onClick={() => dispatch(resetFilters())}
-                        className="text-xs text-cyan-500 hover:text-cyan-400 font-semibold flex items-center gap-1 bg-cyan-500/5 px-2.5 py-1.5 rounded-lg border border-cyan-500/20 hover:border-cyan-500/30 transition-all cursor-pointer shrink-0"
-                      >
-                        {translate("clear_filters", lang)}
-                      </button>
-                    )}
-                  </div>
-                )}
-
-                {/* Search Box */}
-                <div className="relative w-full sm:w-28 shrink-0">
-                  <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-500" />
-                  <input
-                    type="text"
-                    value={searchQuery}
-                    onChange={(e) => dispatch(setSearchQuery(e.target.value))}
-                    placeholder={translate("search_placeholder", lang)}
-                    className="w-full pl-8 pr-3 py-1.5 bg-slate-950 rounded-lg border border-slate-900 focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/30 text-xs outline-hidden transition-all placeholder:text-slate-500 h-8"
-                  />
-                </div>
-              </div>
-            </section>
+            <FilterSection />
 
             {/* MATCHES VIEW */}
             {activeTab === "matches" && (
-              <div className="space-y-6">
-
-                {/* Matches Grouped list */}
-                {gamesGroupedByDate.length > 0 ? (
-                  <div className="space-y-10">
-                    {gamesGroupedByDate.map(({ date, matches }) => (
-                      <div key={date} className="space-y-4">
-                        {/* Date Heading */}
-                        <div className="flex items-center gap-3">
-                          <div className="h-px flex-1 bg-linear-to-r from-transparent to-slate-800/80"></div>
-                          <span className="text-xs font-bold uppercase tracking-wider text-slate-400 bg-slate-900/80 px-4 py-1.5 rounded-full border border-slate-900">
-                            {date}
-                          </span>
-                          <div className="h-px flex-1 bg-linear-to-l from-transparent to-slate-800/80"></div>
-                        </div>
-
-                        {/* Games Grid */}
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                          {matches.map((match, index) => {
-                            const isFinished = match.finished.toUpperCase() === "TRUE"
-                            const homeFlag = flagMap[match.home_team_id] || (match.home_team_name_en ? flagMap[match.home_team_name_en.toLowerCase()] : undefined)
-                            const awayFlag = flagMap[match.away_team_id] || (match.away_team_name_en ? flagMap[match.away_team_name_en.toLowerCase()] : undefined)
-
-                            return (
-                              <div
-                                key={match._id}
-                                onClick={() => router.push(`/match/${getGameSlug(match)}`)}
-                                className={`bg-slate-900/30 hover:bg-slate-900/60 backdrop-blur-xs border border-slate-900 hover:border-slate-800 rounded-2xl p-5 flex flex-col justify-between transition-all duration-300 hover:-translate-y-0.5 group shadow-xs hover:shadow-md cursor-pointer ${
-                                  matches.length === 1 || (matches.length % 2 !== 0 && index === matches.length - 1)
-                                    ? "lg:col-span-2"
-                                    : ""
-                                }`}
-                              >
-                                {/* Card Header info */}
-                                <div className="flex items-center justify-between text-slate-400 text-xs mb-4 pb-2 border-b border-slate-900/40">
-                                  <span className="bg-slate-950 px-2.5 py-1 rounded-md border border-slate-900 font-medium">
-                                    {translate("group", lang)} {match.group} • {translate("matchday", lang)} {match.matchday}
-                                  </span>
-
-                                  {!isFinished && <Countdown dateStr={match.local_date} stadiumId={match.stadium_id} lang={lang} />}
-
-                                  <span
-                                    className={`px-2 py-0.5 rounded font-semibold text-[10px] tracking-wide uppercase ${isFinished
-                                      ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
-                                      : "bg-cyan-500/10 text-cyan-400 border border-cyan-500/20"
-                                      }`}
-                                  >
-                                    {isFinished ? translate("finished", lang) : translate("upcoming", lang)}
-                                  </span>
-                                </div>
-
-                                {/* Teams and Scores row */}
-                                <div className="flex items-center justify-between my-2">
-                                  {/* Home Team */}
-                                  <div
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      dispatch(setSelectedTeamId(match.home_team_id));
-                                    }}
-                                    className="flex flex-1 items-center gap-3 min-w-0 cursor-pointer hover:bg-slate-850/40 p-1.5 rounded-xl transition-all"
-                                  >
-                                    {homeFlag ? (
-                                      <div className="relative w-9 h-6 overflow-hidden rounded-md border border-slate-800 shrink-0 shadow-xs">
-                                        <Image
-                                          src={homeFlag}
-                                          alt={getTeamName(match.home_team_id)}
-                                          fill
-                                          className="object-cover"
-                                          unoptimized
-                                        />
-                                      </div>
-                                    ) : (
-                                      <div className="w-9 h-6 bg-slate-800 rounded-md shrink-0 flex items-center justify-center text-xs">🏴</div>
-                                    )}
-                                    <span className="font-semibold text-slate-100 truncate text-sm sm:text-base group-hover:text-cyan-400 transition-colors">
-                                      {getTeamName(match.home_team_id)}
-                                    </span>
-                                  </div>
-
-                                  {/* Match Center: Score / Time */}
-                                  <div className="px-4 flex items-center justify-center shrink-0">
-                                    {isFinished ? (
-                                      <div className="flex items-center gap-2 bg-slate-950 px-4 py-1.5 rounded-xl border border-slate-855 shadow-inner font-mono font-bold text-lg text-emerald-400">
-                                        <span>{match.home_score}</span>
-                                        <span className="text-slate-655 text-sm font-sans">:</span>
-                                        <span>{match.away_score}</span>
-                                      </div>
-                                    ) : (
-                                      <button
-                                        onClick={(e) => {
-                                          e.stopPropagation()
-                                          router.push(`/match/${getGameSlug(match)}`)
-                                        }}
-                                        className="flex items-center gap-2 px-5 py-2 rounded-full bg-cyan-600 hover:bg-cyan-400 text-white font-extrabold text-xs shadow-md shadow-cyan-500/10 hover:shadow-cyan-500/20 active:scale-95 hover:scale-[1.03] transition-all duration-300 cursor-pointer font-sans tracking-wide uppercase group/btn shrink-0"
-                                      >
-                                        <span className="relative flex h-2 w-2">
-                                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75"></span>
-                                          <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
-                                        </span>
-                                        <span>{translate("watch_live", lang) || "Watch Live"}</span>
-                                        <Play className="w-3 h-3 fill-current group-hover/btn:translate-x-0.5 transition-transform" />
-                                      </button>
-                                    )}
-                                  </div>
-
-
-                                  {/* Away Team */}
-                                  <div
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      dispatch(setSelectedTeamId(match.away_team_id));
-                                    }}
-                                    className="flex flex-1 items-center justify-end gap-3 min-w-0 cursor-pointer hover:bg-slate-850/40 p-1.5 rounded-xl transition-all"
-                                  >
-                                    <span className="font-semibold text-slate-100 truncate text-sm sm:text-base group-hover:text-cyan-400 transition-colors">
-                                      {getTeamName(match.away_team_id)}
-                                    </span>
-                                    {awayFlag ? (
-                                      <div className="relative w-9 h-6 overflow-hidden rounded-md border border-slate-800 shrink-0 shadow-xs">
-                                        <Image
-                                          src={awayFlag}
-                                          alt={getTeamName(match.away_team_id)}
-                                          fill
-                                          className="object-cover"
-                                          unoptimized
-                                        />
-                                      </div>
-                                    ) : (
-                                      <div className="w-9 h-6 bg-slate-800 rounded-md shrink-0 flex items-center justify-center text-xs">🏴</div>
-                                    )}
-                                  </div>
-                                </div>
-
-                                {/* Stadium & Scorers footer info */}
-                                <div className="mt-4 pt-3 border-t border-slate-900/40 flex flex-col gap-2 text-slate-400 text-xs">
-                                  {/* Stadium and Time */}
-                                  <div className="flex items-center justify-between text-[11px] text-slate-505 w-full">
-                                    <div className="flex items-center gap-1.5">
-                                      <MapPin className="w-3.5 h-3.5 text-slate-600" />
-                                      <span>
-                                        {translate("stadium", lang)}: {getStadiumName(match.stadium_id) || `#${match.stadium_id}`}
-                                      </span>
-                                    </div>
-                                    {!isFinished && (
-                                      <div className="text-center bg-slate-950 px-3 py-1.5 rounded-xl border border-slate-855">
-                                        <p className="font-mono text-xs font-bold text-cyan-500">
-                                          {(() => {
-                                            const gameDate = parseStadiumLocalDate(match.local_date, match.stadium_id)
-                                            const localeStr = lang === "en-us" ? "en-US" : lang === "pt" ? "pt-BR" : lang === "es-la" ? "es-419" : lang
-                                            return gameDate.toLocaleTimeString(localeStr, { hour: "2-digit", minute: "2-digit" })
-                                          })()}
-                                        </p>
-                                      </div>
-                                    )}
-                                  </div>
-
-
-
-                                  {/* Scorers */}
-                                  {isFinished &&
-                                    ((match.home_scorers && match.home_scorers !== "null") ||
-                                      (match.away_scorers && match.away_scorers !== "null")) && (
-                                      <div className="bg-slate-950/50 p-2.5 rounded-xl border border-slate-950/80 flex flex-col gap-1 text-[10px]">
-                                        <span className="font-semibold text-slate-500 uppercase tracking-wider text-[9px]">
-                                          ⚽ {translate("goal_scorers", lang)}
-                                        </span>
-                                        <div className="flex justify-between gap-4">
-                                          <div className="text-slate-400 font-medium truncate flex-1">
-                                            {match.home_scorers && match.home_scorers !== "null"
-                                              ? match.home_scorers
-                                              : ""}
-                                          </div>
-                                          <div className="text-slate-400 font-medium truncate flex-1 text-right">
-                                            {match.away_scorers && match.away_scorers !== "null"
-                                              ? match.away_scorers
-                                              : ""}
-                                          </div>
-                                        </div>
-                                      </div>
-                                    )}
-                                </div>
-                              </div>
-                            )
-                          })}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-center py-16 bg-slate-900/10 rounded-2xl border border-slate-900/40">
-                    <p className="text-slate-505 text-sm mb-4">{translate("no_matches", lang)}</p>
-                    <button
-                      onClick={() => dispatch(resetFilters())}
-                      className="px-4 py-2 bg-slate-900 hover:bg-slate-800 transition-colors border border-slate-800 text-xs font-semibold rounded-lg cursor-pointer"
-                    >
-                      {translate("clear_filters", lang)}
-                    </button>
-                  </div>
-                )}
-              </div>
+              <MatchesView
+                gamesGroupedByDate={gamesGroupedByDate}
+                flagMap={flagMap}
+                teamNamesMap={teamNamesMap}
+                stadiumsMap={stadiumsMap}
+                adsConfig={adsConfig}
+              />
             )}
 
             {/* TEAMS & GROUPS VIEW */}
             {activeTab === "teams" && (
-              <div className="space-y-8 animate-fade-in">
-                {Object.keys(teamsGroupedByGroup).length > 0 ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {allGroupLetters.map((groupLetter) => {
-                      const teams = teamsGroupedByGroup[groupLetter] || []
-                      if (teams.length === 0) return null
-
-                      return (
-                        <div
-                          key={groupLetter}
-                          className="bg-slate-900/30 backdrop-blur-xs border border-slate-900 rounded-2xl overflow-hidden hover:border-emerald-500/20 transition-all duration-300 shadow-xs"
-                        >
-                          {/* Group Header */}
-                          <div className="bg-linear-to-r from-emerald-500/10 to-emerald-600/5 px-5 py-4 border-b border-slate-900 flex justify-between items-center">
-                            <h3 className="font-bold text-base text-slate-100 flex items-center gap-2">
-                              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-md shadow-emerald-500/20"></span>
-                              {translate("group", lang)} {groupLetter}
-                            </h3>
-                            <span className="text-[10px] font-bold text-slate-400 bg-slate-950 px-2 py-0.5 rounded border border-slate-900">
-                              {teams.length} {translate("teams", lang)}
-                            </span>
-                          </div>
-
-                          {/* Teams List */}
-                          <div className="p-4 divide-y divide-slate-900/40">
-                            {teams.map((team) => (
-                              <div
-                                key={team._id}
-                                onClick={() => {
-                                  dispatch(setSelectedTeamId(team.id))
-                                }}
-                                className="flex items-center justify-between py-3 px-1 hover:bg-slate-900/50 rounded-xl transition-all cursor-pointer group"
-                                title={team.name_en}
-                              >
-                                <div className="flex items-center gap-3">
-                                  {team.flag ? (
-                                    <div className="relative w-8 h-5.5 overflow-hidden rounded-md border border-slate-800 shadow-xs shrink-0">
-                                      <Image
-                                        src={team.flag}
-                                        alt={team.name_en}
-                                        fill
-                                        className="object-cover"
-                                        unoptimized
-                                      />
-                                    </div>
-                                  ) : (
-                                    <div className="w-8 h-5.5 bg-slate-850 rounded-md shrink-0 flex items-center justify-center text-xs">🏴</div>
-                                  )}
-                                  <span className="text-sm font-semibold text-slate-200 group-hover:text-emerald-400 transition-colors">
-                                    {team.name_en}
-                                  </span>
-                                </div>
-
-                                <div className="flex items-center gap-2 shrink-0">
-                                  <span className="text-[10px] font-mono font-semibold text-slate-500 bg-slate-950 px-2 py-0.5 rounded border border-slate-900">
-                                    {team.fifa_code}
-                                  </span>
-                                  <ChevronRight className="w-3.5 h-3.5 text-slate-600 group-hover:text-emerald-400 group-hover:translate-x-0.5 transition-all" />
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )
-                    })}
-                  </div>
-                ) : (
-                  <div className="text-center py-16 bg-slate-900/10 rounded-2xl border border-slate-900/40">
-                    <p className="text-slate-505 text-sm">{translate("no_teams", lang)}</p>
-                  </div>
-                )}
-              </div>
+              <TeamsView teamsGroupedByGroup={teamsGroupedByGroup} />
             )}
           </>
         )}
