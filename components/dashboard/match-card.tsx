@@ -92,10 +92,16 @@ export default function MatchCard({ match, flagMap, stadiumName, teamNamesMap }:
     return team.name_en
   }
 
+  const getTeamCode = (teamId: string) => {
+    const team = teamNamesMap[teamId]
+    if (!team) return "TBD"
+    return team.fifa_code || team.id.toUpperCase().substring(0, 3)
+  }
+
   return (
     <div
       onClick={() => router.push(`/match/${getGameSlug(match)}`)}
-      className="bg-slate-900/30 border border-slate-600/60 hover:bg-slate-900/60 backdrop-blur-xs hover:border-slate-800 rounded-2xl p-5 flex flex-col justify-between transition-all duration-300 hover:-translate-y-0.5 group shadow-xs hover:shadow-md cursor-pointer"
+      className="bg-slate-900/30 border border-slate-600/60 hover:bg-slate-900/60 backdrop-blur-xs hover:border-slate-800 rounded-2xl p-2 flex flex-col justify-between transition-all duration-300 hover:-translate-y-0.5 group shadow-xs hover:shadow-md cursor-pointer"
     >
       {/* Card Header info */}
       <div className="flex items-center justify-between text-slate-400 text-xs mb-4 pb-2 border-b border-slate-900/40">
@@ -132,7 +138,8 @@ export default function MatchCard({ match, flagMap, stadiumName, teamNamesMap }:
             <div className="w-9 h-6 bg-slate-800 rounded-md shrink-0 flex items-center justify-center text-xs">🏴</div>
           )}
           <span className="font-semibold text-slate-100 truncate text-sm sm:text-base group-hover/team:text-cyan-400 transition-colors">
-            {getTeamName(match.home_team_id)}
+            <span className="sm:hidden">{getTeamCode(match.home_team_id)}</span>
+            <span className="hidden sm:inline">{getTeamName(match.home_team_id)}</span>
           </span>
         </div>
 
@@ -150,7 +157,7 @@ export default function MatchCard({ match, flagMap, stadiumName, teamNamesMap }:
                 e.stopPropagation()
                 router.push(`/match/${getGameSlug(match)}`)
               }}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-cyan-950/40 border border-cyan-500/30 hover:bg-cyan-500/20 text-cyan-400 font-mono font-bold text-xs shadow-md shadow-cyan-500/10 hover:shadow-cyan-500/20 active:scale-95 hover:scale-[1.03] transition-all duration-300 cursor-pointer shrink-0"
+              className="flex items-center gap-2 px-3 py-2 rounded-full bg-cyan-950/40 border border-cyan-500/30 hover:bg-cyan-500/20 text-cyan-400 font-mono font-bold text-xs shadow-md shadow-cyan-500/10 hover:shadow-cyan-500/20 active:scale-95 hover:scale-[1.03] transition-all duration-300 cursor-pointer shrink-0"
             >
               <span className="relative flex h-1.5 w-1.5 mr-0.5">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
@@ -176,7 +183,8 @@ export default function MatchCard({ match, flagMap, stadiumName, teamNamesMap }:
           className="flex flex-1 items-center justify-end gap-3 min-w-0 cursor-pointer hover:bg-slate-850/40 p-1.5 rounded-xl transition-all group/team"
         >
           <span className="font-semibold text-slate-100 truncate text-sm sm:text-base group-hover/team:text-cyan-400 transition-colors">
-            {getTeamName(match.away_team_id)}
+            <span className="sm:hidden">{getTeamCode(match.away_team_id)}</span>
+            <span className="hidden sm:inline">{getTeamName(match.away_team_id)}</span>
           </span>
           {awayFlag ? (
             <div className="relative w-9 h-6 overflow-hidden rounded-md border border-slate-800 shrink-0 shadow-xs">

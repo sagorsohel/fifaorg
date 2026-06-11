@@ -232,16 +232,18 @@ export default function FilterSection() {
         )}
 
         {/* Search Box */}
-        <div className="relative w-full sm:w-28 shrink-0">
-          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-500" />
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => dispatch(setSearchQuery(e.target.value))}
-            placeholder={translate("search_placeholder", lang)}
-            className="w-full pl-8 pr-3 py-1.5 bg-slate-950 rounded-lg border border-slate-900 focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/30 text-xs outline-hidden transition-all placeholder:text-slate-500 h-8"
-          />
-        </div>
+        {activeTab === "matches" && (
+          <div className="relative w-full sm:w-28 shrink-0">
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-500" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => dispatch(setSearchQuery(e.target.value))}
+              placeholder={translate("search_placeholder", lang)}
+              className="w-full pl-8 pr-3 py-1.5 bg-slate-950 rounded-lg border border-slate-900 focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/30 text-xs outline-hidden transition-all placeholder:text-slate-500 h-8"
+            />
+          </div>
+        )}
       </div>
     </section>
   )
