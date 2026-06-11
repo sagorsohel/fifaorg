@@ -408,8 +408,6 @@ export default function MatchCenterPage({ params }: { params: Promise<{ slug: st
       <div className="fixed top-1/2 -right-40 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none z-0"></div>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-3 animate-fade-in relative z-10">
-        {/* Hero Ads */}
-        <AdScriptContainer scriptHtml={adsConfig?.hero_ads} className="max-w-4xl mx-auto w-full flex justify-center" />
 
         {/* Match Scoreboard Header Card (Sleek and compact) */}
         <div className="p-4 rounded-2xl bg-linear-to-r from-slate-900 to-slate-900 border border-slate-900 shadow-xl flex flex-col gap-4 relative overflow-hidden max-w-4xl mx-auto">
