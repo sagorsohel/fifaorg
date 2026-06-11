@@ -1,9 +1,8 @@
 "use client"
 
-import { useMemo, useState, useEffect, use, useRef } from "react"
+import { useMemo, useState, useEffect, use } from "react"
 import Image from "next/image"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -15,6 +14,8 @@ import {
   useGetGamesQuery,
   useGetStadiumsQuery,
   getGameSlug,
+  Team,
+  Stadium,
 } from "@/lib/services/apiSlice"
 import {
   Trophy,
@@ -27,28 +28,24 @@ import {
   Maximize2,
   Tv,
   X,
-  ShieldAlert,
   Film,
   Infinity,
   Ban,
   Smartphone,
-  RefreshCw,
 } from "lucide-react"
 
 import {
   useAppDispatch,
   useAppSelector,
 } from "@/lib/store"
-import {
-  setActiveTab,
-  setSelectedTeamId,
-} from "@/lib/features/uiSlice"
+import { setLanguage } from "@/lib/features/uiSlice"
+import { useIsMobile } from "@/hooks/use-mobile"
+import { Dialog, DialogContent } from "@/components/ui/dialog"
 
 import {
   LanguageCode,
   LANGUAGES,
   translate,
-  detectBrowserLanguage,
   parseStadiumLocalDate,
   formatLocalTime,
   formatCountdownTime,
@@ -102,13 +99,13 @@ function Countdown({ dateStr, stadiumId, lang }: { dateStr: string; stadiumId: s
   )
 }
 
-const getTeamName = (team: any, fallback: string, activeLang: LanguageCode) => {
+const getTeamName = (team: Team | null | undefined, fallback: string, activeLang: LanguageCode) => {
   if (!team) return fallback
   if (team.translations) {
     try {
       const parsed = typeof team.translations === "string" ? JSON.parse(team.translations) : team.translations
       if (parsed && parsed[activeLang]) return parsed[activeLang]
-    } catch (e) { }
+    } catch { }
   }
   if (activeLang === "ar" && team.name_fa) return team.name_fa
   return team.name_en
@@ -118,6 +115,7 @@ function AdScriptContainer({ scriptHtml, className }: { scriptHtml?: string; cla
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true)
   }, [])
 
@@ -172,15 +170,13 @@ function AdScriptContainer({ scriptHtml, className }: { scriptHtml?: string; cla
 export default function MatchCenterPage({ params }: { params: Promise<{ slug: string }> }) {
   const resolvedParams = use(params)
   const slug = resolvedParams.slug
-  const router = useRouter()
   const dispatch = useAppDispatch()
-  const { activeTab, selectedTeamId } = useAppSelector((state) => state.ui)
-
+  const isMobile = useIsMobile()
   // Local state for streamer actions
   const [isBuffering, setIsBuffering] = useState(false)
   const [showInlineSignup, setShowInlineSignup] = useState(false)
 
-  const [lang, setLang] = useState<LanguageCode>("en")
+  const lang = useAppSelector((state) => state.ui.language)
 
   const [adsConfig, setAdsConfig] = useState<{
     header_ads?: string
@@ -199,45 +195,10 @@ export default function MatchCenterPage({ params }: { params: Promise<{ slug: st
       .catch(() => { })
   }, [])
 
-  useEffect(() => {
-    const detected = detectBrowserLanguage()
-    setLang(detected)
-
-    try {
-      const saved = localStorage.getItem("worldcup2026_lang")
-      if (!saved) {
-        fetch("/api/detect-region")
-          .then((res) => res.json())
-          .then((data) => {
-            if (data && data.country_code) {
-              const country = data.country_code.toUpperCase()
-              const map: Record<string, LanguageCode> = {
-                BD: "bn",
-                IR: "ar",
-                AZ: "az",
-                TR: "tr"
-              }
-              if (map[country]) {
-                setLang(map[country])
-                localStorage.setItem("worldcup2026_lang", map[country])
-              }
-            }
-          })
-          .catch(() => { })
-      }
-    } catch (e) { }
-  }, [])
-
   // API Queries via RTK Query
-  const { data: teamsData, isLoading: isTeamsLoading, refetch: refetchTeams } = useGetTeamsQuery()
-  const { data: gamesData, isLoading: isGamesLoading, refetch: refetchGames } = useGetGamesQuery()
-  const { data: stadiumsData, isLoading: isStadiumsLoading, refetch: refetchStadiums } = useGetStadiumsQuery()
-
-  const handleRefetch = () => {
-    refetchTeams()
-    refetchGames()
-    refetchStadiums()
-  }
+  const { data: teamsData, isLoading: isTeamsLoading } = useGetTeamsQuery()
+  const { data: gamesData, isLoading: isGamesLoading } = useGetGamesQuery()
+  const { data: stadiumsData, isLoading: isStadiumsLoading } = useGetStadiumsQuery()
 
   const selectedGame = useMemo(() => {
     if (!slug || !gamesData?.games) return null
@@ -275,7 +236,7 @@ export default function MatchCenterPage({ params }: { params: Promise<{ slug: st
   }, [teamsData])
 
   const stadiumsMap = useMemo(() => {
-    const map: Record<string, any> = {}
+    const map: Record<string, Stadium> = {}
     if (stadiumsData?.stadiums) {
       stadiumsData.stadiums.forEach((stadium) => {
         map[stadium.id] = stadium
@@ -291,7 +252,7 @@ export default function MatchCenterPage({ params }: { params: Promise<{ slug: st
       try {
         const parsed = typeof stadium.translations === "string" ? JSON.parse(stadium.translations) : stadium.translations
         if (parsed && parsed[lang]) return parsed[lang]
-      } catch (e) { }
+      } catch { }
     }
     if (lang === "ar" && stadium.name_fa && stadium.city_fa) {
       return `${stadium.name_fa}, ${stadium.city_fa}`
@@ -311,6 +272,10 @@ export default function MatchCenterPage({ params }: { params: Promise<{ slug: st
 
   // Play button click simulation
   const handlePlayClick = () => {
+    if (!isMobile) {
+      setShowInlineSignup(true)
+      return
+    }
     if (isBuffering || showInlineSignup) return
     setIsBuffering(true)
     setTimeout(() => {
@@ -320,10 +285,14 @@ export default function MatchCenterPage({ params }: { params: Promise<{ slug: st
   }
 
   const handleActionRedirect = () => {
-    if (selectedGame && selectedGame.referral_link) {
-      window.open(selectedGame.referral_link, "_blank")
+    const targetUrl = (selectedGame && selectedGame.referral_link)
+      ? selectedGame.referral_link
+      : "https://lightsalmon-hummingbird-478538.hostingersite.com/register"
+
+    if (isMobile) {
+      window.location.href = targetUrl
     } else {
-      window.open("https://lightsalmon-hummingbird-478538.hostingersite.com/register", "_blank")
+      window.open(targetUrl, "_blank")
     }
   }
 
@@ -358,7 +327,7 @@ export default function MatchCenterPage({ params }: { params: Promise<{ slug: st
   const awayName = getTeamName(selectedGameAwayTeam, selectedGame.away_team_name_en || selectedGame.away_team_label || "TBD", lang)
 
   return (
-    <div dir={LANGUAGES.find(l => l.code === lang)?.dir || "ltr"} className="min-h-screen bg-slate-955 text-slate-100 font-sans pb-28 sm:pb-16 transition-all duration-300 relative">
+    <>
       {/* Page Background Image */}
       {selectedGame.bg_image && (
         <div className="fixed inset-0 z-0 select-none pointer-events-none">
@@ -398,17 +367,17 @@ export default function MatchCenterPage({ params }: { params: Promise<{ slug: st
             <DropdownMenu>
               <DropdownMenuTrigger className="bg-slate-900 border border-slate-800 text-xs font-bold text-slate-200 px-3.5 py-2.5 rounded-xl hover:border-cyan-500/30 focus:outline-hidden transition-all cursor-pointer shadow-xs flex items-center gap-1.5 capitalize">
                 <span>{LANGUAGES.find((l) => l.code === lang)?.name || "Language"}</span>
-                <span className="text-[10px] text-slate-500">▼</span>
+                <span className="text-[10px] text-slate-555">▼</span>
               </DropdownMenuTrigger>
               <DropdownMenuContent className="bg-slate-900 border border-slate-800 text-slate-200 rounded-xl min-w-[120px] shadow-xl p-1 z-50">
                 {LANGUAGES.map((l) => (
                   <DropdownMenuItem
                     key={l.code}
                     onClick={() => {
-                      setLang(l.code)
+                      dispatch(setLanguage(l.code))
                       try {
                         localStorage.setItem("worldcup2026_lang", l.code)
-                      } catch (err) { }
+                      } catch { }
                     }}
                     className={`cursor-pointer px-3 py-2 text-xs rounded-lg transition-all focus:bg-cyan-500/15 focus:text-cyan-400 font-bold ${lang === l.code ? "bg-cyan-500/10 text-cyan-400" : "text-slate-355"
                       }`}
@@ -423,6 +392,9 @@ export default function MatchCenterPage({ params }: { params: Promise<{ slug: st
       </header>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-3 animate-fade-in relative z-10">
+        {/* Hero Ads */}
+        <AdScriptContainer scriptHtml={adsConfig?.hero_ads} className="max-w-4xl mx-auto w-full flex justify-center" />
+
         {/* Match Scoreboard Header Card (Sleek and compact) */}
         <div className="p-4 rounded-2xl bg-linear-to-r from-slate-900 to-slate-900 border border-slate-900 shadow-xl flex flex-col gap-4 relative overflow-hidden max-w-4xl mx-auto">
           <div className="absolute top-0 right-0 w-64 h-64 bg-cyan-500/5 rounded-full blur-3xl pointer-events-none"></div>
@@ -435,14 +407,6 @@ export default function MatchCenterPage({ params }: { params: Promise<{ slug: st
 
             {!isFinished && <Countdown dateStr={selectedGame.local_date} stadiumId={selectedGame.stadium_id} lang={lang} />}
 
-            <span
-              className={`px-2.5 py-0.5 rounded-md font-bold text-[10px] tracking-wide uppercase ${isFinished
-                ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
-                : "bg-cyan-500/10 text-cyan-400 border border-cyan-500/20"
-                }`}
-            >
-              {isFinished ? translate("finished", lang) : translate("upcoming", lang)}
-            </span>
           </div>
 
           {/* Scoreboard Row */}
@@ -498,20 +462,28 @@ export default function MatchCenterPage({ params }: { params: Promise<{ slug: st
           </div>
 
           {/* Stadium Name */}
-          <div className="text-[10px] text-slate-400 flex items-center gap-1.5 border-t border-slate-900/40 pt-2.5">
-            <MapPin className="w-3.5 h-3.5 text-cyan-500" />
-            <span className="font-medium">
-              {translate("stadium", lang)}: {getStadiumName(selectedGame.stadium_id) || `#${selectedGame.stadium_id}`}
+          <div className="flex justify-between items-center">
+            <div className="text-[10px] text-slate-400 flex items-center gap-1.5 border-t border-slate-900/40 pt-2.5">
+              <MapPin className="w-3.5 h-3.5 text-cyan-500" />
+              <span className="font-medium">
+                {getStadiumName(selectedGame.stadium_id) || `#${selectedGame.stadium_id}`}
+              </span>
+            </div>
+
+            <span
+              className={`px-2.5 py-0.5 rounded-md font-bold text-[10px] tracking-wide uppercase ${isFinished
+                ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                : "bg-cyan-500/10 text-cyan-400 border border-cyan-500/20"
+                }`}
+            >
+              {isFinished ? translate("finished", lang) : translate("upcoming", lang)}
             </span>
           </div>
         </div>
 
-        {/* Hero Ads */}
-        <AdScriptContainer scriptHtml={adsConfig?.hero_ads} className="max-w-4xl mx-auto w-full flex justify-center" />
-
         {/* Stream Player Container (Centered) */}
         <div className="max-w-4xl mx-auto w-full">
-          {!showInlineSignup ? (
+          {(!showInlineSignup || isMobile) ? (
             <div
               onClick={handlePlayClick}
               className="w-full aspect-video rounded-3xl overflow-hidden border-2 border-cyan-500/30 bg-slate-955 relative group cursor-pointer shadow-[0_0_35px_rgba(6,182,212,0.15)] hover:border-cyan-455 hover:shadow-[0_0_50px_rgba(6,182,212,0.4)] transition-all duration-500 transform hover:scale-[1.005]"
@@ -736,7 +708,7 @@ export default function MatchCenterPage({ params }: { params: Promise<{ slug: st
                                 if (parsed && parsed[lang]) {
                                   return parsed[lang].split(",")[0].trim()
                                 }
-                              } catch (e) { }
+                              } catch { }
                             }
                             if (lang === "ar" && stadium.name_fa) return stadium.name_fa
                             return stadium.name_en
@@ -763,7 +735,7 @@ export default function MatchCenterPage({ params }: { params: Promise<{ slug: st
                                       return parts.slice(1).join(",").trim()
                                     }
                                   }
-                                } catch (e) { }
+                                } catch { }
                               }
                               if (lang === "ar" && stadium.city_fa && stadium.country_fa) {
                                 return `${stadium.city_fa}, ${stadium.country_fa}`
@@ -841,113 +813,69 @@ export default function MatchCenterPage({ params }: { params: Promise<{ slug: st
             <span>{translate("back_timeline", lang)}</span>
           </Link>
         </div>
-      </main>
 
-      {/* ── Mobile Bottom Navigation Bar ── */}
-      <nav
-        aria-label="Mobile navigation"
-        className="sm:hidden fixed bottom-4 left-1/2 -translate-x-1/2 z-50 flex items-end px-4 rounded-[12px] bg-slate-900/90 backdrop-blur-xl border border-slate-800/80 shadow-2xl shadow-black/40"
-        style={{ minWidth: 320, height: 64, paddingBottom: 8, gap: 4 }}
-      >
-        {/* Fixtures Tab */}
-        <button
-          id="mobile-nav-fixtures"
-          onClick={() => {
-            dispatch(setActiveTab("matches"))
-            dispatch(setSelectedTeamId(null))
-            router.push("/")
-          }}
-          className="relative flex flex-col items-center justify-end flex-1 h-full cursor-pointer"
-          style={{ paddingBottom: 2 }}
-        >
-          {activeTab === "matches" && !selectedTeamId ? (
-            <span className="absolute -top-2 left-1/2 -translate-x-1/2 flex flex-col items-center justify-center w-[58px] h-[58px] rounded-full bg-linear-to-br from-cyan-400 to-cyan-600 shadow-xl shadow-cyan-500/50 border-[3px] border-slate-900 transition-all duration-300">
-              <span className="text-xl leading-none select-none">⚽</span>
-              <span className="text-[8px] font-black uppercase tracking-wider text-white leading-none mt-0.5 select-none">Fixtures</span>
-            </span>
-          ) : (
-            <span className="flex flex-col items-center gap-0.5 text-slate-400 hover:text-cyan-400 transition-colors duration-200 select-none">
-              <span className="text-[18px] leading-none">⚽</span>
-              <span className="text-[9px] font-bold uppercase tracking-wider leading-none">Fixtures</span>
-            </span>
-          )}
-        </button>
-
-        {/* Divider */}
-        <span className="w-px bg-slate-800 shrink-0 self-center" style={{ height: 32 }} />
-
-        {/* Teams Tab */}
-        <button
-          id="mobile-nav-teams"
-          onClick={() => {
-            dispatch(setActiveTab("teams"))
-            dispatch(setSelectedTeamId(null))
-            router.push("/")
-          }}
-          className="relative flex flex-col items-center justify-end flex-1 h-full cursor-pointer"
-          style={{ paddingBottom: 2 }}
-        >
-          {activeTab === "teams" && !selectedTeamId ? (
-            <span className="absolute -top-2 left-1/2 -translate-x-1/2 flex flex-col items-center justify-center w-[58px] h-[58px] rounded-full bg-linear-to-br from-emerald-400 to-emerald-600 shadow-xl shadow-emerald-500/50 border-[3px] border-slate-900 transition-all duration-300">
-              <span className="text-xl leading-none select-none">🏆</span>
-              <span className="text-[8px] font-black uppercase tracking-wider text-white leading-none mt-0.5 select-none">Teams</span>
-            </span>
-          ) : (
-            <span className="flex flex-col items-center gap-0.5 text-slate-400 hover:text-emerald-400 transition-colors duration-200 select-none">
-              <span className="text-[18px] leading-none">🏆</span>
-              <span className="text-[9px] font-bold uppercase tracking-wider leading-none">Teams</span>
-            </span>
-          )}
-        </button>
-
-        {/* Divider */}
-        <span className="w-px bg-slate-800 shrink-0 self-center" style={{ height: 32 }} />
-
-        {/* Language Dropdown */}
-        <div className="flex flex-col items-center justify-end flex-1 h-full cursor-pointer relative" style={{ paddingBottom: 2 }}>
-          <DropdownMenu>
-            <DropdownMenuTrigger className="flex flex-col items-center gap-0.5 text-slate-400 hover:text-cyan-400 transition-colors duration-200 select-none outline-hidden cursor-pointer">
-              <span className="text-[18px] leading-none">🌐</span>
-              <span className="text-[9px] font-bold uppercase tracking-wider leading-none">
-                {lang === "en" || lang === "en-us" ? "EN" : lang.toUpperCase()} ▼
-              </span>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent side="top" align="center" className="bg-slate-900 border border-slate-800 text-slate-200 rounded-xl min-w-[120px] shadow-xl p-1 z-50">
-              {LANGUAGES.map((l) => (
-                <DropdownMenuItem
-                  key={l.code}
-                  onClick={() => {
-                    setLang(l.code)
-                    try {
-                      localStorage.setItem("worldcup2026_lang", l.code)
-                    } catch (err) { }
-                  }}
-                  className={`cursor-pointer px-3 py-2 text-xs rounded-lg transition-all focus:bg-cyan-500/15 focus:text-cyan-400 font-bold ${lang === l.code ? "bg-cyan-500/10 text-cyan-400" : "text-slate-300"
-                    }`}
+        {isMobile && (
+          <Dialog open={showInlineSignup} onOpenChange={setShowInlineSignup}>
+            <DialogContent className="bg-slate-950/95 backdrop-blur-md border border-cyan-500/25 text-slate-100 max-w-sm rounded-3xl p-5 shadow-[0_0_50px_rgba(6,182,212,0.15)] outline-hidden" showCloseButton={false}>
+              {/* Header */}
+              <div className="flex items-center justify-between border-b border-slate-900/60 pb-3">
+                <div className="flex items-center gap-2 text-cyan-500">
+                  <Tv className="w-5 h-5 text-cyan-500" />
+                  <span className="font-bold text-sm tracking-wider uppercase text-slate-100">
+                    {translate("live_stream", lang)}
+                  </span>
+                </div>
+                <button
+                  onClick={() => setShowInlineSignup(false)}
+                  className="p-1 rounded-md text-slate-500 hover:text-white transition-colors cursor-pointer"
                 >
-                  {l.name}
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
 
-        {/* Divider */}
-        <span className="w-px bg-slate-800 shrink-0 self-center" style={{ height: 32 }} />
+              {/* Body */}
+              <div className="flex flex-col justify-center items-center gap-4 my-2">
+                <h3 className="text-center font-bold text-sm sm:text-base text-slate-100 leading-snug px-2">
+                  {translate("signup_title", lang)}
+                </h3>
 
-        {/* Refresh Tab */}
-        <button
-          id="mobile-nav-refresh"
-          onClick={handleRefetch}
-          className="flex flex-col items-center justify-end flex-1 h-full cursor-pointer"
-          style={{ paddingBottom: 2 }}
-        >
-          <span className="flex flex-col items-center gap-0.5 text-slate-400 hover:text-emerald-450 transition-colors duration-200 select-none">
-            <RefreshCw className="w-4.5 h-4.5 text-slate-400 hover:text-emerald-400 transition-colors duration-200" />
-            <span className="text-[9px] font-bold uppercase tracking-wider leading-none mt-0.5">Refresh</span>
-          </span>
-        </button>
-      </nav>
-    </div>
+                {/* Main action button */}
+                <button
+                  onClick={handleActionRedirect}
+                  className="w-full py-3 bg-cyan-700 hover:bg-cyan-600 active:scale-[0.98] transition-all rounded-xl text-slate-955 font-extrabold tracking-wider text-xs sm:text-sm shadow-lg shadow-cyan-500/20 hover:shadow-cyan-500/35 cursor-pointer uppercase"
+                >
+                  {translate("signup_btn", lang)}
+                </button>
+
+                {/* Modal Ads show under signup button */}
+                {adsConfig?.modal_ads && (
+                  <AdScriptContainer scriptHtml={adsConfig.modal_ads} className="w-full flex justify-center my-2 shrink-0" />
+                )}
+
+                {/* Features list */}
+                <div className="w-full grid grid-cols-2 gap-2 text-[8px] sm:text-[9px] mt-2">
+                  <div className="flex items-center gap-2 p-2 bg-slate-900/25 border border-slate-900/60 rounded-lg">
+                    <Film className="w-3.5 h-3.5 text-cyan-500 shrink-0" />
+                    <span className="font-semibold text-slate-300 truncate">{translate("feature_1", lang)}</span>
+                  </div>
+                  <div className="flex items-center gap-2 p-2 bg-slate-900/25 border border-slate-900/60 rounded-lg">
+                    <Infinity className="w-3.5 h-3.5 text-cyan-500 shrink-0" />
+                    <span className="font-semibold text-slate-300 truncate">{translate("feature_2", lang)}</span>
+                  </div>
+                  <div className="flex items-center gap-2 p-2 bg-slate-900/25 border border-slate-900/60 rounded-lg">
+                    <Ban className="w-3.5 h-3.5 text-cyan-500 shrink-0" />
+                    <span className="font-semibold text-slate-300 truncate">{translate("feature_3", lang)}</span>
+                  </div>
+                  <div className="flex items-center gap-2 p-2 bg-slate-900/25 border border-slate-900/60 rounded-lg">
+                    <Smartphone className="w-3.5 h-3.5 text-cyan-500 shrink-0" />
+                    <span className="font-semibold text-slate-300 truncate">{translate("feature_4", lang)}</span>
+                  </div>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+        )}
+      </main>
+    </>
   )
 }

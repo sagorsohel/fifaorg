@@ -2,7 +2,6 @@
 
 import { useMemo, useState, useEffect } from "react"
 import Image from "next/image"
-import { useTheme } from "next-themes"
 import { useRouter } from "next/navigation"
 import {
   DropdownMenu,
@@ -16,6 +15,7 @@ import {
   useGetStadiumsQuery,
   Game,
   Team,
+  Stadium,
   getGameSlug,
   useGetPlayersQuery,
   Player
@@ -30,7 +30,7 @@ import {
   setActiveTab,
   setSelectedGroup,
   setSelectedTeamId,
-  setSelectedGameId,
+  setLanguage,
   resetFilters,
 } from "@/lib/features/uiSlice"
 import {
@@ -46,23 +46,12 @@ import {
   XCircle,
   ArrowLeft,
   Play,
-  Volume2,
-  Settings,
-  Maximize2,
-  Tv,
-  X,
-  ShieldAlert,
-  Film,
-  Infinity,
-  Ban,
-  Smartphone,
 } from "lucide-react"
 
 import {
   LanguageCode,
   LANGUAGES,
   translate,
-  detectBrowserLanguage,
   parseStadiumLocalDate,
   formatLocalTime,
   formatCountdownTime,
@@ -83,7 +72,7 @@ function formatLocalDateOnly(date: Date, lang: LanguageCode): string {
       month: "long",
       day: "numeric",
     })
-  } catch (e) {
+  } catch {
     return date.toDateString()
   }
 }
@@ -139,44 +128,13 @@ function Countdown({ dateStr, stadiumId, lang }: { dateStr: string; stadiumId: s
 export default function WorldCupDashboard() {
   const dispatch = useAppDispatch()
   const router = useRouter()
-  const { theme, setTheme } = useTheme()
-
-  const [lang, setLang] = useState<LanguageCode>("en")
 
   useEffect(() => {
-    const detected = detectBrowserLanguage()
-    setLang(detected)
     document.title = "World Cup 2026 Dashboard"
-
-    try {
-      const saved = localStorage.getItem("worldcup2026_lang")
-      if (!saved) {
-        fetch("/api/detect-region")
-          .then((res) => res.json())
-          .then((data) => {
-            if (data && data.country_code) {
-              const country = data.country_code.toUpperCase()
-              if (country === "BD") {
-                setLang("bn")
-                localStorage.setItem("worldcup2026_lang", "bn")
-              } else if (country === "IR") {
-                setLang("ar")
-                localStorage.setItem("worldcup2026_lang", "ar")
-              } else if (country === "AZ") {
-                setLang("az")
-                localStorage.setItem("worldcup2026_lang", "az")
-              } else if (country === "TR") {
-                setLang("tr")
-                localStorage.setItem("worldcup2026_lang", "tr")
-              }
-            }
-          })
-          .catch(() => { })
-      }
-    } catch (e) { }
   }, [])
 
   // Selectors from Redux UI State
+  const lang = useAppSelector((state) => state.ui.language)
   const searchQuery = useAppSelector((state) => state.ui.searchQuery)
   const filterStatus = useAppSelector((state) => state.ui.filterStatus)
   const activeTab = useAppSelector((state) => state.ui.activeTab)
@@ -214,11 +172,11 @@ export default function WorldCupDashboard() {
 
   // Selected Team Active Sub-Tab State ("matches" | "squad")
   const [teamTab, setTeamTab] = useState<"matches" | "squad">("matches")
-
-  // Reset tab to matches when selected team changes
-  useEffect(() => {
+  const [prevTeamId, setPrevTeamId] = useState(selectedTeamId)
+  if (selectedTeamId !== prevTeamId) {
+    setPrevTeamId(selectedTeamId)
     setTeamTab("matches")
-  }, [selectedTeamId])
+  }
 
   // Fetch players for the selected team
   const { data: teamPlayersData, isLoading: isPlayersLoading } = useGetPlayersQuery(
@@ -297,7 +255,7 @@ export default function WorldCupDashboard() {
       try {
         const parsed = typeof team.translations === "string" ? JSON.parse(team.translations) : team.translations
         if (parsed && parsed[lang]) return parsed[lang]
-      } catch (e) { }
+      } catch { }
     }
     if (lang === "ar" && team.name_fa) return team.name_fa
     return team.name_en
@@ -305,7 +263,7 @@ export default function WorldCupDashboard() {
 
   // Create a fast lookup map for stadiums
   const stadiumsMap = useMemo(() => {
-    const map: Record<string, any> = {}
+    const map: Record<string, Stadium> = {}
     if (stadiumsData?.stadiums) {
       stadiumsData.stadiums.forEach((stadium) => {
         map[stadium.id] = stadium
@@ -321,7 +279,7 @@ export default function WorldCupDashboard() {
       try {
         const parsed = typeof stadium.translations === "string" ? JSON.parse(stadium.translations) : stadium.translations
         if (parsed && parsed[lang]) return parsed[lang]
-      } catch (e) { }
+      } catch { }
     }
     if (lang === "ar" && stadium.name_fa && stadium.city_fa) {
       return `${stadium.name_fa}, ${stadium.city_fa}`
@@ -493,7 +451,7 @@ export default function WorldCupDashboard() {
   ]
 
   return (
-    <div dir={LANGUAGES.find(l => l.code === lang)?.dir || "ltr"} className="min-h-screen bg-slate-950 text-slate-100 font-sans transition-all duration-300">
+    <>
       {/* Background Glows */}
       <div className="fixed -top-40 -left-40 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none"></div>
       <div className="fixed top-1/2 -right-40 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
@@ -521,17 +479,17 @@ export default function WorldCupDashboard() {
               <DropdownMenu>
                 <DropdownMenuTrigger className="bg-slate-900 border border-slate-800 text-xs font-bold text-slate-200 px-3.5 py-2.5 rounded-xl hover:border-cyan-500/30 focus:outline-hidden transition-all cursor-pointer shadow-xs flex items-center gap-1.5 capitalize">
                   <span>{LANGUAGES.find((l) => l.code === lang)?.name || "Language"}</span>
-                  <span className="text-[10px] text-slate-500">▼</span>
+                  <span className="text-[10px] text-slate-505">▼</span>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="bg-slate-900 border border-slate-800 text-slate-200 rounded-xl min-w-[120px] shadow-xl p-1 z-50">
                   {LANGUAGES.map((l) => (
                     <DropdownMenuItem
                       key={l.code}
                       onClick={() => {
-                        setLang(l.code)
+                        dispatch(setLanguage(l.code))
                         try {
                           localStorage.setItem("worldcup2026_lang", l.code)
-                        } catch (err) { }
+                        } catch { }
                       }}
                       className={`cursor-pointer px-3 py-2 text-xs rounded-lg transition-all focus:bg-cyan-500/15 focus:text-cyan-400 font-bold ${lang === l.code ? "bg-cyan-500/10 text-cyan-400" : "text-slate-300"
                         }`}
@@ -820,9 +778,12 @@ export default function WorldCupDashboard() {
                                 {/* Player Photo */}
                                 <div className="relative w-16 h-16 rounded-full border border-slate-850 overflow-hidden shrink-0 flex items-center justify-center bg-slate-950 shadow-inner">
                                   {player.picture_url ? (
-                                    <img
+                                    <Image
                                       src={player.picture_url}
                                       alt={player.name}
+                                      width={64}
+                                      height={64}
+                                      unoptimized
                                       className="w-full h-full object-cover scale-100 group-hover:scale-105 transition-transform duration-300"
                                     />
                                   ) : (
@@ -1313,117 +1274,6 @@ export default function WorldCupDashboard() {
           </>
         )}
       </main>
-
-      {/* Footer copyright */}
-      <footer className="mb-24 sm:mb-0 mt-16 py-8 border-t border-slate-900/60 bg-slate-950/40 text-center text-xs text-slate-600">
-        <p className="max-w-7xl mx-auto px-4">
-          {translate("title", lang)} Dashboard • Integrated with worldcup26.ir APIs
-        </p>
-      </footer>
-
-      {/* ── Mobile Bottom Navigation Bar ── */}
-      <nav
-        aria-label="Mobile navigation"
-        className="sm:hidden fixed bottom-4 left-1/2 -translate-x-1/2 z-50 flex items-end px-4 rounded-[12px] bg-slate-900/90 backdrop-blur-xl border border-slate-800/80 shadow-2xl shadow-black/40"
-        style={{ minWidth: 320, height: 64, paddingBottom: 8, gap: 4 }}
-      >
-        {/* Fixtures Tab */}
-        <button
-          id="mobile-nav-fixtures"
-          onClick={() => {
-            dispatch(setActiveTab("matches"))
-            dispatch(setSelectedTeamId(null))
-          }}
-          className="relative flex flex-col items-center justify-end flex-1 h-full cursor-pointer"
-          style={{ paddingBottom: 2 }}
-        >
-          {activeTab === "matches" && !selectedTeamId ? (
-            <span className="absolute -top-2 left-1/2 -translate-x-1/2 flex flex-col items-center justify-center w-[58px] h-[58px] rounded-full bg-linear-to-br from-cyan-400 to-cyan-600 shadow-xl shadow-cyan-500/50 border-[3px] border-slate-900 transition-all duration-300">
-              <span className="text-xl leading-none select-none">⚽</span>
-              <span className="text-[8px] font-black uppercase tracking-wider text-white leading-none mt-0.5 select-none">Fixtures</span>
-            </span>
-          ) : (
-            <span className="flex flex-col items-center gap-0.5 text-slate-400 hover:text-cyan-400 transition-colors duration-200 select-none">
-              <span className="text-[18px] leading-none">⚽</span>
-              <span className="text-[9px] font-bold uppercase tracking-wider leading-none">Fixtures</span>
-            </span>
-          )}
-        </button>
-
-        {/* Divider */}
-        <span className="w-px bg-slate-800 shrink-0 self-center" style={{ height: 32 }} />
-
-        {/* Teams Tab */}
-        <button
-          id="mobile-nav-teams"
-          onClick={() => {
-            dispatch(setActiveTab("teams"))
-            dispatch(setSelectedTeamId(null))
-          }}
-          className="relative flex flex-col items-center justify-end flex-1 h-full cursor-pointer"
-          style={{ paddingBottom: 2 }}
-        >
-          {activeTab === "teams" && !selectedTeamId ? (
-            <span className="absolute -top-2 left-1/2 -translate-x-1/2 flex flex-col items-center justify-center w-[58px] h-[58px] rounded-full bg-linear-to-br from-emerald-400 to-emerald-600 shadow-xl shadow-emerald-500/50 border-[3px] border-slate-900 transition-all duration-300">
-              <span className="text-xl leading-none select-none">🏆</span>
-              <span className="text-[8px] font-black uppercase tracking-wider text-white leading-none mt-0.5 select-none">Teams</span>
-            </span>
-          ) : (
-            <span className="flex flex-col items-center gap-0.5 text-slate-400 hover:text-emerald-400 transition-colors duration-200 select-none">
-              <span className="text-[18px] leading-none">🏆</span>
-              <span className="text-[9px] font-bold uppercase tracking-wider leading-none">Teams</span>
-            </span>
-          )}
-        </button>
-
-        {/* Divider */}
-        <span className="w-px bg-slate-800 shrink-0 self-center" style={{ height: 32 }} />
-
-        {/* Language Dropdown */}
-        <div className="flex flex-col items-center justify-end flex-1 h-full cursor-pointer relative" style={{ paddingBottom: 2 }}>
-          <DropdownMenu>
-            <DropdownMenuTrigger className="flex flex-col items-center gap-0.5 text-slate-400 hover:text-cyan-400 transition-colors duration-200 select-none outline-hidden cursor-pointer">
-              <span className="text-[18px] leading-none">🌐</span>
-              <span className="text-[9px] font-bold uppercase tracking-wider leading-none">
-                {lang === "en" || lang === "en-us" ? "EN" : lang.toUpperCase()} ▼
-              </span>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent side="top" align="center" className="bg-slate-900 border border-slate-800 text-slate-200 rounded-xl min-w-[120px] shadow-xl p-1 z-50">
-              {LANGUAGES.map((l) => (
-                <DropdownMenuItem
-                  key={l.code}
-                  onClick={() => {
-                    setLang(l.code)
-                    try {
-                      localStorage.setItem("worldcup2026_lang", l.code)
-                    } catch (err) { }
-                  }}
-                  className={`cursor-pointer px-3 py-2 text-xs rounded-lg transition-all focus:bg-cyan-500/15 focus:text-cyan-400 font-bold ${lang === l.code ? "bg-cyan-500/10 text-cyan-400" : "text-slate-300"
-                    }`}
-                >
-                  {l.name}
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-
-        {/* Divider */}
-        <span className="w-px bg-slate-800 shrink-0 self-center" style={{ height: 32 }} />
-
-        {/* Refresh Tab */}
-        <button
-          id="mobile-nav-refresh"
-          onClick={handleRefetch}
-          className="flex flex-col items-center justify-end flex-1 h-full cursor-pointer"
-          style={{ paddingBottom: 2 }}
-        >
-          <span className="flex flex-col items-center gap-0.5 text-slate-400 hover:text-emerald-450 transition-colors duration-200 select-none">
-            <RefreshCw className="w-4.5 h-4.5 text-slate-400 hover:text-emerald-400 transition-colors duration-200" />
-            <span className="text-[9px] font-bold uppercase tracking-wider leading-none mt-0.5">Refresh</span>
-          </span>
-        </button>
-      </nav>
-    </div>
+    </>
   )
 }

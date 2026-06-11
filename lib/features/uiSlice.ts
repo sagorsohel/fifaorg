@@ -1,7 +1,8 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit"
+import { LanguageCode } from "../i18n"
 
 export interface UiState {
-  language: "en" | "fa"
+  language: LanguageCode
   searchQuery: string
   filterStatus: "all" | "finished" | "upcoming"
   activeTab: "matches" | "teams"
@@ -24,7 +25,7 @@ export const uiSlice = createSlice({
   name: "ui",
   initialState,
   reducers: {
-    setLanguage: (state, action: PayloadAction<"en" | "fa">) => {
+    setLanguage: (state, action: PayloadAction<LanguageCode>) => {
       state.language = action.payload
     },
     setSearchQuery: (state, action: PayloadAction<string>) => {
