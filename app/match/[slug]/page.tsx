@@ -2,8 +2,8 @@ import { Metadata } from "next"
 import { db } from "@/lib/db"
 import { games, teams } from "@/lib/db/schema"
 import MatchClientPage from "@/components/match-client-page"
-import { headers, cookies } from "next/headers"
-import { LanguageCode, LANGUAGES } from "@/lib/i18n"
+import { LanguageCode } from "@/lib/i18n"
+import { getLanguageFromServer, getLocalizedTeamName } from "@/lib/i18n-server"
 
 const METADATA_TRANSLATIONS: Record<string, Record<string, string>> = {
   title_template: {
@@ -104,51 +104,7 @@ const METADATA_TRANSLATIONS: Record<string, Record<string, string>> = {
   }
 }
 
-async function getPreferredLanguage(): Promise<LanguageCode> {
-  try {
-    const headersList = await headers()
-    const acceptLang = headersList.get("accept-language")
-    if (!acceptLang) return "en"
-    
-    const parsedLangs = acceptLang.split(",")
-    for (const rawLang of parsedLangs) {
-      const cleanLang = rawLang.split(";")[0].trim().toLowerCase()
-      const exactMatch = LANGUAGES.find(l => l.code === cleanLang)
-      if (exactMatch) return exactMatch.code
 
-      const baseCode = cleanLang.split("-")[0] as LanguageCode
-      const baseMatch = LANGUAGES.find(l => l.code === baseCode)
-      if (baseMatch) {
-        if (baseCode === "pt") {
-          if (cleanLang.includes("pt-pt")) return "pt-pt"
-          return "pt"
-        }
-        if (baseCode === "es") {
-          if (["es-ar", "es-cl", "es-co", "es-cr", "es-do", "es-ec", "es-gt", "es-hn", "es-mx", "es-ni", "es-pa", "es-pe", "es-pr", "es-py", "es-sv", "es-uy", "es-ve", "es-419"].some(loc => cleanLang.includes(loc))) {
-            return "es-la"
-          }
-          return "es"
-        }
-        return baseCode
-      }
-    }
-  } catch (err) {
-    console.error("Failed to parse accept-language header:", err)
-  }
-  return "en"
-}
-
-function getLocalizedTeamName(team: any, fallback: string, activeLang: LanguageCode) {
-  if (!team) return fallback
-  if (team.translations) {
-    try {
-      const parsed = typeof team.translations === "string" ? JSON.parse(team.translations) : team.translations
-      if (parsed && parsed[activeLang]) return parsed[activeLang]
-    } catch { }
-  }
-  if (activeLang === "ar" && team.name_fa) return team.name_fa
-  return team.name_en
-}
 
 async function getGameAndTeamsBySlug(slug: string) {
   try {
@@ -191,8 +147,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const resolvedParams = await params
   const matchInfo = await getGameAndTeamsBySlug(resolvedParams.slug)
 
-  const cookieList = await cookies()
-  const lang = (cookieList.get("worldcup2026_lang")?.value || await getPreferredLanguage()) as LanguageCode
+  const lang = await getLanguageFromServer()
 
   if (!matchInfo) {
     const notFoundTitle = METADATA_TRANSLATIONS.not_found[lang] || METADATA_TRANSLATIONS.not_found["en"]
