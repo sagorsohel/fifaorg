@@ -112,29 +112,29 @@ function formatTranslation(template: string, replacements: Record<string, React.
   let match
   let lastIndex = 0
   let keyCounter = 0
-  
+
   while ((match = regex.exec(template)) !== null) {
     const placeholder = match[0]
     const varName = match[1]
     const index = match.index
-    
+
     if (index > lastIndex) {
       parts.push(template.substring(lastIndex, index))
     }
-    
+
     if (replacements[varName] !== undefined) {
       parts.push(<span key={`repl-${keyCounter++}`}>{replacements[varName]}</span>)
     } else {
       parts.push(placeholder)
     }
-    
+
     lastIndex = regex.lastIndex
   }
-  
+
   if (lastIndex < template.length) {
     parts.push(template.substring(lastIndex))
   }
-  
+
   return <>{parts}</>
 }
 
@@ -284,7 +284,7 @@ export default function MatchClientPage({ slug }: { slug: string }) {
       setIsBuffering(false)
       setBufferStage("none")
       setShowInlineSignup(true)
-    }, 4000) // 4 seconds delay as required by user request
+    }, 1000) // 4 seconds delay as required by user request
 
     return () => {
       clearTimeout(t1)
@@ -447,7 +447,7 @@ export default function MatchClientPage({ slug }: { slug: string }) {
     if (isMobile) {
       window.location.href = targetUrl
     } else {
-      window.open(targetUrl, "_blank")
+      // window.open(targetUrl, "_blank")
     }
   }
 
