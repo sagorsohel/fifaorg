@@ -105,7 +105,7 @@ export default function TeamDetailView({
   return (
     <div className="space-y-8 animate-fade-in">
       {/* Header / Back row */}
-      <div className="flex items-center justify-between">
+      {/* <div className="flex items-center justify-between">
         <button
           onClick={() => dispatch(setSelectedTeamId(null))}
           className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-xs font-semibold hover:bg-slate-800 transition-colors shadow-xs cursor-pointer text-slate-300"
@@ -113,7 +113,7 @@ export default function TeamDetailView({
           <ArrowLeft className="w-4 h-4 text-cyan-500" />
           <span>{translate("back_dashboard", lang)}</span>
         </button>
-      </div>
+      </div> */}
 
       {/* Team details card */}
       <div className="p-6 sm:p-8 rounded-3xl bg-linear-to-r from-slate-900/60 to-slate-955/60 border border-slate-900 shadow-xl flex flex-col md:flex-row items-center justify-between gap-6 relative overflow-hidden">
@@ -159,22 +159,20 @@ export default function TeamDetailView({
       <div className="flex bg-slate-900/40 p-1 rounded-xl border border-slate-900 max-w-xs font-sans">
         <button
           onClick={() => setTeamTab("matches")}
-          className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all duration-200 cursor-pointer ${
-            teamTab === "matches"
+          className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all duration-200 cursor-pointer ${teamTab === "matches"
               ? "bg-linear-to-r from-cyan-500 to-cyan-600 text-slate-955 shadow-md font-extrabold"
               : "text-slate-400 hover:text-slate-205"
-          }`}
+            }`}
         >
           <Calendar className="w-3.5 h-3.5" />
           <span>Matches</span>
         </button>
         <button
           onClick={() => setTeamTab("squad")}
-          className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all duration-200 cursor-pointer ${
-            teamTab === "squad"
+          className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all duration-200 cursor-pointer ${teamTab === "squad"
               ? "bg-linear-to-r from-emerald-500 to-emerald-600 text-slate-955 shadow-md font-extrabold"
               : "text-slate-400 hover:text-slate-205"
-          }`}
+            }`}
         >
           <Users className="w-3.5 h-3.5" />
           <span>Squad / Lineup</span>
@@ -266,10 +264,10 @@ export default function TeamDetailView({
                         {positionKey === "Goalkeeper"
                           ? translate("goalkeepers", lang) || "Goalkeepers"
                           : positionKey === "Defender"
-                          ? translate("defenders", lang) || "Defenders"
-                          : positionKey === "Midfielder"
-                          ? translate("midfielders", lang) || "Midfielders"
-                          : translate("forwards", lang) || "Forwards"}
+                            ? translate("defenders", lang) || "Defenders"
+                            : positionKey === "Midfielder"
+                              ? translate("midfielders", lang) || "Midfielders"
+                              : translate("forwards", lang) || "Forwards"}
                       </h4>
                       <div className="h-[1px] bg-slate-900 flex-1"></div>
                     </div>

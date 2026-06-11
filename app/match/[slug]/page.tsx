@@ -824,7 +824,7 @@ export default function MatchCenterPage({ params }: { params: Promise<{ slug: st
         </div>
 
         {/* Back Button (At the very bottom) */}
-        <div className="flex justify-center pt-4 max-w-4xl mx-auto w-full">
+        {/* <div className="flex justify-center pt-4 max-w-4xl mx-auto w-full">
           <Link
             href="/"
             className="flex items-center gap-2 px-6 py-3 rounded-xl bg-slate-900 border border-slate-800 text-xs font-bold hover:bg-slate-800 transition-colors shadow-lg cursor-pointer text-slate-200"
@@ -832,7 +832,7 @@ export default function MatchCenterPage({ params }: { params: Promise<{ slug: st
             <ArrowLeft className="w-4 h-4 text-cyan-500" />
             <span>{translate("back_timeline", lang)}</span>
           </Link>
-        </div>
+        </div> */}
 
         {isMobile && (
           <Dialog open={showInlineSignup} onOpenChange={setShowInlineSignup}>

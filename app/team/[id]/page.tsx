@@ -217,7 +217,7 @@ export default function TeamPage({ params }: { params: Promise<{ id: string }> }
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 space-y-6 pb-28 sm:pb-8 relative z-10 animate-fade-in">
         {/* Back row */}
-        <div className="flex items-center justify-between max-w-4xl mx-auto w-full">
+        {/* <div className="flex items-center justify-between max-w-4xl mx-auto w-full">
           <Link
             href="/"
             className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-xs font-semibold hover:bg-slate-800 transition-colors shadow-xs cursor-pointer text-slate-300"
@@ -225,7 +225,7 @@ export default function TeamPage({ params }: { params: Promise<{ id: string }> }
             <ArrowLeft className="w-4 h-4 text-cyan-500" />
             <span>{translate("back_dashboard", lang)}</span>
           </Link>
-        </div>
+        </div> */}
 
         {/* Team details card */}
         <div className="p-6 sm:p-8 rounded-3xl bg-linear-to-r from-slate-900/60 to-slate-955/60 border border-slate-900 shadow-xl flex flex-col md:flex-row items-center justify-between gap-6 relative overflow-hidden max-w-4xl mx-auto w-full">
