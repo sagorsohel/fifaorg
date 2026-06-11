@@ -151,9 +151,9 @@ export function Navbar() {
             </div>
             <div>
               <h1 className="text-xl font-bold tracking-tight bg-linear-to-r from-cyan-400 to-emerald-400 bg-clip-text text-transparent group-hover:brightness-110 transition-all duration-300">
-                {translate("title", lang)}
+                FIFA WC26 on Screen
               </h1>
-              <p className="text-xs text-slate-400 font-medium">{translate("subtitle", lang)}</p>
+              <p className="text-xs text-slate-400 font-medium">Stream World Cup 2026 Live Scores, Results and Fixtures.</p>
             </div>
           </Link>
 
