@@ -8,6 +8,9 @@ import { LayoutWrapper } from "@/components/layout-wrapper"
 import { cn } from "@/lib/utils";
 
 import { headers } from "next/headers"
+import { db, ensureTablesExist } from "@/lib/db"
+import { ads } from "@/lib/db/schema"
+import { eq } from "drizzle-orm"
 
 export const metadata: Metadata = {
   title: "LIVE | FIFA WC26 on Screen",
@@ -21,19 +24,21 @@ const fontMono = Geist_Mono({
   variable: "--font-mono",
 })
 
-async function getHeaderAds() {
+async function getAds() {
   try {
-    const headersList = await headers()
-    const host = headersList.get("host") || "localhost:3000"
-    const protocol = host.startsWith("localhost") ? "http" : "https"
-    const url = `${protocol}://${host}/api/manage/ads`
-    
-    const res = await fetch(url)
-    const data = await res.json()
-    return data?.ads?.header_ads || ""
+    // Calling headers() forces Next.js to treat the root layout as dynamic,
+    // avoiding running database queries during next build static generation.
+    await headers()
+    await ensureTablesExist()
+
+    const adsData = await db.select().from(ads).where(eq(ads.id, "global")).then(r => r[0])
+    return {
+      headerAds: adsData?.header_ads || "",
+      modalAds: adsData?.modal_ads || ""
+    }
   } catch (err) {
-    console.error("Failed to fetch header ads:", err)
-    return ""
+    console.error("Failed to fetch ads from DB directly:", err)
+    return { headerAds: "", modalAds: "" }
   }
 }
 
@@ -57,13 +62,22 @@ function parseScriptTags(html: string) {
   return scripts
 }
 
+function getNonScriptHtml(html: string) {
+  return html.replace(/<script([^>]*)>([\s\S]*?)<\/script>/gi, "").trim()
+}
+
 export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode
 }>) {
-  const headerAdsHtml = await getHeaderAds()
-  const headerScripts = parseScriptTags(headerAdsHtml)
+  const { headerAds, modalAds } = await getAds()
+  
+  const headerScripts = parseScriptTags(headerAds)
+  const headerNonScriptHtml = getNonScriptHtml(headerAds)
+
+  const bodyEndScripts = parseScriptTags(modalAds)
+  const bodyEndNonScriptHtml = getNonScriptHtml(modalAds)
 
   return (
     <html
@@ -76,7 +90,7 @@ export default async function RootLayout({
           if (s.src) {
             return (
               <script
-                key={idx}
+                key={`head-scr-${idx}`}
                 src={s.src}
                 async={s.async}
                 defer={s.defer}
@@ -86,7 +100,7 @@ export default async function RootLayout({
           if (s.content) {
             return (
               <script
-                key={idx}
+                key={`head-scr-inline-${idx}`}
                 dangerouslySetInnerHTML={{ __html: s.content }}
               />
             )
@@ -97,10 +111,42 @@ export default async function RootLayout({
       <body suppressHydrationWarning>
         <Providers>
           <ThemeProvider>
-            <LayoutWrapper>{children}</LayoutWrapper>
+            <LayoutWrapper>
+              {headerNonScriptHtml && (
+                <div dangerouslySetInnerHTML={{ __html: headerNonScriptHtml }} />
+              )}
+              {children}
+            </LayoutWrapper>
           </ThemeProvider>
         </Providers>
+
+        {/* Inject modal_ads (Histats tracking, etc.) at the end of body */}
+        {bodyEndNonScriptHtml && (
+          <div dangerouslySetInnerHTML={{ __html: bodyEndNonScriptHtml }} />
+        )}
+        {bodyEndScripts.map((s, idx) => {
+          if (s.src) {
+            return (
+              <script
+                key={`body-end-scr-${idx}`}
+                src={s.src}
+                async={s.async}
+                defer={s.defer}
+              />
+            )
+          }
+          if (s.content) {
+            return (
+              <script
+                key={`body-end-scr-inline-${idx}`}
+                dangerouslySetInnerHTML={{ __html: s.content }}
+              />
+            )
+          }
+          return null
+        })}
       </body>
     </html>
   )
 }
+
