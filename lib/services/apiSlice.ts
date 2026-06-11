@@ -11,6 +11,14 @@ export interface Team {
   id: string
   translations?: any
   fifa_team_id?: string
+  mp?: number
+  w?: number
+  l?: number
+  d?: number
+  pts?: number
+  gf?: number
+  ga?: number
+  gd?: number
 }
 
 export interface Player {

@@ -181,6 +181,12 @@ export async function performSync() {
       })
   }
 
+  try {
+    await performGroupsSync()
+  } catch (err) {
+    console.error("Failed to sync groups during full sync:", err)
+  }
+
   console.log("Database Sync Completed Successfully!")
   return {
     teams: teamsList.length,
@@ -249,9 +255,52 @@ export async function performGamesSync() {
       })
   }
 
+  try {
+    await performGroupsSync()
+  } catch (err) {
+    console.error("Failed to sync groups during games sync:", err)
+  }
+
   console.log("Games-only Sync Completed Successfully!")
   return {
     games: gamesList.length
+  }
+}
+
+export async function performGroupsSync() {
+  await ensureTablesExist()
+
+  console.log("Groups Sync Started...")
+
+  const groupsData = await fetchFromApi("groups")
+  const groupsList = groupsData?.groups || []
+
+  console.log(`Fetched ${groupsList.length} groups for sync.`)
+
+  if (groupsList.length > 0) {
+    for (const group of groupsList) {
+      const groupTeams = group.teams || []
+      for (const t of groupTeams) {
+        await db
+          .update(teams)
+          .set({
+            mp: Number(t.mp || 0),
+            w: Number(t.w || 0),
+            l: Number(t.l || 0),
+            d: Number(t.d || 0),
+            pts: Number(t.pts || 0),
+            gf: Number(t.gf || 0),
+            ga: Number(t.ga || 0),
+            gd: Number(t.gd || 0),
+          })
+          .where(sql`id = ${t.team_id}`)
+      }
+    }
+  }
+
+  console.log("Groups Sync Completed Successfully!")
+  return {
+    groups: groupsList.length
   }
 }
 

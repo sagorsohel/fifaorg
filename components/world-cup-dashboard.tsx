@@ -274,9 +274,20 @@ export default function WorldCupDashboard() {
       groups[groupName].push(team)
     })
 
-    // Sort teams within each group alphabetically
+    // Sort teams within each group by standings: Points desc, GD desc, GF desc, Name asc
     Object.keys(groups).forEach((key) => {
-      groups[key].sort((a, b) => a.name_en.localeCompare(b.name_en))
+      groups[key].sort((a, b) => {
+        const ptsDiff = (b.pts || 0) - (a.pts || 0)
+        if (ptsDiff !== 0) return ptsDiff
+
+        const gdDiff = (b.gd || 0) - (a.gd || 0)
+        if (gdDiff !== 0) return gdDiff
+
+        const gfDiff = (b.gf || 0) - (a.gf || 0)
+        if (gfDiff !== 0) return gfDiff
+
+        return a.name_en.localeCompare(b.name_en)
+      })
     })
 
     return groups

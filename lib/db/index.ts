@@ -42,7 +42,15 @@ export function ensureTablesExist(): Promise<void> {
           \`iso2\` varchar(10),
           \`groups\` varchar(10),
           \`translations\` text,
-          \`fifa_team_id\` varchar(50)
+          \`fifa_team_id\` varchar(50),
+          \`mp\` int DEFAULT 0,
+          \`w\` int DEFAULT 0,
+          \`l\` int DEFAULT 0,
+          \`d\` int DEFAULT 0,
+          \`pts\` int DEFAULT 0,
+          \`gf\` int DEFAULT 0,
+          \`ga\` int DEFAULT 0,
+          \`gd\` int DEFAULT 0
         )
       `)
 
@@ -140,6 +148,31 @@ export function ensureTablesExist(): Promise<void> {
       } catch (err) {
         // Ignore if column already exists
       }
+
+      try {
+        await poolConnection.query("ALTER TABLE `teams` ADD COLUMN `mp` INT DEFAULT 0")
+      } catch (err) {}
+      try {
+        await poolConnection.query("ALTER TABLE `teams` ADD COLUMN `w` INT DEFAULT 0")
+      } catch (err) {}
+      try {
+        await poolConnection.query("ALTER TABLE `teams` ADD COLUMN `l` INT DEFAULT 0")
+      } catch (err) {}
+      try {
+        await poolConnection.query("ALTER TABLE `teams` ADD COLUMN `d` INT DEFAULT 0")
+      } catch (err) {}
+      try {
+        await poolConnection.query("ALTER TABLE `teams` ADD COLUMN `pts` INT DEFAULT 0")
+      } catch (err) {}
+      try {
+        await poolConnection.query("ALTER TABLE `teams` ADD COLUMN `gf` INT DEFAULT 0")
+      } catch (err) {}
+      try {
+        await poolConnection.query("ALTER TABLE `teams` ADD COLUMN `ga` INT DEFAULT 0")
+      } catch (err) {}
+      try {
+        await poolConnection.query("ALTER TABLE `teams` ADD COLUMN `gd` INT DEFAULT 0")
+      } catch (err) {}
 
       try {
         await poolConnection.query("ALTER TABLE `stadiums` ADD COLUMN `translations` TEXT NULL")

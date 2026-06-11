@@ -11,6 +11,14 @@ export const teams = mysqlTable("teams", {
   groups: varchar("groups", { length: 10 }),
   translations: text("translations"),
   fifa_team_id: varchar("fifa_team_id", { length: 50 }),
+  mp: int("mp").default(0),
+  w: int("w").default(0),
+  l: int("l").default(0),
+  d: int("d").default(0),
+  pts: int("pts").default(0),
+  gf: int("gf").default(0),
+  ga: int("ga").default(0),
+  gd: int("gd").default(0),
 })
 
 export const players = mysqlTable("players", {

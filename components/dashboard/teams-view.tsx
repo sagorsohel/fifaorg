@@ -60,47 +60,74 @@ export default function TeamsView({ teamsGroupedByGroup }: TeamsViewProps) {
                   </span>
                 </div>
 
-                {/* Teams List */}
-                <div className="p-4 divide-y divide-slate-900/40">
-                  {teams.map((team) => (
-                    <div
-                      key={team._id}
-                      onClick={() => {
-                        dispatch(setSelectedTeamId(team.id))
-                        const slug = team.name_en.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "")
-                        router.push(`/team/${slug}`)
-                      }}
-                      className="flex items-center justify-between py-3 px-1 hover:bg-slate-900/50 rounded-xl transition-all cursor-pointer group"
-                      title={getTeamName(team)}
-                    >
-                      <div className="flex items-center gap-3 font-sans">
-                        {team.flag ? (
-                          <div className="relative w-8 h-5.5 overflow-hidden rounded-md border border-slate-800 shadow-xs shrink-0">
-                            <Image
-                              src={team.flag}
-                              alt={getTeamName(team)}
-                              fill
-                              className="object-cover"
-                              unoptimized
-                            />
-                          </div>
-                        ) : (
-                          <div className="w-8 h-5.5 bg-slate-850 rounded-md shrink-0 flex items-center justify-center text-xs">🏴</div>
-                        )}
-                        <span className="text-sm font-semibold text-slate-200 group-hover:text-emerald-400 transition-colors">
-                          <span className="sm:hidden">{getTeamCode(team)}</span>
-                          <span className="hidden sm:inline">{getTeamName(team)}</span>
-                        </span>
-                      </div>
-
-                      <div className="flex items-center gap-2 shrink-0">
-                        <span className="hidden sm:inline-block text-[10px] font-mono font-semibold text-slate-500 bg-slate-950 px-2 py-0.5 rounded border border-slate-900">
-                          {team.fifa_code}
-                        </span>
-                        <ChevronRight className="w-3.5 h-3.5 text-slate-600 group-hover:text-emerald-400 group-hover:translate-x-0.5 transition-all" />
-                      </div>
-                    </div>
-                  ))}
+                {/* Standings Table */}
+                <div className="p-2 overflow-x-auto select-none">
+                  <table className="w-full text-left border-collapse text-[10px] sm:text-[11px] font-sans">
+                    <thead>
+                      <tr className="border-b border-slate-900/60 text-slate-500 font-bold uppercase tracking-wider text-[8px] sm:text-[9px]">
+                        <th className="py-2 px-1 text-center w-6 sm:w-8">#</th>
+                        <th className="py-2 px-1.5">{translate("team", lang)}</th>
+                        <th className="py-2 px-1 text-center w-6 sm:w-8" title="Matches Played">MP</th>
+                        <th className="py-2 px-1 text-center w-6 sm:w-8" title="Wins">W</th>
+                        <th className="py-2 px-1 text-center w-6 sm:w-8" title="Draws">D</th>
+                        <th className="py-2 px-1 text-center w-6 sm:w-8" title="Losses">L</th>
+                        <th className="py-2 px-1 text-center w-8 sm:w-10" title="Goal Difference">GD</th>
+                        <th className="py-2 px-1 text-center w-8 sm:w-10 font-black text-emerald-400" title="Points">PTS</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-900/30">
+                      {teams.map((team, index) => {
+                        const position = index + 1
+                        return (
+                          <tr
+                            key={team._id}
+                            onClick={() => {
+                              dispatch(setSelectedTeamId(team.id))
+                              const slug = team.name_en.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "")
+                              router.push(`/team/${slug}`)
+                            }}
+                            className="hover:bg-slate-900/40 transition-all cursor-pointer group/row"
+                            title={getTeamName(team)}
+                          >
+                            <td className="py-2.5 px-1 text-center font-mono text-slate-505 font-bold">
+                              {position}
+                            </td>
+                            <td className="py-2.5 px-1.5">
+                              <div className="flex items-center gap-1.5 sm:gap-2 font-semibold text-slate-200 group-hover/row:text-emerald-400 transition-colors">
+                                {team.flag ? (
+                                  <div className="relative w-5 h-3.5 overflow-hidden rounded-[3px] border border-slate-900 shrink-0">
+                                    <Image
+                                      src={team.flag}
+                                      alt=""
+                                      fill
+                                      className="object-cover"
+                                      unoptimized
+                                    />
+                                  </div>
+                                ) : (
+                                  <span className="text-xs">🏴</span>
+                                )}
+                                <span className="truncate max-w-[60px] sm:max-w-[120px]">
+                                  <span className="sm:hidden">{getTeamCode(team)}</span>
+                                  <span className="hidden sm:inline">{getTeamName(team)}</span>
+                                </span>
+                              </div>
+                            </td>
+                            <td className="py-2.5 px-1 text-center font-mono text-slate-400">{team.mp || 0}</td>
+                            <td className="py-2.5 px-1 text-center font-mono text-slate-400">{team.w || 0}</td>
+                            <td className="py-2.5 px-1 text-center font-mono text-slate-400">{team.d || 0}</td>
+                            <td className="py-2.5 px-1 text-center font-mono text-slate-400">{team.l || 0}</td>
+                            <td className="py-2.5 px-1 text-center font-mono text-slate-400 font-bold">
+                              {Number(team.gd || 0) > 0 ? `+${team.gd}` : team.gd || 0}
+                            </td>
+                            <td className="py-2.5 px-1 text-center font-mono font-extrabold text-slate-100 group-hover/row:text-emerald-400 transition-colors bg-emerald-500/5">
+                              {team.pts || 0}
+                            </td>
+                          </tr>
+                        )
+                      })}
+                    </tbody>
+                  </table>
                 </div>
               </div>
             )

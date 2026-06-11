@@ -94,6 +94,18 @@ export const TRANSLATIONS: Record<string, Record<string, string>> = {
     sk: "Zápasy", sl: "Tekme", sr: "Утакмице",
     sv: "Matcher", tr: "Maçlar", zh: "比赛"
   },
+  team: {
+    en: "Team", "en-us": "Team", ar: "الفريق",
+    az: "Komanda", bn: "দল", cs: "Tým",
+    da: "Hold", de: "Team", el: "Ομάδα",
+    es: "Equipo", "es-la": "Equipo", fr: "Équipe",
+    hi: "टीम", hr: "Reprezentacija", hu: "Csapat",
+    id: "Tim", it: "Squadra", nl: "Team",
+    no: "Lag", pl: "Drużyna", pt: "Equipe",
+    "pt-pt": "Equipa", ro: "Echipă", ru: "Команда",
+    sk: "Tím", sl: "Ekipa", sr: "Репрезентација",
+    sv: "Lag", tr: "Takım", zh: "球队"
+  },
   teams_groups: {
     en: "Teams & Groups", "en-us": "Teams & Groups", ar: "الفرق والمجموعات",
     az: "Komandalar və Qruplar", bn: "দল এবং গ্রুপ", cs: "Týmy a skupiny",
