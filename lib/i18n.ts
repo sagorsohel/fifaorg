@@ -179,7 +179,7 @@ export const TRANSLATIONS: Record<string, Record<LanguageCode, string>> = {
     sv: "Rensa filter", tr: "Filtreleri Temizle", zh: "清除筛选"
   },
   select_group_stage: {
-    en: "Select Group or Knockout Stage:", "en-us": "Select Group or Knockout Stage:", ar: "اختر المجموعة أو مرحلة خروج المغلوب:",
+    en: " Knockout Stage:", "en-us": " Knockout Stage:", ar: "اختر المجموعة أو مرحلة خروج المغلوب:",
     az: "Qrupu və ya Pley-off mərhələsini seçin:", bn: "গ্রুপ বা নকআউট পর্ব নির্বাচন করুন:", cs: "Vyberte skupinu nebo vyřazovací fázi:",
     da: "Vælg gruppe- eller knockoutfase:", de: "Gruppe oder K.-o.-Phase wählen:", el: "Επιλέξτε Όμιλο ή Φάση Νοκ-Άουτ:",
     es: "Seleccione Grupo o Fase Eliminatoria:", "es-la": "Seleccione Grupo o Fase Eliminatoria:", fr: "Sélectionnez un Groupe ou une Phase Finale :",
