@@ -143,28 +143,28 @@ export function Navbar() {
   return (
     <>
       <header className="sticky top-0 z-40 bg-slate-955/80 backdrop-blur-md border-b border-slate-900 w-full">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between gap-4">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-3.5 sm:py-4 flex items-center justify-between gap-2.5 sm:gap-4">
           {/* Logo & Brand */}
-          <Link href="/" className="flex items-center gap-3 group cursor-pointer select-none">
-            <div className="w-12 h-12 rounded-xl bg-linear-to-br from-cyan-500 to-emerald-500 flex items-center justify-center shadow-lg shadow-cyan-500/15 group-hover:scale-[1.03] transition-transform duration-300">
-              <Trophy className="w-6 h-6 text-slate-950" />
+          <Link href="/" className="flex items-center gap-2 sm:gap-3 group cursor-pointer select-none shrink-0">
+            <div className="w-9 h-9 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl bg-linear-to-br from-cyan-500 to-emerald-500 flex items-center justify-center shadow-lg shadow-cyan-500/15 group-hover:scale-[1.03] transition-transform duration-300 shrink-0">
+              <Trophy className="w-4.5 h-4.5 sm:w-6 sm:h-6 text-slate-950" />
             </div>
             <div>
-              <h1 className="text-xl font-bold tracking-tight bg-linear-to-r from-cyan-400 to-emerald-400 bg-clip-text text-transparent group-hover:brightness-110 transition-all duration-300">
+              <h1 className="text-sm sm:text-xl font-extrabold tracking-tight bg-linear-to-r from-cyan-400 to-emerald-400 bg-clip-text text-transparent group-hover:brightness-110 transition-all duration-300 whitespace-nowrap">
                 FIFA WC26 on Screen
               </h1>
-              <p className="text-xs text-slate-400 font-medium">Stream World Cup 2026 Live Scores, Results and Fixtures.</p>
+              <p className="text-[10px] sm:text-xs text-slate-400 font-medium hidden sm:block">Stream World Cup 2026 Live Scores, Results and Fixtures.</p>
             </div>
           </Link>
 
           {/* Action Filters / Language Dropdown */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
             {/* Member Button */}
             <a
               href={referralLink}
               target="_blank"
               rel="noopener noreferrer"
-              className="bg-linear-to-r from-cyan-500 to-emerald-500 text-gray-200 font-bold hover:brightness-110 shadow-md px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl text-[10px] sm:text-xs uppercase cursor-pointer hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 flex items-center gap-1.5 select-none"
+              className="bg-linear-to-r from-cyan-500 to-emerald-500 text-gray-200 font-bold hover:brightness-110 shadow-md px-2.5 sm:px-4 py-2 sm:py-2.5 rounded-lg sm:rounded-xl text-[9px] sm:text-xs uppercase cursor-pointer hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 flex items-center gap-1 sm:gap-1.5 select-none shrink-0"
             >
               <User className="w-3 sm:w-3.5 h-3 sm:h-3.5" />
               <span>{MEMBERSHIP_TRANSLATIONS[lang] || MEMBERSHIP_TRANSLATIONS["en"]}</span>
@@ -173,9 +173,10 @@ export function Navbar() {
             {/* Language Selector Dropdown */}
             <div className="flex items-center gap-2 z-50">
               <DropdownMenu>
-                <DropdownMenuTrigger className="bg-slate-900 border border-slate-800 text-xs font-bold text-slate-200 px-3.5 py-2.5 rounded-xl hover:border-cyan-500/30 focus:outline-hidden transition-all cursor-pointer shadow-xs flex items-center gap-1.5 capitalize">
-                  <span>{LANGUAGES.find((l) => l.code === lang)?.name || "Language"}</span>
-                  <span className="text-[10px] text-slate-505">▼</span>
+                <DropdownMenuTrigger className="bg-slate-900 border border-slate-800 text-[9px] sm:text-xs font-bold text-slate-200 px-2 sm:px-3.5 py-2 sm:py-2.5 rounded-lg sm:rounded-xl hover:border-cyan-500/30 focus:outline-hidden transition-all cursor-pointer shadow-xs flex items-center gap-1 sm:gap-1.5 capitalize shrink-0">
+                  <span className="hidden sm:inline">{LANGUAGES.find((l) => l.code === lang)?.name || "Language"}</span>
+                  <span className="sm:hidden">{lang === "en" || lang === "en-us" ? "EN" : lang.toUpperCase()}</span>
+                  <span className="text-[8px] sm:text-[10px] text-slate-500">▼</span>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="bg-slate-900 border border-slate-800 text-slate-200 rounded-xl min-w-[120px] shadow-xl p-1 z-50">
                   {LANGUAGES.map((l) => (
