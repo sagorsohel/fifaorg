@@ -431,16 +431,16 @@ export const TRANSLATIONS: Record<string, Record<LanguageCode, string>> = {
     sv: "Regelbrott", tr: "Fauller", zh: "犯规"
   },
   signup_title: {
-    en: "Please Sign Up to Watch Football Match Live", "en-us": "Please Sign Up to Watch Football Match Live", ar: "يرجى التسجيل لمشاهدة مباراة كرة القدم مباشرة",
-    az: "Futbol matçını canlı izləmək üçün qeydiyyatdan keçin", bn: "ফুটবল ম্যাচ সরাসরি দেখতে সাইন আপ করুন", cs: "Zaregistrujte se pro sledování fotbalu živě",
-    da: "Opret en bruger for at se fodbold live", de: "Bitte registrieren Sie sich, um das Spiel live zu sehen", el: "Εγγραφείτε για να παρακολουθήσετε τον αγώνα ζωντανά",
-    es: "Regístrese para ver el partido en vivo", "es-la": "Regístrese para ver el partido en vivo", fr: "Inscrivez-vous pour regarder le match en direct",
-    hi: "फुटबॉल मैच लाइव देखने के लिए साइन अप करें", hr: "Registrirajte se za gledanje utakmice uživo", hu: "Regisztráljon a mérkőzés élő közvetítéséhez",
-    id: "Silakan Daftar untuk Menonton Pertandingan Langsung", it: "Registrati per guardare la partita in diretta", nl: "Meld je aan om de voetbalwedstrijd live te bekijken",
-    no: "Registrer deg for å se fotballkampen live", pl: "Zarejestruj się, aby oglądać mecz na żywo", pt: "Cadastre-se para Assistir ao Jogo ao Vivo",
-    "pt-pt": "Registe-se para Assistir ao Jogo ao Vivo", ro: "Înregistrează-te pentru a viziona meciul live", ru: "Зарегистрируйтесь, чтобы смотреть футбол в эфире",
-    sk: "Zaregistrujte sa a sledujte futbal naživo", sl: "Registrirajte se za ogled nogometne tekme v živo", sr: "Региструјте се за гледање утакмице уживо",
-    sv: "Registrera dig för å se fotbollsmatchen live", tr: "Futbol Maçını Canlı İzlemek İçin Üye Olun", zh: "请注册以观看足球比赛直播"
+    en: "Please Sign Up to Watch every match live", "en-us": "Please Sign Up to Watch every match live", ar: "يرجى التسجيل لمشاهدة كل مباراة مباشرة",
+    az: "Hər oyunu canlı izləmək üçün qeydiyyatdan keçin", bn: "প্রতিটি ম্যাচ সরাসরি দেখতে সাইন আপ করুন", cs: "Zaregistrujte se pro sledování každého zápasu živě",
+    da: "Opret en bruger for at se hver kamp live", de: "Bitte registrieren Sie sich, um jedes Spiel live zu sehen", el: "Εγγραφείτε για να παρακολουθήσετε κάθε αγώνα ζωντανά",
+    es: "Regístrese para ver cada partido en vivo", "es-la": "Regístrese para ver cada partido en vivo", fr: "Inscrivez-vous pour regarder chaque match en direct",
+    hi: "हर मैच लाइव देखने के लिए साइन अप करें", hr: "Registrirajte se za gledanje svake utakmice uživo", hu: "Regisztráljon minden mérkőzés élő közvetítéséhez",
+    id: "Silakan Daftar untuk Menonton Setiap Pertandingan Langsung", it: "Registrati per guardare ogni partita in diretta", nl: "Meld je aan om elke wedstrijd live te bekijken",
+    no: "Registrer deg for å se hver kamp live", pl: "Zarejestruj się, aby oglądać każdy mecz na żywo", pt: "Cadastre-se para Assistir a cada Jogo ao Vivo",
+    "pt-pt": "Registe-se para Assistir a cada Jogo ao Vivo", ro: "Înregistrează-te pentru a viziona fiecare meci live", ru: "Зарегистрируйтесь, чтобы смотреть каждый матч в эфире",
+    sk: "Zaregistrujte sa a sledujte každý zápas naživo", sl: "Registrirajte se za ogled vsake tekme v živo", sr: "Региструјте се за гледање сваке утакмице уживо",
+    sv: "Registrera dig för att se varje match live", tr: "Her Maçı Canlı İzlemek İçin Üye Olun", zh: "请注册以观看每场比赛直播"
   },
   live_stream: {
     en: "FOOTBALL LIVE STREAM", "en-us": "FOOTBALL LIVE STREAM", ar: "بث مباشر لكرة القدم",

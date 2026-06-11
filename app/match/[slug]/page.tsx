@@ -601,7 +601,7 @@ export default function MatchCenterPage({ params }: { params: Promise<{ slug: st
                 <div className="flex items-center gap-2 text-cyan-500">
                   <Tv className="w-5 h-5 text-cyan-500" />
                   <span className="font-bold text-sm tracking-wider uppercase text-slate-100">
-                    {translate("live_stream", lang)}
+                    {translate("title", lang)}
                   </span>
                 </div>
                 <button
@@ -842,7 +842,7 @@ export default function MatchCenterPage({ params }: { params: Promise<{ slug: st
                 <div className="flex items-center gap-2 text-cyan-500">
                   <Tv className="w-5 h-5 text-cyan-500" />
                   <span className="font-bold text-sm tracking-wider uppercase text-slate-100">
-                    {translate("live_stream", lang)}
+                    {translate("title", lang)}
                   </span>
                 </div>
                 <button
