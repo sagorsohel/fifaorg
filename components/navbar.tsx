@@ -169,7 +169,7 @@ export function Navbar() {
             {/* Member Button */}
             <a
               href={referralLink}
-              target="_blank"
+
               rel="noopener noreferrer"
               className="bg-linear-to-r from-cyan-500 to-emerald-500 text-gray-200 font-bold hover:brightness-110 shadow-md px-2.5 sm:px-4 py-2 sm:py-2.5 rounded-lg sm:rounded-xl text-[9px] sm:text-xs uppercase cursor-pointer hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 flex items-center gap-1 sm:gap-1.5 select-none shrink-0"
             >
