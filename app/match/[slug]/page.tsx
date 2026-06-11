@@ -299,15 +299,113 @@ export default function MatchCenterPage({ params }: { params: Promise<{ slug: st
   // Loading state fallback
   if (isTeamsLoading || isGamesLoading || isStadiumsLoading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-slate-955 text-white p-6">
-        <div className="relative w-24 h-24 mb-6">
-          <div className="absolute inset-0 rounded-full border-4 border-t-cyan-500 border-r-transparent border-b-emerald-500 border-l-transparent animate-spin"></div>
-          <div className="absolute inset-3 rounded-full bg-slate-900 flex items-center justify-center">
-            <span className="text-3xl">⚽</span>
+      <>
+        {/* Background Glows */}
+        <div className="fixed -top-40 -left-40 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none z-0"></div>
+        <div className="fixed top-1/2 -right-40 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none z-0"></div>
+
+        {/* Header Banner */}
+        <header className="sticky top-0 z-40 bg-slate-900 backdrop-blur-md border-b border-slate-900 mb-3">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-xl bg-linear-to-br from-cyan-500 to-emerald-500 flex items-center justify-center shadow-lg shadow-cyan-500/15">
+                <Trophy className="w-6 h-6 text-slate-950" />
+              </div>
+              <div>
+                <h1 className="text-xl font-bold tracking-tight bg-linear-to-r from-cyan-400 to-emerald-400 bg-clip-text text-transparent">
+                  {translate("title", lang)}
+                </h1>
+                <p className="text-xs text-slate-400">{translate("match_center", lang)}</p>
+              </div>
+            </div>
+
+            {/* Language selector */}
+            <div className="hidden sm:flex items-center gap-2 z-50">
+              <DropdownMenu>
+                <DropdownMenuTrigger className="bg-slate-900 border border-slate-800 text-xs font-bold text-slate-200 px-3.5 py-2.5 rounded-xl hover:border-cyan-500/30 focus:outline-hidden transition-all cursor-pointer shadow-xs flex items-center gap-1.5 capitalize">
+                  <span>{LANGUAGES.find((l) => l.code === lang)?.name || "Language"}</span>
+                  <span className="text-[10px] text-slate-555">▼</span>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="bg-slate-900 border border-slate-800 text-slate-200 rounded-xl min-w-[120px] shadow-xl p-1 z-50">
+                  {LANGUAGES.map((l) => (
+                    <DropdownMenuItem
+                      key={l.code}
+                      onClick={() => {
+                        dispatch(setLanguage(l.code))
+                        try {
+                          localStorage.setItem("worldcup2026_lang", l.code)
+                        } catch { }
+                      }}
+                      className={`cursor-pointer px-3 py-2 text-xs rounded-lg transition-all focus:bg-cyan-500/15 focus:text-cyan-400 font-bold ${lang === l.code ? "bg-cyan-500/10 text-cyan-400" : "text-slate-355"
+                        }`}
+                    >
+                      {l.name}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
           </div>
-        </div>
-        <p className="text-lg font-medium text-slate-300 animate-pulse">{translate("loading", lang)}</p>
-      </div>
+        </header>
+
+        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-4 animate-pulse relative z-10">
+          {/* Hero Ads Placeholder */}
+          <div className="max-w-4xl mx-auto w-full h-[90px] rounded-2xl bg-slate-900/60 border border-slate-900 flex items-center justify-center">
+            <div className="text-[10px] text-slate-500 font-bold tracking-widest uppercase">ADVERTISEMENT SKELETON</div>
+          </div>
+
+          {/* Match Scoreboard Header Card Skeleton */}
+          <div className="p-4 rounded-2xl bg-slate-900/60 border border-slate-900 shadow-xl flex flex-col gap-4 max-w-4xl mx-auto w-full">
+            <div className="flex items-center justify-between border-b border-slate-900/40 pb-2.5">
+              <div className="h-5 bg-slate-800 rounded-full w-32"></div>
+              <div className="h-5 bg-slate-800 rounded-full w-24"></div>
+            </div>
+            <div className="flex items-center justify-between gap-4 py-1">
+              <div className="flex flex-1 items-center gap-3 justify-start">
+                <div className="w-12 h-8 bg-slate-800 rounded-md shrink-0"></div>
+                <div className="h-5 bg-slate-800 rounded w-24"></div>
+              </div>
+              <div className="h-8 bg-slate-800 rounded-xl w-16"></div>
+              <div className="flex flex-1 items-center justify-end gap-3">
+                <div className="h-5 bg-slate-800 rounded w-24"></div>
+                <div className="w-12 h-8 bg-slate-800 rounded-md shrink-0"></div>
+              </div>
+            </div>
+            <div className="flex justify-between items-center border-t border-slate-900/40 pt-2.5">
+              <div className="h-4 bg-slate-800 rounded w-48"></div>
+              <div className="h-4 bg-slate-800 rounded w-16"></div>
+            </div>
+          </div>
+
+          {/* Stream Player Container Skeleton */}
+          <div className="max-w-4xl mx-auto w-full">
+            <div className="w-full aspect-video rounded-3xl border border-slate-900 bg-slate-900/40 flex items-center justify-center">
+              <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full border border-slate-800 bg-slate-850/50 flex items-center justify-center">
+                <Play className="w-6 h-6 sm:w-8 sm:h-8 text-slate-700 fill-slate-700 translate-x-0.5" />
+              </div>
+            </div>
+          </div>
+
+          {/* Details Tabs & Stats Skeleton */}
+          <div className="max-w-4xl mx-auto w-full bg-slate-900/20 border border-slate-900/60 p-5 rounded-2xl min-h-[200px] flex flex-col gap-4">
+            <div className="flex gap-2 border-b border-slate-900 pb-3">
+              <div className="h-8 bg-slate-800 rounded-lg w-20"></div>
+              <div className="h-8 bg-slate-800 rounded-lg w-20"></div>
+              <div className="h-8 bg-slate-800 rounded-lg w-20"></div>
+            </div>
+            <div className="space-y-3 pt-2">
+              <div className="h-4 bg-slate-800 rounded w-full"></div>
+              <div className="h-4 bg-slate-800 rounded w-5/6"></div>
+              <div className="h-4 bg-slate-800 rounded w-4/5"></div>
+            </div>
+          </div>
+
+          {/* Back Button Skeleton */}
+          <div className="flex justify-center pt-4 max-w-4xl mx-auto w-full">
+            <div className="w-40 h-10 bg-slate-900/60 border border-slate-900 rounded-xl"></div>
+          </div>
+        </main>
+      </>
     )
   }
 
