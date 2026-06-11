@@ -181,12 +181,12 @@ function AdScriptContainer({ scriptHtml, className }: { scriptHtml?: string; cla
   `
 
   return (
-    <div className={`${className} flex justify-center items-center overflow-hidden`}>
+    <div className={`${className} flex justify-center items-center overflow-hidden max-w-full`}>
       <iframe
         srcDoc={iframeSrcDoc}
         width={width}
         height={height}
-        style={{ border: "none", overflow: "hidden", background: "transparent" }}
+        style={{ border: "none", overflow: "hidden", background: "transparent", maxWidth: "100%" }}
         scrolling="no"
         title="Ad Space"
       />
@@ -1056,7 +1056,7 @@ export default function MatchClientPage({ slug }: { slug: string }) {
 
         {isMobile && (
           <Dialog open={showInlineSignup} onOpenChange={setShowInlineSignup}>
-            <DialogContent className="bg-slate-955/95 backdrop-blur-md border border-cyan-500/25 text-slate-100 max-w-[22rem]  rounded-3xl p-5 shadow-[0_0_50px_rgba(6,182,212,0.15)] outline-hidden" showCloseButton={false}>
+            <DialogContent className="bg-slate-955/95 backdrop-blur-md border border-cyan-500/25 text-slate-100 w-[calc(100%-1rem)] max-w-[22rem] max-h-[96vh] overflow-y-auto rounded-3xl p-3 shadow-[0_0_50px_rgba(6,182,212,0.15)] outline-hidden" showCloseButton={false}>
               {/* Header */}
               <div className="flex items-center justify-between border-b border-slate-900/60 pb-3">
                 <div className="flex items-center gap-2 text-cyan-500">
@@ -1094,21 +1094,21 @@ export default function MatchClientPage({ slug }: { slug: string }) {
 
                 {/* Features list */}
                 <div className="w-full grid grid-cols-2 gap-2 text-[8px] sm:text-[9px] mt-2">
-                  <div className="flex items-center gap-2 p-2 bg-slate-900/25 border border-slate-900/60 rounded-lg">
+                  <div className="flex items-center gap-1.5 p-2 bg-slate-900/25 border border-slate-900/60 rounded-lg">
                     <Film className="w-3.5 h-3.5 text-cyan-500 shrink-0" />
-                    <span className="font-semibold text-slate-300 truncate">{translate("feature_1", lang)}</span>
+                    <span className="font-semibold text-slate-300 break-words leading-tight">{translate("feature_1", lang)}</span>
                   </div>
-                  <div className="flex items-center gap-2 p-2 bg-slate-900/25 border border-slate-900/60 rounded-lg">
+                  <div className="flex items-center gap-1.5 p-2 bg-slate-900/25 border border-slate-900/60 rounded-lg">
                     <Infinity className="w-3.5 h-3.5 text-cyan-500 shrink-0" />
-                    <span className="font-semibold text-slate-300 truncate">{translate("feature_2", lang)}</span>
+                    <span className="font-semibold text-slate-300 break-words leading-tight">{translate("feature_2", lang)}</span>
                   </div>
-                  <div className="flex items-center gap-2 p-2 bg-slate-900/25 border border-slate-900/60 rounded-lg">
+                  <div className="flex items-center gap-1.5 p-2 bg-slate-900/25 border border-slate-900/60 rounded-lg">
                     <Ban className="w-3.5 h-3.5 text-cyan-500 shrink-0" />
-                    <span className="font-semibold text-slate-300 truncate">{translate("feature_3", lang)}</span>
+                    <span className="font-semibold text-slate-300 break-words leading-tight">{translate("feature_3", lang)}</span>
                   </div>
-                  <div className="flex items-center gap-2 p-2 bg-slate-900/25 border border-slate-900/60 rounded-lg">
+                  <div className="flex items-center gap-1.5 p-2 bg-slate-900/25 border border-slate-900/60 rounded-lg">
                     <Smartphone className="w-3.5 h-3.5 text-cyan-500 shrink-0" />
-                    <span className="font-semibold text-slate-300 truncate">{translate("feature_4", lang)}</span>
+                    <span className="font-semibold text-slate-300 break-words leading-tight">{translate("feature_4", lang)}</span>
                   </div>
                 </div>
               </div>
