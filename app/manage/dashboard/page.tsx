@@ -778,11 +778,11 @@ export default function AdminDashboardPage() {
                             const stadiumName = stadium ? `${stadium.name_en}, ${stadium.city_en}` : `Stadium ID: #${match.stadium_id}`
                             const hasCustom = !!(match.referral_link || match.modal_image || match.bg_image)
 
-                            const isFinished = match.finished.toUpperCase() === "TRUE"
+                            const isFinished = match.finished.toUpperCase() === "TRUE" || match.time_elapsed?.toLowerCase() === "finished"
                             const gameDate = parseStadiumLocalDate(match.local_date, match.stadium_id)
                             const hasStarted = Date.now() >= gameDate.getTime()
-                            const isLive = !!(match.time_elapsed && match.time_elapsed !== "" && match.time_elapsed !== "null")
-                            const shouldShowScore = isLive
+                            const isLive = !isFinished && !!(match.time_elapsed && match.time_elapsed !== "" && match.time_elapsed !== "null" && match.time_elapsed.toLowerCase() !== "notstarted")
+                            const shouldShowScore = isLive || isFinished
 
                             return (
                               <div

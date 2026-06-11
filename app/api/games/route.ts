@@ -21,8 +21,8 @@ export async function GET() {
         const kickoff = new Date(game.local_date)
         const now = new Date()
         const diff = kickoff.getTime() - now.getTime()
-        // Starting in the next 15 minutes, or started in the last 4 hours (and not finished)
-        return (diff <= 15 * 60 * 1000 && diff >= -4 * 60 * 60 * 1000)
+        // Starting in the next 15 minutes, or already started in the past (and not finished in DB)
+        return (diff <= 15 * 60 * 1000)
       } catch {
         return false
       }
@@ -31,7 +31,7 @@ export async function GET() {
     const now = Date.now()
     const lastSync = globalForSync.lastSyncTime || 0
 
-    if (isLiveOrStartingSoon && now - lastSync > 30000) {
+    if (isLiveOrStartingSoon && now - lastSync > 120000) {
       if (!globalForSync.syncPromise) {
         globalForSync.lastSyncTime = now
         console.log("Triggering games-only sync on-demand...")

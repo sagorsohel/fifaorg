@@ -13,6 +13,7 @@ import {
   parseStadiumLocalDate,
   formatCountdownTime,
 } from "@/lib/i18n"
+import { formatScorers } from "@/lib/utils"
 
 // Countdown Component for upcoming matches
 function Countdown({ dateStr, stadiumId, lang }: { dateStr: string; stadiumId: string; lang: LanguageCode }) {
@@ -74,11 +75,14 @@ export default function MatchCard({ match, flagMap, stadiumName, teamNamesMap }:
   const router = useRouter()
 
   const lang = useAppSelector((state) => state.ui.language)
-  const isFinished = match.finished.toUpperCase() === "TRUE"
+  const isFinished = match.finished.toUpperCase() === "TRUE" || match.time_elapsed?.toLowerCase() === "finished"
   const gameDate = parseStadiumLocalDate(match.local_date, match.stadium_id)
   const hasStarted = Date.now() >= gameDate.getTime()
-  const isLive = !!(match.time_elapsed && match.time_elapsed !== "" && match.time_elapsed !== "null")
-  const shouldShowScore = isLive
+  const isLive = !isFinished && !!(match.time_elapsed && match.time_elapsed !== "" && match.time_elapsed !== "null" && match.time_elapsed.toLowerCase() !== "notstarted")
+  const shouldShowScore = isLive || isFinished
+
+  const formattedHomeScorers = formatScorers(match.home_scorers)
+  const formattedAwayScorers = formatScorers(match.away_scorers)
 
   const homeFlag = flagMap[match.home_team_id] || (match.home_team_name_en ? flagMap[match.home_team_name_en.toLowerCase()] : undefined)
   const awayFlag = flagMap[match.away_team_id] || (match.away_team_name_en ? flagMap[match.away_team_name_en.toLowerCase()] : undefined)
@@ -250,23 +254,21 @@ export default function MatchCard({ match, flagMap, stadiumName, teamNamesMap }:
 
 
         {/* Scorers */}
-        {shouldShowScore &&
-          ((match.home_scorers && match.home_scorers !== "null") ||
-            (match.away_scorers && match.away_scorers !== "null")) && (
-            <div className="bg-slate-955/50 p-2.5 rounded-xl border border-slate-950/80 flex flex-col gap-1 text-[10px]">
-              <span className="font-semibold text-slate-500 uppercase tracking-wider text-[9px]">
-                ⚽ {translate("goal_scorers", lang)}
-              </span>
-              <div className="flex justify-between gap-4">
-                <div className="text-slate-400 font-medium truncate flex-1 font-sans">
-                  {match.home_scorers && match.home_scorers !== "null" ? match.home_scorers : ""}
-                </div>
-                <div className="text-slate-400 font-medium truncate flex-1 text-right font-sans">
-                  {match.away_scorers && match.away_scorers !== "null" ? match.away_scorers : ""}
-                </div>
+        {shouldShowScore && (formattedHomeScorers || formattedAwayScorers) && (
+          <div className="bg-slate-955/50 p-2.5 rounded-xl border border-slate-950/80 flex flex-col gap-1 text-[10px]">
+            <span className="font-semibold text-slate-500 uppercase tracking-wider text-[9px]">
+              ⚽ {translate("goal_scorers", lang)}
+            </span>
+            <div className="flex justify-between gap-4">
+              <div className="text-slate-400 font-medium truncate flex-1 font-sans">
+                {formattedHomeScorers}
+              </div>
+              <div className="text-slate-400 font-medium truncate flex-1 text-right font-sans">
+                {formattedAwayScorers}
               </div>
             </div>
-          )}
+          </div>
+        )}
       </div>
     </div>
   )

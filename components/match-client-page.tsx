@@ -40,6 +40,7 @@ import {
   formatLocalTime,
   formatCountdownTime,
 } from "@/lib/i18n"
+import { formatScorers } from "@/lib/utils"
 
 // Countdown Component for upcoming matches
 function Countdown({ dateStr, stadiumId, lang }: { dateStr: string; stadiumId: string; lang: LanguageCode }) {
@@ -383,9 +384,9 @@ export default function MatchClientPage({ slug }: { slug: string }) {
       const now = new Date()
       const diff = kickoff.getTime() - now.getTime()
       
-      // If live or starting in next 15 minutes: poll every 30 seconds
+      // If live or starting in next 15 minutes: poll every 2 minutes
       if (diff <= 15 * 60 * 1000 && diff >= -4 * 60 * 60 * 1000) {
-        setPollingInterval(30000)
+        setPollingInterval(120000)
       } else {
         setPollingInterval(0)
       }
@@ -575,13 +576,16 @@ export default function MatchClientPage({ slug }: { slug: string }) {
     )
   }
 
-  const isFinished = selectedGame.finished.toUpperCase() === "TRUE"
+  const isFinished = selectedGame.finished.toUpperCase() === "TRUE" || selectedGame.time_elapsed?.toLowerCase() === "finished"
   const gameDate = parseStadiumLocalDate(selectedGame.local_date, selectedGame.stadium_id)
   const hasStarted = Date.now() >= gameDate.getTime()
-  const isLive = !!(selectedGame.time_elapsed && selectedGame.time_elapsed !== "" && selectedGame.time_elapsed !== "null")
-  const shouldShowScore = isLive
+  const isLive = !isFinished && !!(selectedGame.time_elapsed && selectedGame.time_elapsed !== "" && selectedGame.time_elapsed !== "null" && selectedGame.time_elapsed.toLowerCase() !== "notstarted")
+  const shouldShowScore = isLive || isFinished
   const homeName = getTeamName(selectedGameHomeTeam, selectedGame.home_team_name_en || selectedGame.home_team_label || "TBD", lang)
   const awayName = getTeamName(selectedGameAwayTeam, selectedGame.away_team_name_en || selectedGame.away_team_label || "TBD", lang)
+
+  const formattedHomeScorers = formatScorers(selectedGame.home_scorers)
+  const formattedAwayScorers = formatScorers(selectedGame.away_scorers)
 
   return (
     <>
@@ -905,23 +909,21 @@ export default function MatchClientPage({ slug }: { slug: string }) {
               </div>
 
               {/* Goal Scorers inside schedule card */}
-              {shouldShowScore &&
-                ((selectedGame.home_scorers && selectedGame.home_scorers !== "null") ||
-                  (selectedGame.away_scorers && selectedGame.away_scorers !== "null")) && (
-                  <div className="bg-slate-955/60 p-3.5 rounded-xl border border-slate-900/60 text-[10px] space-y-2">
-                    <span className="font-bold text-slate-505 uppercase tracking-wider block">⚽ {translate("goal_scorers", lang)}</span>
-                    <div className="flex justify-between gap-4 text-slate-300">
-                      <div className="truncate flex-1 flex flex-col gap-0.5">
-                        <span className="text-[7px] text-slate-500 uppercase tracking-wider font-bold mb-0.5">{selectedGame.home_team_name_en || (lang === "ar" ? "المضيف" : "HOME")}</span>
-                        {selectedGame.home_scorers && selectedGame.home_scorers !== "null" ? selectedGame.home_scorers : "-"}
-                      </div>
-                      <div className="truncate flex-1 text-right flex flex-col gap-0.5">
-                        <span className="text-[7px] text-slate-500 uppercase tracking-wider font-bold mb-0.5">{selectedGame.away_team_name_en || (lang === "ar" ? "الضيف" : "AWAY")}</span>
-                        {selectedGame.away_scorers && selectedGame.away_scorers !== "null" ? selectedGame.away_scorers : "-"}
-                      </div>
+              {shouldShowScore && (formattedHomeScorers || formattedAwayScorers) && (
+                <div className="bg-slate-955/60 p-3.5 rounded-xl border border-slate-900/60 text-[10px] space-y-2">
+                  <span className="font-bold text-slate-505 uppercase tracking-wider block">⚽ {translate("goal_scorers", lang)}</span>
+                  <div className="flex justify-between gap-4 text-slate-300">
+                    <div className="truncate flex-1 flex flex-col gap-0.5">
+                      <span className="text-[7px] text-slate-500 uppercase tracking-wider font-bold mb-0.5">{selectedGame.home_team_name_en || (lang === "ar" ? "المضيف" : "HOME")}</span>
+                      {formattedHomeScorers || "-"}
+                    </div>
+                    <div className="truncate flex-1 text-right flex flex-col gap-0.5">
+                      <span className="text-[7px] text-slate-500 uppercase tracking-wider font-bold mb-0.5">{selectedGame.away_team_name_en || (lang === "ar" ? "الضيف" : "AWAY")}</span>
+                      {formattedAwayScorers || "-"}
                     </div>
                   </div>
-                )}
+                </div>
+              )}
             </div>
 
             {/* Column 2: Stadium Stats */}
