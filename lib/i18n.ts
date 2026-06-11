@@ -466,6 +466,18 @@ export const TRANSLATIONS: Record<string, Record<LanguageCode, string>> = {
     sk: "ZAREGISTRUJTE SA A SLEDUJTE!", sl: "REGISTRIRAJ SE IN GLEJ ZDAJ!", sr: "РЕГИСТРУЈ СЕ И ГЛЕДАЈ ОДМАХ!",
     sv: "REGISTRERA DIG & SE NU!", tr: "KAYDOL VE ŞİMDİ İZLE!", zh: "立即注册观看！"
   },
+  watch_live: {
+    en: "Watch Live", "en-us": "Watch Live", ar: "شاهد مباشرة",
+    az: "Canlı İzlə", bn: "সরাসরি দেখুন", cs: "Sledovat Živě",
+    da: "Se Live", de: "Live Ansehen", el: "Παρακολουθήστε Ζωντανά",
+    es: "Ver en Vivo", "es-la": "Ver en Vivo", fr: "Regarder en Direct",
+    hi: "लाइव देखें", hr: "Gledaj Uživo", hu: "Nézd Élőben",
+    id: "Tonton Langsung", it: "Guarda in Diretta", nl: "Live Kijken",
+    no: "Se Live", pl: "Oglądaj na Żywo", pt: "Assistir ao Vivo",
+    "pt-pt": "Assistir ao Vivo", ro: "Vizionează Live", ru: "Смотреть онлайн",
+    sk: "Sledovať Naživo", sl: "Glej v Živo", sr: "Гледај уживо",
+    sv: "Se Live", tr: "Canlı İzle", zh: "观看直播"
+  },
   adblocker_title: {
     en: "Ad Blocker Detected", "en-us": "Ad Blocker Detected", ar: "تم اكتشاف مانع الإعلانات",
     az: "Reklam Engelleyici Aşkar Edildi", bn: "অ্যাড ব্লকার সনাক্ত করা হয়েছে", cs: "Detekován blokátor reklam",

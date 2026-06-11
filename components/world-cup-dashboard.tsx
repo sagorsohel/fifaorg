@@ -1109,7 +1109,7 @@ export default function WorldCupDashboard() {
                                   </div>
 
                                   {/* Match Center: Score / Time */}
-                                  <div className="px-4 flex flex-col items-center shrink-0">
+                                  <div className="px-4 flex items-center justify-center shrink-0">
                                     {isFinished ? (
                                       <div className="flex items-center gap-2 bg-slate-950 px-4 py-1.5 rounded-xl border border-slate-855 shadow-inner font-mono font-bold text-lg text-emerald-400">
                                         <span>{match.home_score}</span>
@@ -1117,17 +1117,23 @@ export default function WorldCupDashboard() {
                                         <span>{match.away_score}</span>
                                       </div>
                                     ) : (
-                                      <div className="text-center bg-slate-950 px-3 py-1.5 rounded-xl border border-slate-855">
-                                        <p className="font-mono text-xs font-bold text-cyan-500">
-                                          {(() => {
-                                            const gameDate = parseStadiumLocalDate(match.local_date, match.stadium_id)
-                                            const localeStr = lang === "en-us" ? "en-US" : lang === "pt" ? "pt-BR" : lang === "es-la" ? "es-419" : lang
-                                            return gameDate.toLocaleTimeString(localeStr, { hour: "2-digit", minute: "2-digit" })
-                                          })()}
-                                        </p>
-                                      </div>
+                                      <button
+                                        onClick={(e) => {
+                                          e.stopPropagation()
+                                          router.push(`/match/${getGameSlug(match)}`)
+                                        }}
+                                        className="flex items-center gap-2 px-5 py-2 rounded-full bg-cyan-600 hover:bg-cyan-400 text-white font-extrabold text-xs shadow-md shadow-cyan-500/10 hover:shadow-cyan-500/20 active:scale-95 hover:scale-[1.03] transition-all duration-300 cursor-pointer font-sans tracking-wide uppercase group/btn shrink-0"
+                                      >
+                                        <span className="relative flex h-2 w-2">
+                                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75"></span>
+                                          <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+                                        </span>
+                                        <span>{translate("watch_live", lang) || "Watch Live"}</span>
+                                        <Play className="w-3 h-3 fill-current group-hover/btn:translate-x-0.5 transition-transform" />
+                                      </button>
                                     )}
                                   </div>
+
 
                                   {/* Away Team */}
                                   <div
@@ -1158,13 +1164,28 @@ export default function WorldCupDashboard() {
 
                                 {/* Stadium & Scorers footer info */}
                                 <div className="mt-4 pt-3 border-t border-slate-900/40 flex flex-col gap-2 text-slate-400 text-xs">
-                                  {/* Stadium */}
-                                  <div className="flex items-center gap-1.5 text-[11px] text-slate-505">
-                                    <MapPin className="w-3.5 h-3.5 text-slate-600" />
-                                    <span>
-                                      {translate("stadium", lang)}: {getStadiumName(match.stadium_id) || `#${match.stadium_id}`}
-                                    </span>
+                                  {/* Stadium and Time */}
+                                  <div className="flex items-center justify-between text-[11px] text-slate-505 w-full">
+                                    <div className="flex items-center gap-1.5">
+                                      <MapPin className="w-3.5 h-3.5 text-slate-600" />
+                                      <span>
+                                        {translate("stadium", lang)}: {getStadiumName(match.stadium_id) || `#${match.stadium_id}`}
+                                      </span>
+                                    </div>
+                                    {!isFinished && (
+                                      <div className="text-center bg-slate-950 px-3 py-1.5 rounded-xl border border-slate-855">
+                                        <p className="font-mono text-xs font-bold text-cyan-500">
+                                          {(() => {
+                                            const gameDate = parseStadiumLocalDate(match.local_date, match.stadium_id)
+                                            const localeStr = lang === "en-us" ? "en-US" : lang === "pt" ? "pt-BR" : lang === "es-la" ? "es-419" : lang
+                                            return gameDate.toLocaleTimeString(localeStr, { hour: "2-digit", minute: "2-digit" })
+                                          })()}
+                                        </p>
+                                      </div>
+                                    )}
                                   </div>
+
+
 
                                   {/* Scorers */}
                                   {isFinished &&
