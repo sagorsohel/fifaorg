@@ -8,11 +8,11 @@ import { LayoutWrapper } from "@/components/layout-wrapper"
 import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = {
-  title: "FIFA WC26 on Screen",
+  title: "LIVE | FIFA WC26 on Screen",
   description: "World Cup 2026 Live Scores, Results and Fixtures. Don't miss a single match. Stream all 104 matches live on FIFAonScreen.",
 }
 
-const geist = Geist({subsets:['latin'],variable:'--font-sans'})
+const geist = Geist({ subsets: ['latin'], variable: '--font-sans' })
 
 const fontMono = Geist_Mono({
   subsets: ["latin"],
