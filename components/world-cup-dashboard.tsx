@@ -295,7 +295,7 @@ export default function WorldCupDashboard() {
     if (!team) return "TBD"
     if (team.translations) {
       try {
-        const parsed = JSON.parse(team.translations)
+        const parsed = typeof team.translations === "string" ? JSON.parse(team.translations) : team.translations
         if (parsed && parsed[lang]) return parsed[lang]
       } catch (e) { }
     }
@@ -319,7 +319,7 @@ export default function WorldCupDashboard() {
     if (!stadium) return ""
     if (stadium.translations) {
       try {
-        const parsed = JSON.parse(stadium.translations)
+        const parsed = typeof stadium.translations === "string" ? JSON.parse(stadium.translations) : stadium.translations
         if (parsed && parsed[lang]) return parsed[lang]
       } catch (e) { }
     }
@@ -1051,7 +1051,7 @@ export default function WorldCupDashboard() {
 
                         {/* Games Grid */}
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                          {matches.map((match) => {
+                          {matches.map((match, index) => {
                             const isFinished = match.finished.toUpperCase() === "TRUE"
                             const homeFlag = flagMap[match.home_team_id] || (match.home_team_name_en ? flagMap[match.home_team_name_en.toLowerCase()] : undefined)
                             const awayFlag = flagMap[match.away_team_id] || (match.away_team_name_en ? flagMap[match.away_team_name_en.toLowerCase()] : undefined)
@@ -1060,7 +1060,11 @@ export default function WorldCupDashboard() {
                               <div
                                 key={match._id}
                                 onClick={() => router.push(`/match/${getGameSlug(match)}`)}
-                                className="bg-slate-900/30 hover:bg-slate-900/60 backdrop-blur-xs border border-slate-900 hover:border-slate-800 rounded-2xl p-5 flex flex-col justify-between transition-all duration-300 hover:-translate-y-0.5 group shadow-xs hover:shadow-md cursor-pointer"
+                                className={`bg-slate-900/30 hover:bg-slate-900/60 backdrop-blur-xs border border-slate-900 hover:border-slate-800 rounded-2xl p-5 flex flex-col justify-between transition-all duration-300 hover:-translate-y-0.5 group shadow-xs hover:shadow-md cursor-pointer ${
+                                  matches.length === 1 || (matches.length % 2 !== 0 && index === matches.length - 1)
+                                    ? "lg:col-span-2"
+                                    : ""
+                                }`}
                               >
                                 {/* Card Header info */}
                                 <div className="flex items-center justify-between text-slate-400 text-xs mb-4 pb-2 border-b border-slate-900/40">

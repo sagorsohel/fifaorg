@@ -9,7 +9,7 @@ export interface Team {
   iso2: string
   groups: string // E.g. "A"
   id: string
-  translations?: string
+  translations?: any
   fifa_team_id?: string
 }
 
@@ -74,7 +74,7 @@ export interface Stadium {
   country_fa: string
   capacity: number
   region: string
-  translations?: string
+  translations?: any
 }
 
 export interface StadiumsResponse {

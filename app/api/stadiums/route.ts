@@ -6,7 +6,19 @@ export async function GET() {
   try {
     await ensureTablesExist()
     const stadiumsList = await db.select().from(stadiums)
-    return NextResponse.json({ stadiums: stadiumsList })
+    const formattedStadiums = stadiumsList.map(stadium => {
+      let parsed = null
+      if (stadium.translations) {
+        try {
+          parsed = JSON.parse(stadium.translations)
+        } catch (e) {}
+      }
+      return {
+        ...stadium,
+        translations: parsed
+      }
+    })
+    return NextResponse.json({ stadiums: formattedStadiums })
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 })
   }

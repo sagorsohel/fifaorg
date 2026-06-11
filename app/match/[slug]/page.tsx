@@ -106,7 +106,7 @@ const getTeamName = (team: any, fallback: string, activeLang: LanguageCode) => {
   if (!team) return fallback
   if (team.translations) {
     try {
-      const parsed = JSON.parse(team.translations)
+      const parsed = typeof team.translations === "string" ? JSON.parse(team.translations) : team.translations
       if (parsed && parsed[activeLang]) return parsed[activeLang]
     } catch (e) { }
   }
@@ -289,7 +289,7 @@ export default function MatchCenterPage({ params }: { params: Promise<{ slug: st
     if (!stadium) return ""
     if (stadium.translations) {
       try {
-        const parsed = JSON.parse(stadium.translations)
+        const parsed = typeof stadium.translations === "string" ? JSON.parse(stadium.translations) : stadium.translations
         if (parsed && parsed[lang]) return parsed[lang]
       } catch (e) { }
     }
@@ -732,7 +732,7 @@ export default function MatchCenterPage({ params }: { params: Promise<{ slug: st
                           {(() => {
                             if (stadium.translations) {
                               try {
-                                const parsed = JSON.parse(stadium.translations)
+                                const parsed = typeof stadium.translations === "string" ? JSON.parse(stadium.translations) : stadium.translations
                                 if (parsed && parsed[lang]) {
                                   return parsed[lang].split(",")[0].trim()
                                 }
@@ -756,7 +756,7 @@ export default function MatchCenterPage({ params }: { params: Promise<{ slug: st
                             {(() => {
                               if (stadium.translations) {
                                 try {
-                                  const parsed = JSON.parse(stadium.translations)
+                                  const parsed = typeof stadium.translations === "string" ? JSON.parse(stadium.translations) : stadium.translations
                                   if (parsed && parsed[lang]) {
                                     const parts = parsed[lang].split(",")
                                     if (parts.length > 1) {
