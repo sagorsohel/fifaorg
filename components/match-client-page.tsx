@@ -306,10 +306,13 @@ export default function MatchClientPage({ slug }: { slug: string }) {
   const [adsConfig, setAdsConfig] = useState<{
     header_ads?: string
     hero_ads?: string
+    hero2_ads?: string
     modal_ads?: string
     membership_ref_link?: string
     signin_ref_link?: string
   } | null>(null)
+
+  const [currentModalAd, setCurrentModalAd] = useState<"hero" | "hero2">("hero")
 
   useEffect(() => {
     fetch("/api/manage/ads")
@@ -321,6 +324,28 @@ export default function MatchClientPage({ slug }: { slug: string }) {
       })
       .catch(() => { })
   }, [])
+
+  useEffect(() => {
+    if (!adsConfig?.hero_ads || !adsConfig?.hero2_ads) return
+
+    let timer: NodeJS.Timeout
+    const runLoop = () => {
+      const delay = currentModalAd === "hero" ? 40000 : 20000
+      timer = setTimeout(() => {
+        setCurrentModalAd((prev) => (prev === "hero" ? "hero2" : "hero"))
+      }, delay)
+    }
+
+    runLoop()
+    return () => clearTimeout(timer)
+  }, [currentModalAd, adsConfig])
+
+  const activeModalAdHtml = (() => {
+    if (adsConfig?.hero_ads && adsConfig?.hero2_ads) {
+      return currentModalAd === "hero" ? adsConfig.hero_ads : adsConfig.hero2_ads
+    }
+    return adsConfig?.modal_ads || adsConfig?.hero_ads || adsConfig?.hero2_ads || ""
+  })()
 
   // API Queries via RTK Query
   const { data: teamsData, isLoading: isTeamsLoading } = useGetTeamsQuery()
@@ -779,8 +804,8 @@ export default function MatchClientPage({ slug }: { slug: string }) {
                 </button>
 
                 {/* Modal Ads show under signup button */}
-                {adsConfig?.modal_ads && (
-                  <AdScriptContainer scriptHtml={adsConfig.modal_ads} className="w-full max-w-sm flex justify-center my-2 shrink-0" />
+                {activeModalAdHtml && (
+                  <AdScriptContainer scriptHtml={activeModalAdHtml} className="w-full max-w-sm flex justify-center my-2 shrink-0" />
                 )}
 
                 {/* Features list */}
@@ -1084,8 +1109,8 @@ export default function MatchClientPage({ slug }: { slug: string }) {
                 </button>
 
                 {/* Modal Ads show under signup button */}
-                {adsConfig?.modal_ads && (
-                  <AdScriptContainer scriptHtml={adsConfig.modal_ads} className="w-full flex justify-center my-2 shrink-0" />
+                {activeModalAdHtml && (
+                  <AdScriptContainer scriptHtml={activeModalAdHtml} className="w-full flex justify-center my-2 shrink-0" />
                 )}
 
                 {/* Features list */}

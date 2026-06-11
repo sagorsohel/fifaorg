@@ -51,11 +51,34 @@ function AdScriptContainer({ scriptHtml, className }: { scriptHtml?: string; cla
   )
 }
 
-export default function AdCard({ scriptHtml }: { scriptHtml?: string }) {
+export default function AdCard({ scriptHtml, scriptHtml2 }: { scriptHtml?: string; scriptHtml2?: string }) {
+  const [currentAd, setCurrentAd] = useState<"ad1" | "ad2">("ad1")
+
+  useEffect(() => {
+    if (!scriptHtml || !scriptHtml2) return
+
+    let timer: NodeJS.Timeout
+    const runLoop = () => {
+      const delay = currentAd === "ad1" ? 40000 : 20000
+      timer = setTimeout(() => {
+        setCurrentAd((prev) => (prev === "ad1" ? "ad2" : "ad1"))
+      }, delay)
+    }
+
+    runLoop()
+    return () => clearTimeout(timer)
+  }, [currentAd, scriptHtml, scriptHtml2])
+
+  const activeHtml = (() => {
+    if (currentAd === "ad1" && scriptHtml) return scriptHtml
+    if (currentAd === "ad2" && scriptHtml2) return scriptHtml2
+    return scriptHtml || scriptHtml2 || ""
+  })()
+
   return (
-    <div className="bg-slate-900/30 border-slate-700/60 border  rounded-2xl p-5 flex flex-col justify-center items-center h-full min-h-[180px] shadow-xs relative overflow-hidden">
-      {scriptHtml ? (
-        <AdScriptContainer scriptHtml={scriptHtml} className="w-full h-full flex justify-center items-center" />
+    <div className="bg-slate-900/30 border-slate-700/60 border rounded-2xl p-5 flex flex-col justify-center items-center h-full min-h-[180px] shadow-xs relative overflow-hidden">
+      {activeHtml ? (
+        <AdScriptContainer scriptHtml={activeHtml} className="w-full h-full flex justify-center items-center" />
       ) : (
         <div className="text-center text-slate-655 font-bold uppercase tracking-wider text-[10px]">
           <span className="block text-xl mb-1">📢</span>

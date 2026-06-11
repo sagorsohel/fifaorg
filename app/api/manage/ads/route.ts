@@ -11,6 +11,7 @@ export async function GET() {
       await db.insert(ads).values({ 
         id: "global", 
         hero_ads: "", 
+        hero2_ads: "",
         modal_ads: "", 
         header_ads: "",
         membership_ref_link: "",
@@ -19,6 +20,7 @@ export async function GET() {
       adsData = { 
         id: "global", 
         hero_ads: "", 
+        hero2_ads: "",
         modal_ads: "", 
         header_ads: "",
         membership_ref_link: "",
@@ -34,11 +36,12 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     await ensureTablesExist()
-    const { hero_ads, modal_ads, header_ads, membership_ref_link, signin_ref_link } = await request.json()
+    const { hero_ads, hero2_ads, modal_ads, header_ads, membership_ref_link, signin_ref_link } = await request.json()
 
     await db.update(ads)
       .set({
         hero_ads: hero_ads ?? "",
+        hero2_ads: hero2_ads ?? "",
         modal_ads: modal_ads ?? "",
         header_ads: header_ads ?? "",
         membership_ref_link: membership_ref_link ?? "",

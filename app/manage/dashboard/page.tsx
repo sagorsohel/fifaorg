@@ -64,6 +64,7 @@ export default function AdminDashboardPage() {
 
   // Ads Control State
   const [heroAds, setHeroAds] = useState("")
+  const [hero2Ads, setHero2Ads] = useState("")
   const [modalAds, setModalAds] = useState("")
   const [headerAds, setHeaderAds] = useState("")
   const [adsSaving, setAdsSaving] = useState(false)
@@ -511,6 +512,7 @@ export default function AdminDashboardPage() {
       .then(data => {
         if (data && data.ads) {
           setHeroAds(data.ads.hero_ads || "")
+          setHero2Ads(data.ads.hero2_ads || "")
           setModalAds(data.ads.modal_ads || "")
           setHeaderAds(data.ads.header_ads || "")
           setMembershipRefLink(data.ads.membership_ref_link || "")
@@ -531,6 +533,7 @@ export default function AdminDashboardPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           hero_ads: heroAds,
+          hero2_ads: hero2Ads,
           modal_ads: modalAds,
           header_ads: headerAds,
           membership_ref_link: membershipRefLink,
@@ -560,6 +563,7 @@ export default function AdminDashboardPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           hero_ads: heroAds,
+          hero2_ads: hero2Ads,
           modal_ads: modalAds,
           header_ads: headerAds,
           membership_ref_link: membershipRefLink,
@@ -1191,6 +1195,23 @@ export default function AdminDashboardPage() {
                   />
                   <p className="text-[9px] text-slate-550 leading-relaxed font-sans">
                     This script renders in the primary hero slot, directly below/above the score banner.
+                  </p>
+                </div>
+
+                {/* Hero2 Ads Input */}
+                <div className="space-y-2">
+                  <label className="text-[10px] uppercase tracking-wider font-bold text-slate-400 flex items-center gap-1.5 font-mono">
+                    Hero2 Ads (Script / HTML Code)
+                  </label>
+                  <textarea
+                    value={hero2Ads}
+                    onChange={(e) => setHero2Ads(e.target.value)}
+                    placeholder="<!-- Paste second banner script or custom HTML here -->"
+                    rows={6}
+                    className="w-full bg-slate-950 border border-slate-900 rounded-xl px-4 py-3 text-xs text-slate-200 placeholder-slate-600 focus:outline-hidden focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/20 font-mono transition-all"
+                  />
+                  <p className="text-[9px] text-slate-550 leading-relaxed font-sans">
+                    This script renders in the secondary hero slot, directly below the first Hero Ads slot.
                   </p>
                 </div>
 

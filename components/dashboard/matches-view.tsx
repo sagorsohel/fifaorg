@@ -10,7 +10,7 @@ interface MatchesViewProps {
   flagMap: Record<string, string>
   teamNamesMap: Record<string, Team>
   stadiumsMap: Record<string, Stadium>
-  adsConfig: { header_ads?: string; hero_ads?: string; modal_ads?: string } | null
+  adsConfig: { header_ads?: string; hero_ads?: string; hero2_ads?: string; modal_ads?: string } | null
 }
 
 export default function MatchesView({
@@ -68,7 +68,7 @@ export default function MatchesView({
                 ))}
 
                 {/* Ads Card (only shown if matches count is odd) */}
-                {isOdd && <AdCard scriptHtml={adsConfig?.header_ads} />}
+                {isOdd && <AdCard scriptHtml={adsConfig?.hero_ads} scriptHtml2={adsConfig?.hero2_ads} />}
               </div>
             </div>
           </div>

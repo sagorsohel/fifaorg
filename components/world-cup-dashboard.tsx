@@ -65,6 +65,7 @@ export default function WorldCupDashboard() {
   const [adsConfig, setAdsConfig] = useState<{
     header_ads?: string
     hero_ads?: string
+    hero2_ads?: string
     modal_ads?: string
   } | null>(null)
 

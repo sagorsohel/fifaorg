@@ -111,9 +111,12 @@ export function Navbar() {
   const { data: gamesData } = useGetGamesQuery()
   const [adsConfig, setAdsConfig] = useState<{
     hero_ads?: string
+    hero2_ads?: string
     membership_ref_link?: string
     signin_ref_link?: string
   } | null>(null)
+
+  const [currentAd, setCurrentAd] = useState<"hero" | "hero2">("hero")
 
   useEffect(() => {
     fetch("/api/manage/ads")
@@ -125,6 +128,31 @@ export function Navbar() {
       })
       .catch(() => { })
   }, [])
+
+  useEffect(() => {
+    if (!adsConfig?.hero_ads || !adsConfig?.hero2_ads) return
+
+    let timer: NodeJS.Timeout
+    const runLoop = () => {
+      const delay = currentAd === "hero" ? 40000 : 20000
+      timer = setTimeout(() => {
+        setCurrentAd((prev) => (prev === "hero" ? "hero2" : "hero"))
+      }, delay)
+    }
+
+    runLoop()
+    return () => clearTimeout(timer)
+  }, [currentAd, adsConfig])
+
+  const activeAdHtml = (() => {
+    if (currentAd === "hero" && adsConfig?.hero_ads) {
+      return adsConfig.hero_ads
+    }
+    if (currentAd === "hero2" && adsConfig?.hero2_ads) {
+      return adsConfig.hero2_ads
+    }
+    return adsConfig?.hero_ads || adsConfig?.hero2_ads || ""
+  })()
 
   const referralLink = (() => {
     if (adsConfig?.membership_ref_link) {
@@ -223,9 +251,9 @@ export function Navbar() {
           </div>
         </div>
       </header>
-      {adsConfig?.hero_ads && (
+      {activeAdHtml && (
         <div className="w-full flex justify-center py-2 bg-slate-955/50 border-b border-slate-900/40 relative z-30">
-          <AdScriptContainer scriptHtml={adsConfig.hero_ads} className="max-w-7xl mx-auto w-full flex justify-center" />
+          <AdScriptContainer scriptHtml={activeAdHtml} className="max-w-7xl mx-auto w-full flex justify-center" />
         </div>
       )}
     </>

@@ -67,6 +67,7 @@ export const games = mysqlTable("games", {
 export const ads = mysqlTable("ads", {
   id: varchar("id", { length: 50 }).primaryKey(),
   hero_ads: text("hero_ads"),
+  hero2_ads: text("hero2_ads"),
   modal_ads: text("modal_ads"),
   header_ads: text("header_ads"),
   membership_ref_link: text("membership_ref_link"),
