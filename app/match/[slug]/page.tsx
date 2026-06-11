@@ -172,6 +172,73 @@ function AdScriptContainer({ scriptHtml, className }: { scriptHtml?: string; cla
   )
 }
 
+const BUFFER_STAGE_TRANSLATIONS: Record<string, Record<string, string>> = {
+  connecting: {
+    en: "Connecting to Server...",
+    "en-us": "Connecting to Server...",
+    ar: "جاري الاتصال بالخادم...",
+    az: "Serverə bağlanılır...",
+    bn: "সার্ভারে কানেক্ট করা হচ্ছে...",
+    cs: "Připojování k serveru...",
+    da: "Forbinder til server...",
+    de: "Verbindung zum Server...",
+    el: "Σύνδεση με το διακομιστή...",
+    es: "Conectando al servidor...",
+    "es-la": "Conectando al servidor...",
+    fr: "Connexion au serveur...",
+    hi: "सर्वर से कनेक्ट हो रहा है...",
+    hr: "Povezivanje s poslužiteljem...",
+    hu: "Csatlakozás a szerverhez...",
+    id: "Menghubungkan ke Server...",
+    it: "Connessione al server...",
+    nl: "Verbinden met server...",
+    no: "Kobler til server...",
+    pl: "Łączenie z serwerem...",
+    pt: "Conectando ao servidor...",
+    "pt-pt": "A ligar ao servidor...",
+    ro: "Conectare la server...",
+    ru: "Подключение к серверу...",
+    sk: "Pripájanie k serveru...",
+    sl: "Povezovanje s strežnikom...",
+    sr: "Повезивање са сервером...",
+    sv: "Ansluter till server...",
+    tr: "Sunucuya Bağlanıyor...",
+    zh: "正在连接服务器...",
+  },
+  buffering: {
+    en: "Buffering HD Stream...",
+    "en-us": "Buffering HD Stream...",
+    ar: "جاري تحميل البث عالي الدقة...",
+    az: "HD yayım yüklənir...",
+    bn: "এইচডি স্ট্রিম লোড হচ্ছে...",
+    cs: "Načítání HD přenosu...",
+    da: "Indlæser HD-stream...",
+    de: "HD-Stream wird geladen...",
+    el: "Φόρτωση ροής HD...",
+    es: "Cargando transmisión HD...",
+    "es-la": "Cargando transmisión HD...",
+    fr: "Chargement du flux HD...",
+    hi: "एचडी स्ट्रीम बफर हो रहा है...",
+    hr: "Učitavanje HD prijenosa...",
+    hu: "HD közvetítés betöltése...",
+    id: "Memuat Siaran HD...",
+    it: "Caricamento streaming HD...",
+    nl: "HD-stream laden...",
+    no: "Laster inn HD-strøm...",
+    pl: "Buforowanie transmisji HD...",
+    pt: "Carregando transmissão HD...",
+    "pt-pt": "A carregar transmissão HD...",
+    ro: "Încărcare flux HD...",
+    ru: "Буферизация HD-трансляции...",
+    sk: "Načítavanie HD streamu...",
+    sl: "Nalaganje HD prenosa...",
+    sr: "Учитавање ХД преноса...",
+    sv: "Buffrar HD-ström...",
+    tr: "HD Yayın Yükleniyor...",
+    zh: "正在缓冲高清直播...",
+  }
+}
+
 export default function MatchCenterPage({ params }: { params: Promise<{ slug: string }> }) {
   const resolvedParams = use(params)
   const slug = resolvedParams.slug
@@ -179,9 +246,42 @@ export default function MatchCenterPage({ params }: { params: Promise<{ slug: st
   const isMobile = useIsMobile()
   // Local state for streamer actions
   const [isBuffering, setIsBuffering] = useState(false)
+  const [bufferStage, setBufferStage] = useState<"none" | "connecting" | "buffering">("none")
   const [showInlineSignup, setShowInlineSignup] = useState(false)
 
   const lang = useAppSelector((state) => state.ui.language)
+
+  useEffect(() => {
+    if (!isBuffering) return
+
+    setBufferStage("connecting")
+
+    const t1 = setTimeout(() => {
+      setBufferStage("buffering")
+    }, 1000)
+
+    const t2 = setTimeout(() => {
+      setIsBuffering(false)
+      setBufferStage("none")
+      setShowInlineSignup(true)
+    }, 1000)
+
+    return () => {
+      clearTimeout(t1)
+      clearTimeout(t2)
+    }
+  }, [isBuffering])
+
+  const getBufferText = () => {
+    const stage = bufferStage
+    if (stage === "connecting") {
+      return BUFFER_STAGE_TRANSLATIONS.connecting[lang] || BUFFER_STAGE_TRANSLATIONS.connecting["en"]
+    }
+    if (stage === "buffering") {
+      return BUFFER_STAGE_TRANSLATIONS.buffering[lang] || BUFFER_STAGE_TRANSLATIONS.buffering["en"]
+    }
+    return translate("loading", lang)
+  }
 
   const [adsConfig, setAdsConfig] = useState<{
     header_ads?: string
@@ -277,16 +377,8 @@ export default function MatchCenterPage({ params }: { params: Promise<{ slug: st
 
   // Play button click simulation
   const handlePlayClick = () => {
-    if (!isMobile) {
-      setShowInlineSignup(true)
-      return
-    }
     if (isBuffering || showInlineSignup) return
     setIsBuffering(true)
-    setTimeout(() => {
-      setIsBuffering(false)
-      setShowInlineSignup(true)
-    }, 1500)
   }
 
   const handleActionRedirect = () => {
@@ -560,7 +652,7 @@ export default function MatchCenterPage({ params }: { params: Promise<{ slug: st
 
               {/* Center Overlays */}
               <div className="absolute inset-0 flex flex-col items-center justify-center">
-                {!isBuffering ? (
+                {!isBuffering && !showInlineSignup ? (
                   /* Highlighted Play button with pulse radar ring */
                   <div className="relative flex items-center justify-center">
                     <div className="absolute inset-0 rounded-full bg-cyan-500/25 animate-ping duration-1000 scale-125"></div>
@@ -568,15 +660,15 @@ export default function MatchCenterPage({ params }: { params: Promise<{ slug: st
                       <Play className="w-7 h-7 sm:w-9 sm:h-9 text-cyan-400 fill-cyan-400 translate-x-0.5" />
                     </div>
                   </div>
-                ) : (
+                ) : isBuffering ? (
                   /* rotating loading spinner text (shown during buffering delay) */
                   <div className="bg-slate-955/95 border border-slate-900/80 px-5 py-3 rounded-full flex items-center gap-3 z-10 shadow-xl animate-pulse">
                     <div className="w-4 h-4 rounded-full border-2 border-t-cyan-500 border-r-transparent border-b-cyan-500 border-l-transparent animate-spin"></div>
                     <span className="text-[10px] sm:text-xs font-black font-mono tracking-widest text-slate-100 uppercase">
-                      {translate("loading", lang).toUpperCase()}
+                      {getBufferText()}
                     </span>
                   </div>
-                )}
+                ) : null}
               </div>
 
               {/* bottom strip */}
