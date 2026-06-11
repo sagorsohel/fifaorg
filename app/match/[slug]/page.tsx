@@ -510,18 +510,21 @@ export default function MatchCenterPage({ params }: { params: Promise<{ slug: st
           {/* Scoreboard Row */}
           <div className="flex items-center justify-between gap-4 py-1">
             {/* Home Team */}
-            <div className="flex flex-1 items-center gap-3 min-w-0 justify-start">
+            <Link
+              href={`/team/${selectedGame.home_team_id}`}
+              className="flex flex-1 items-center gap-3 min-w-0 justify-start cursor-pointer hover:text-cyan-400 group/team transition-all duration-200"
+            >
               {selectedGameHomeFlag ? (
-                <div className="relative w-12 h-8 overflow-hidden rounded-md border border-slate-800 shadow-sm shrink-0">
+                <div className="relative w-12 h-8 overflow-hidden rounded-md border border-slate-800 shadow-sm shrink-0 group-hover/team:border-cyan-500/50 transition-colors">
                   <Image src={selectedGameHomeFlag} alt={homeName} fill className="object-cover" unoptimized />
                 </div>
               ) : (
                 <div className="w-12 h-8 bg-slate-800 rounded-md shrink-0 flex items-center justify-center text-xl">🏴</div>
               )}
-              <span className="font-extrabold text-slate-100 text-xs sm:text-base truncate">
+              <span className="font-extrabold text-slate-100 text-xs sm:text-base truncate group-hover/team:text-cyan-400 transition-colors">
                 {homeName}
               </span>
-            </div>
+            </Link>
 
             {/* score/time */}
             <div className="px-3 flex flex-col items-center shrink-0">
@@ -545,18 +548,21 @@ export default function MatchCenterPage({ params }: { params: Promise<{ slug: st
             </div>
 
             {/* Away Team */}
-            <div className="flex flex-1 items-center justify-end gap-3 min-w-0">
-              <span className="font-extrabold text-slate-100 text-xs sm:text-base truncate">
+            <Link
+              href={`/team/${selectedGame.away_team_id}`}
+              className="flex flex-1 items-center justify-end gap-3 min-w-0 cursor-pointer hover:text-cyan-400 group/team transition-all duration-200"
+            >
+              <span className="font-extrabold text-slate-100 text-xs sm:text-base truncate group-hover/team:text-cyan-400 transition-colors">
                 {awayName}
               </span>
               {selectedGameAwayFlag ? (
-                <div className="relative w-12 h-8 overflow-hidden rounded-md border border-slate-800 shadow-sm shrink-0">
+                <div className="relative w-12 h-8 overflow-hidden rounded-md border border-slate-800 shadow-sm shrink-0 group-hover/team:border-cyan-500/50 transition-colors">
                   <Image src={selectedGameAwayFlag} alt={awayName} fill className="object-cover" unoptimized />
                 </div>
               ) : (
                 <div className="w-12 h-8 bg-slate-800 rounded-md shrink-0 flex items-center justify-center text-xl">🏴</div>
               )}
-            </div>
+            </Link>
           </div>
 
           {/* Stadium Name */}
