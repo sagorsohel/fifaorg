@@ -1,6 +1,7 @@
 "use client"
 
 import Image from "next/image"
+import { useRouter } from "next/navigation"
 import { ChevronRight } from "lucide-react"
 import { Team } from "@/lib/services/apiSlice"
 import { useAppDispatch, useAppSelector } from "@/lib/store"
@@ -13,6 +14,7 @@ interface TeamsViewProps {
 
 export default function TeamsView({ teamsGroupedByGroup }: TeamsViewProps) {
   const dispatch = useAppDispatch()
+  const router = useRouter()
   const lang = useAppSelector((state) => state.ui.language)
 
   const allGroupLetters = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"]
@@ -65,6 +67,8 @@ export default function TeamsView({ teamsGroupedByGroup }: TeamsViewProps) {
                       key={team._id}
                       onClick={() => {
                         dispatch(setSelectedTeamId(team.id))
+                        const slug = team.name_en.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "")
+                        router.push(`/team/${slug}`)
                       }}
                       className="flex items-center justify-between py-3 px-1 hover:bg-slate-900/50 rounded-xl transition-all cursor-pointer group"
                       title={getTeamName(team)}
