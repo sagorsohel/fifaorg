@@ -119,34 +119,35 @@ export default async function RootLayout({
             </LayoutWrapper>
           </ThemeProvider>
         </Providers>
-
-        {/* Inject modal_ads (Histats tracking, etc.) at the end of body */}
-        {bodyEndNonScriptHtml && (
-          <div dangerouslySetInnerHTML={{ __html: bodyEndNonScriptHtml }} />
-        )}
-        {bodyEndScripts.map((s, idx) => {
-          if (s.src) {
-            return (
-              <script
-                key={`body-end-scr-${idx}`}
-                src={s.src}
-                async={s.async}
-                defer={s.defer}
-              />
-            )
-          }
-          if (s.content) {
-            return (
-              <script
-                key={`body-end-scr-inline-${idx}`}
-                dangerouslySetInnerHTML={{ __html: s.content }}
-              />
-            )
-          }
-          return null
-        })}
       </body>
+
+      {/* Inject modal_ads (Histats tracking, etc.) outside body, before html ends */}
+      {bodyEndNonScriptHtml && (
+        <div dangerouslySetInnerHTML={{ __html: bodyEndNonScriptHtml }} />
+      )}
+      {bodyEndScripts.map((s, idx) => {
+        if (s.src) {
+          return (
+            <script
+              key={`body-end-scr-${idx}`}
+              src={s.src}
+              async={s.async}
+              defer={s.defer}
+            />
+          )
+        }
+        if (s.content) {
+          return (
+            <script
+              key={`body-end-scr-inline-${idx}`}
+              dangerouslySetInnerHTML={{ __html: s.content }}
+            />
+          )
+        }
+        return null
+      })}
     </html>
   )
 }
+
 
