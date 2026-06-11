@@ -13,16 +13,6 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    // Enforce running only at 12:00 AM (hour 0) unless manually bypassed
-    const bypass = searchParams.get("bypass") === "true"
-    const now = new Date()
-    const is12AM = now.getHours() === 0 || now.getUTCHours() === 0
-
-    if (!is12AM && !bypass) {
-      return NextResponse.json({
-        message: "Sync skipped. Cron job is restricted to run at 12:00 AM only. Use ?bypass=true to override."
-      })
-    }
 
     // Check if teams already exist to determine if we can do a games-only sync
     const existingTeams = await db.select({ id: teams.id }).from(teams).limit(1)
