@@ -106,6 +106,38 @@ const getTeamSlug = (team: Team | null | undefined) => {
   return team.name_en.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "")
 }
 
+function formatTranslation(template: string, replacements: Record<string, React.ReactNode>): React.ReactNode {
+  const parts: React.ReactNode[] = []
+  const regex = /\{([a-zA-Z0-9_]+)\}/g
+  let match
+  let lastIndex = 0
+  let keyCounter = 0
+  
+  while ((match = regex.exec(template)) !== null) {
+    const placeholder = match[0]
+    const varName = match[1]
+    const index = match.index
+    
+    if (index > lastIndex) {
+      parts.push(template.substring(lastIndex, index))
+    }
+    
+    if (replacements[varName] !== undefined) {
+      parts.push(<span key={`repl-${keyCounter++}`}>{replacements[varName]}</span>)
+    } else {
+      parts.push(placeholder)
+    }
+    
+    lastIndex = regex.lastIndex
+  }
+  
+  if (lastIndex < template.length) {
+    parts.push(template.substring(lastIndex))
+  }
+  
+  return <>{parts}</>
+}
+
 function AdScriptContainer({ scriptHtml, className }: { scriptHtml?: string; className?: string }) {
   const [mounted, setMounted] = useState(false)
 
@@ -308,6 +340,45 @@ export default function MatchClientPage({ slug }: { slug: string }) {
     return teamsData.teams.find((t) => t.id === selectedGame.away_team_id || t._id === selectedGame.away_team_id)
   }, [selectedGame, teamsData])
 
+  const { utcDateString, utcTimeString } = useMemo(() => {
+    if (!selectedGame) return { utcDateString: "", utcTimeString: "" }
+    try {
+      const gameDate = parseStadiumLocalDate(selectedGame.local_date, selectedGame.stadium_id)
+      const dateStr = gameDate.toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric", timeZone: "UTC" })
+      const timeStr = gameDate.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: false, timeZone: "UTC" })
+      return { utcDateString: dateStr, utcTimeString: timeStr }
+    } catch {
+      return { utcDateString: "", utcTimeString: "" }
+    }
+  }, [selectedGame])
+
+  const stadiumFullLocation = useMemo(() => {
+    if (!selectedGame || !stadiumsData?.stadiums) return ""
+    const stadium = stadiumsData.stadiums.find((s) => s.id === selectedGame.stadium_id || s._id === selectedGame.stadium_id)
+    if (!stadium) return ""
+
+    const name = stadium.translations ? (() => {
+      try {
+        const parsed = typeof stadium.translations === "string" ? JSON.parse(stadium.translations) : stadium.translations
+        if (parsed && parsed[lang]) return parsed[lang].split(",")[0].trim()
+      } catch { }
+      return stadium.name_en
+    })() : stadium.name_en
+
+    const location = stadium.translations ? (() => {
+      try {
+        const parsed = typeof stadium.translations === "string" ? JSON.parse(stadium.translations) : stadium.translations
+        if (parsed && parsed[lang]) {
+          const parts = parsed[lang].split(",")
+          if (parts.length > 1) return parts.slice(1).join(",").trim()
+        }
+      } catch { }
+      return `${stadium.city_en}, ${stadium.country_en}`
+    })() : `${stadium.city_en}, ${stadium.country_en}`
+
+    return location ? `${name}, ${location}` : name
+  }, [selectedGame, stadiumsData, lang])
+
   useEffect(() => {
     if (selectedGame) {
       const homeName = getTeamName(selectedGameHomeTeam, selectedGame.home_team_name_en || selectedGame.home_team_label || "TBD", lang)
@@ -461,6 +532,9 @@ export default function MatchClientPage({ slug }: { slug: string }) {
 
   return (
     <>
+      {/* Blackish Base Background */}
+      <div className="fixed inset-0 bg-black z-0 pointer-events-none"></div>
+
       {/* Page Background Image */}
       {selectedGame.bg_image && (
         <div className="fixed inset-0 z-0 select-none pointer-events-none">
@@ -471,13 +545,13 @@ export default function MatchClientPage({ slug }: { slug: string }) {
             className="object-cover "
             unoptimized
           />
-          <div className="absolute inset-0 bg-linear-to-b from-black/90 via-slate-955/80 to-slate-955/95"></div>
+          <div className="absolute inset-0 bg-linear-to-b from-black/90 via-slate-800/80 to-slate-955/95"></div>
         </div>
       )}
 
       {/* Background Glows */}
-      <div className="fixed -top-40 -left-40 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none z-0"></div>
-      <div className="fixed top-1/2 -right-40 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none z-0"></div>
+      <div className="fixed -top-40 -left-40 w-96 h-96 bg-cyan-500/5 rounded-full blur-3xl pointer-events-none z-0"></div>
+      <div className="fixed top-1/2 -right-40 w-96 h-96 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none z-0"></div>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-3 animate-fade-in relative z-10">
 
@@ -836,7 +910,7 @@ export default function MatchClientPage({ slug }: { slug: string }) {
                                 } catch { }
                               }
                               if (lang === "ar" && stadium.city_fa && stadium.country_fa) {
-                                  return `${stadium.city_fa}, ${stadium.country_fa}`
+                                return `${stadium.city_fa}, ${stadium.country_fa}`
                               }
                               return `${stadium.city_en}, ${stadium.country_en}`
                             })()}
@@ -898,6 +972,92 @@ export default function MatchClientPage({ slug }: { slug: string }) {
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+
+        {/* About the Match Section */}
+        <div className="max-w-4xl mx-auto w-full bg-slate-900/60 backdrop-blur-md border border-slate-900 rounded-3xl p-6 sm:p-8 space-y-6 shadow-xl relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-cyan-500/5 rounded-full blur-3xl pointer-events-none"></div>
+
+          <div className="flex items-center gap-2 border-b border-slate-900/60 pb-3">
+            <span className="text-xl">ℹ️</span>
+            <h3 className="font-extrabold text-base text-slate-100 tracking-wider uppercase">
+              {translate("about_the_match", lang)}
+            </h3>
+          </div>
+
+          <div className="space-y-4 text-xs sm:text-sm text-slate-300 leading-relaxed font-sans">
+            <p>
+              {formatTranslation(translate("head_to_head_text", lang), {
+                homeName: <strong className="text-cyan-400 font-extrabold">{homeName}</strong>,
+                awayName: <strong className="text-cyan-400 font-extrabold">{awayName}</strong>,
+                date: <span className="text-slate-100 font-semibold">{utcDateString}</span>,
+                time: <span className="text-slate-100 font-semibold">{utcTimeString}</span>,
+                venue: <span className="text-slate-100 font-semibold">{stadiumFullLocation}</span>,
+                group: selectedGame.group
+              })}
+            </p>
+
+            <p>
+              {formatTranslation(translate("h2h_results_intro", lang), {
+                homeName: homeName,
+                awayName: awayName
+              })}
+            </p>
+
+            <ul className="list-disc pl-5 space-y-2 text-slate-400 font-sans">
+              <li>{translate("h2h_feature_1", lang)}</li>
+              <li>{translate("h2h_feature_2", lang)}</li>
+              <li>
+                {formatTranslation(translate("h2h_feature_3", lang), {
+                  group: selectedGame.group
+                })}
+              </li>
+              <li>{translate("h2h_feature_4", lang)}</li>
+            </ul>
+
+            <p>
+              {formatTranslation(translate("h2h_prediction_odds", lang), {
+                homeName: homeName,
+                awayName: awayName
+              })}
+            </p>
+
+            <p>
+              {formatTranslation(translate("where_to_watch", lang), {
+                homeName: homeName,
+                awayName: awayName
+              })}
+            </p>
+
+            {/* Event Details Grid */}
+            <div className="bg-slate-950/80 border border-slate-900 rounded-2xl p-4 sm:p-5 space-y-3 mt-4">
+              <h4 className="font-extrabold text-xs uppercase tracking-wider text-slate-400 border-b border-slate-900 pb-2">
+                {translate("event_details", lang)}
+              </h4>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                <div>
+                  <span className="text-slate-500 block">{translate("event_name", lang)}:</span>
+                  <span className="font-semibold text-slate-200">{homeName} - {awayName}</span>
+                </div>
+                <div>
+                  <span className="text-slate-500 block">{translate("event_date", lang)}:</span>
+                  <span className="font-semibold text-slate-200">{utcDateString}</span>
+                </div>
+                <div>
+                  <span className="text-slate-505 block">{translate("event_time", lang)}:</span>
+                  <span className="font-semibold text-slate-200">{utcTimeString} UTC</span>
+                </div>
+                <div>
+                  <span className="text-slate-505 block">{translate("event_venue", lang)}:</span>
+                  <span className="font-semibold text-slate-200">{stadiumFullLocation}</span>
+                </div>
+              </div>
+            </div>
+
+            <p className="text-xs text-slate-450 italic mt-6 border-t border-slate-900/40 pt-4">
+              {translate("match_disclaimer", lang)}
+            </p>
           </div>
         </div>
 
