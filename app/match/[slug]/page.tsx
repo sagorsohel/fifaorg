@@ -111,6 +111,11 @@ const getTeamName = (team: Team | null | undefined, fallback: string, activeLang
   return team.name_en
 }
 
+const getTeamSlug = (team: Team | null | undefined) => {
+  if (!team) return ""
+  return team.name_en.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "")
+}
+
 function AdScriptContainer({ scriptHtml, className }: { scriptHtml?: string; className?: string }) {
   const [mounted, setMounted] = useState(false)
 
@@ -511,7 +516,7 @@ export default function MatchCenterPage({ params }: { params: Promise<{ slug: st
           <div className="flex items-center justify-between gap-4 py-1">
             {/* Home Team */}
             <Link
-              href={`/team/${selectedGame.home_team_id}`}
+              href={`/team/${selectedGameHomeTeam ? getTeamSlug(selectedGameHomeTeam) : selectedGame.home_team_id}`}
               className="flex flex-1 items-center gap-3 min-w-0 justify-start cursor-pointer hover:text-cyan-400 group/team transition-all duration-200"
             >
               {selectedGameHomeFlag ? (
@@ -549,7 +554,7 @@ export default function MatchCenterPage({ params }: { params: Promise<{ slug: st
 
             {/* Away Team */}
             <Link
-              href={`/team/${selectedGame.away_team_id}`}
+              href={`/team/${selectedGameAwayTeam ? getTeamSlug(selectedGameAwayTeam) : selectedGame.away_team_id}`}
               className="flex flex-1 items-center justify-end gap-3 min-w-0 cursor-pointer hover:text-cyan-400 group/team transition-all duration-200"
             >
               <span className="font-extrabold text-slate-100 text-xs sm:text-base truncate group-hover/team:text-cyan-400 transition-colors">

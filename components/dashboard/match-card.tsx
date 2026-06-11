@@ -98,6 +98,12 @@ export default function MatchCard({ match, flagMap, stadiumName, teamNamesMap }:
     return team.fifa_code || team.id.toUpperCase().substring(0, 3)
   }
 
+  const getTeamSlugName = (teamId: string) => {
+    const team = teamNamesMap[teamId]
+    if (!team) return teamId
+    return team.name_en.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "")
+  }
+
   return (
     <div
       onClick={() => router.push(`/match/${getGameSlug(match)}`)}
@@ -120,7 +126,7 @@ export default function MatchCard({ match, flagMap, stadiumName, teamNamesMap }:
         <div
           onClick={(e) => {
             e.stopPropagation()
-            dispatch(setSelectedTeamId(match.home_team_id))
+            router.push(`/team/${getTeamSlugName(match.home_team_id)}`)
           }}
           className="flex flex-1 items-center gap-3 min-w-0 cursor-pointer hover:bg-slate-850/40 p-1.5 rounded-xl transition-all group/team"
         >
@@ -178,7 +184,7 @@ export default function MatchCard({ match, flagMap, stadiumName, teamNamesMap }:
         <div
           onClick={(e) => {
             e.stopPropagation()
-            dispatch(setSelectedTeamId(match.away_team_id))
+            router.push(`/team/${getTeamSlugName(match.away_team_id)}`)
           }}
           className="flex flex-1 items-center justify-end gap-3 min-w-0 cursor-pointer hover:bg-slate-850/40 p-1.5 rounded-xl transition-all group/team"
         >

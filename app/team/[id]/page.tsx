@@ -13,9 +13,12 @@ import {
 import {
   useGetTeamsQuery,
   useGetGamesQuery,
+  useGetStadiumsQuery,
   useGetPlayersQuery,
   getGameSlug,
-  Player
+  Player,
+  Team,
+  Stadium
 } from "@/lib/services/apiSlice"
 import {
   Trophy,
@@ -23,6 +26,7 @@ import {
   Users,
   ArrowLeft,
 } from "lucide-react"
+import MatchCard from "@/components/dashboard/match-card"
 
 import {
   useAppDispatch,
@@ -46,15 +50,65 @@ export default function TeamPage({ params }: { params: Promise<{ id: string }> }
   // API Queries via RTK Query
   const { data: teamsData, isLoading: isTeamsLoading } = useGetTeamsQuery()
   const { data: gamesData, isLoading: isGamesLoading } = useGetGamesQuery()
-  const { data: squadData, isLoading: isSquadLoading } = useGetPlayersQuery(teamId)
-
-  const [activeTab, setActiveTab] = useState<"matches" | "squad">("matches")
+  const { data: stadiumsData, isLoading: isStadiumsLoading } = useGetStadiumsQuery()
 
   // Find the selected team
   const team = useMemo(() => {
     if (!teamsData?.teams) return null
-    return teamsData.teams.find((t) => t.id === teamId || t._id === teamId)
+    const target = teamId.toLowerCase().trim()
+    return teamsData.teams.find((t) => {
+      const slug = t.name_en.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "")
+      return (
+        t.id.toLowerCase() === target ||
+        t._id.toLowerCase() === target ||
+        t.fifa_code?.toLowerCase() === target ||
+        slug === target
+      )
+    })
   }, [teamId, teamsData])
+
+  const { data: squadData, isLoading: isSquadLoading } = useGetPlayersQuery(
+    team?.id || "",
+    { skip: !team?.id }
+  )
+
+  const [activeTab, setActiveTab] = useState<"matches" | "squad">("matches")
+
+  // Create a fast lookup map for team names from teams data
+  const teamNamesMap = useMemo(() => {
+    const map: Record<string, Team> = {}
+    if (teamsData?.teams) {
+      teamsData.teams.forEach((t) => {
+        map[t.id] = t
+      })
+    }
+    return map
+  }, [teamsData])
+
+  const stadiumsMap = useMemo(() => {
+    const map: Record<string, Stadium> = {}
+    if (stadiumsData?.stadiums) {
+      stadiumsData.stadiums.forEach((stadium) => {
+        map[stadium.id] = stadium
+      })
+    }
+    return map
+  }, [stadiumsData])
+
+  const getStadiumName = (stadiumId: string) => {
+    const stadium = stadiumsMap[stadiumId]
+    if (!stadium) return ""
+    if (stadium.translations) {
+      try {
+        const parsed = typeof stadium.translations === "string" ? JSON.parse(stadium.translations) : stadium.translations
+        if (parsed && parsed[lang]) return parsed[lang]
+      } catch { }
+    }
+    if (lang === "ar" && stadium.name_fa && stadium.city_fa) {
+      return `${stadium.name_fa}, ${stadium.city_fa}`
+    }
+    return `${stadium.name_en}, ${stadium.city_en}`
+  }
 
   // Flag lookup map
   const flagMap = useMemo(() => {
@@ -70,11 +124,11 @@ export default function TeamPage({ params }: { params: Promise<{ id: string }> }
 
   // Filter team matches
   const teamMatches = useMemo(() => {
-    if (!gamesData?.games) return []
+    if (!gamesData?.games || !team) return []
     return gamesData.games.filter(
-      (game) => game.home_team_id === teamId || game.away_team_id === teamId
+      (game) => game.home_team_id === team.id || game.away_team_id === team.id
     )
-  }, [teamId, gamesData])
+  }, [team, gamesData])
 
   const playedMatches = useMemo(() => {
     return teamMatches.filter((m) => m.finished.toUpperCase() === "TRUE")
@@ -117,7 +171,7 @@ export default function TeamPage({ params }: { params: Promise<{ id: string }> }
   }, [squadData])
 
   // Loading state fallback
-  if (isTeamsLoading || isGamesLoading || isSquadLoading) {
+  if (isTeamsLoading || isGamesLoading || isSquadLoading || isStadiumsLoading) {
     return (
       <>
         {/* Background Glows */}
@@ -297,74 +351,23 @@ export default function TeamPage({ params }: { params: Promise<{ id: string }> }
         {/* Dynamic content tab */}
         <div className="max-w-4xl mx-auto w-full">
           {activeTab === "matches" ? (
-            <div className="space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               {/* Upcoming Matches */}
-              <div>
+              <div className="space-y-4">
                 <h3 className="text-xs font-extrabold tracking-widest text-cyan-500 uppercase mb-3 border-l-2 border-cyan-500 pl-2">
                   {translate("upcoming_matches", lang)}
                 </h3>
                 {upcomingMatches.length > 0 ? (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    {upcomingMatches.map((match) => {
-                      const homeFlag = flagMap[match.home_team_id]
-                      const awayFlag = flagMap[match.away_team_id]
-                      return (
-                        <div
-                          key={match._id}
-                          onClick={() => router.push(`/match/${getGameSlug(match)}`)}
-                          className="p-5 rounded-2xl bg-slate-900/30 border border-slate-900 hover:border-slate-800 hover:bg-slate-900/50 transition-all flex flex-col justify-between gap-4 group shadow-xs cursor-pointer"
-                        >
-                          <div className="flex items-center justify-between text-[10px] text-slate-500 pb-1 border-b border-slate-900/30">
-                            <span>{translate("group", lang)} {match.group} • {translate("matchday", lang)} {match.matchday}</span>
-                            <span className="font-bold text-cyan-400 bg-cyan-500/10 px-2 py-0.5 rounded border border-cyan-500/10 font-mono text-[10px]">
-                              {(() => {
-                                const date = parseStadiumLocalDate(match.local_date, match.stadium_id)
-                                return date.toLocaleDateString(undefined, { month: "short", day: "numeric" })
-                              })()}
-                            </span>
-                          </div>
-                          <div className="flex items-center justify-between my-1">
-                            <div
-                              onClick={(e) => {
-                                  e.stopPropagation()
-                                  router.push(`/team/${match.home_team_id}`)
-                              }}
-                              className="flex items-center gap-2 flex-1 min-w-0 cursor-pointer hover:bg-slate-850/40 p-1.5 rounded-xl transition-all group/team"
-                            >
-                              {homeFlag ? (
-                                <div className="relative w-8 h-5.5 overflow-hidden rounded border border-slate-800 shrink-0">
-                                  <Image src={homeFlag} alt="" fill className="object-cover" unoptimized />
-                                </div>
-                              ) : (
-                                <div className="w-8 h-5.5 bg-slate-800 rounded shrink-0 flex items-center justify-center text-[10px]">🏴</div>
-                              )}
-                              <span className="font-bold text-slate-205 text-xs truncate group-hover/team:text-cyan-400 transition-colors">
-                                {lang === "ar" && match.home_team_name_fa ? match.home_team_name_fa : match.home_team_name_en}
-                              </span>
-                            </div>
-                            <span className="text-slate-500 text-[10px] px-2 font-black shrink-0 font-mono">VS</span>
-                            <div
-                              onClick={(e) => {
-                                  e.stopPropagation()
-                                  router.push(`/team/${match.away_team_id}`)
-                              }}
-                              className="flex items-center gap-2 flex-1 min-w-0 justify-end cursor-pointer hover:bg-slate-850/40 p-1.5 rounded-xl transition-all group/team"
-                            >
-                              <span className="font-bold text-slate-205 text-xs truncate group-hover/team:text-cyan-400 transition-colors">
-                                {lang === "ar" && match.away_team_name_fa ? match.away_team_name_fa : match.away_team_name_en}
-                              </span>
-                              {awayFlag ? (
-                                <div className="relative w-8 h-5.5 overflow-hidden rounded border border-slate-800 shrink-0">
-                                  <Image src={awayFlag} alt="" fill className="object-cover" unoptimized />
-                                </div>
-                              ) : (
-                                <div className="w-8 h-5.5 bg-slate-800 rounded shrink-0 flex items-center justify-center text-[10px]">🏴</div>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      )
-                    })}
+                  <div className="space-y-4">
+                    {upcomingMatches.map((match) => (
+                      <MatchCard
+                        key={match._id || match.id}
+                        match={match}
+                        flagMap={flagMap}
+                        stadiumName={getStadiumName(match.stadium_id)}
+                        teamNamesMap={teamNamesMap}
+                      />
+                    ))}
                   </div>
                 ) : (
                   <p className="text-xs text-slate-500 italic p-4 bg-slate-900/10 border border-slate-900 rounded-2xl text-center">No upcoming matches</p>
@@ -372,67 +375,21 @@ export default function TeamPage({ params }: { params: Promise<{ id: string }> }
               </div>
 
               {/* Played Matches */}
-              <div>
+              <div className="space-y-4">
                 <h3 className="text-xs font-extrabold tracking-widest text-emerald-500 uppercase mb-3 border-l-2 border-emerald-500 pl-2">
                   {translate("played_matches", lang)}
                 </h3>
                 {playedMatches.length > 0 ? (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    {playedMatches.map((match) => {
-                      const homeFlag = flagMap[match.home_team_id]
-                      const awayFlag = flagMap[match.away_team_id]
-                      return (
-                        <div
-                          key={match._id}
-                          onClick={() => router.push(`/match/${getGameSlug(match)}`)}
-                          className="p-5 rounded-2xl bg-slate-900/30 border border-slate-900 hover:border-slate-800 hover:bg-slate-900/50 transition-all flex flex-col justify-between gap-4 group shadow-xs cursor-pointer"
-                        >
-                          <div className="flex items-center justify-between text-[10px] text-slate-500 pb-1 border-b border-slate-900/30">
-                            <span>{translate("group", lang)} {match.group} • {translate("matchday", lang)} {match.matchday}</span>
-                            <span className="font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/10 font-mono text-xs">{match.home_score} : {match.away_score}</span>
-                          </div>
-                          <div className="flex items-center justify-between my-1">
-                            <div
-                              onClick={(e) => {
-                                  e.stopPropagation()
-                                  router.push(`/team/${match.home_team_id}`)
-                              }}
-                              className="flex items-center gap-2 flex-1 min-w-0 cursor-pointer hover:bg-slate-850/40 p-1.5 rounded-xl transition-all group/team"
-                            >
-                              {homeFlag ? (
-                                <div className="relative w-8 h-5.5 overflow-hidden rounded border border-slate-800 shrink-0">
-                                  <Image src={homeFlag} alt="" fill className="object-cover" unoptimized />
-                                </div>
-                              ) : (
-                                <div className="w-8 h-5.5 bg-slate-800 rounded shrink-0 flex items-center justify-center text-[10px]">🏴</div>
-                              )}
-                              <span className="font-bold text-slate-205 text-xs truncate group-hover/team:text-emerald-400 transition-colors">
-                                {lang === "ar" && match.home_team_name_fa ? match.home_team_name_fa : match.home_team_name_en}
-                              </span>
-                            </div>
-                            <span className="text-slate-500 text-[10px] px-2 font-black shrink-0 font-mono">VS</span>
-                            <div
-                              onClick={(e) => {
-                                  e.stopPropagation()
-                                  router.push(`/team/${match.away_team_id}`)
-                              }}
-                              className="flex items-center gap-2 flex-1 min-w-0 justify-end cursor-pointer hover:bg-slate-850/40 p-1.5 rounded-xl transition-all group/team"
-                            >
-                              <span className="font-bold text-slate-205 text-xs truncate group-hover/team:text-emerald-400 transition-colors">
-                                {lang === "ar" && match.away_team_name_fa ? match.away_team_name_fa : match.away_team_name_en}
-                              </span>
-                              {awayFlag ? (
-                                <div className="relative w-8 h-5.5 overflow-hidden rounded border border-slate-800 shrink-0">
-                                  <Image src={awayFlag} alt="" fill className="object-cover" unoptimized />
-                                </div>
-                              ) : (
-                                <div className="w-8 h-5.5 bg-slate-800 rounded shrink-0 flex items-center justify-center text-[10px]">🏴</div>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      )
-                    })}
+                  <div className="space-y-4">
+                    {playedMatches.map((match) => (
+                      <MatchCard
+                        key={match._id || match.id}
+                        match={match}
+                        flagMap={flagMap}
+                        stadiumName={getStadiumName(match.stadium_id)}
+                        teamNamesMap={teamNamesMap}
+                      />
+                    ))}
                   </div>
                 ) : (
                   <p className="text-xs text-slate-500 italic p-4 bg-slate-900/10 border border-slate-900 rounded-2xl text-center">No played matches</p>

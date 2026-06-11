@@ -1,9 +1,9 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import { useMemo, useState, useEffect } from "react"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
-import { Calendar, Users, ArrowLeft, MapPin, Clock } from "lucide-react"
+import { Calendar, Users, ArrowLeft, MapPin } from "lucide-react"
 import {
   useGetPlayersQuery,
   Player,
@@ -17,55 +17,8 @@ import {
   LanguageCode,
   translate,
   parseStadiumLocalDate,
-  formatLocalTime,
-  formatCountdownTime,
 } from "@/lib/i18n"
-
-// Local countdown sub-component
-function Countdown({ dateStr, stadiumId, lang }: { dateStr: string; stadiumId: string; lang: LanguageCode }) {
-  const [timeLeft, setTimeLeft] = useState<{
-    days: number
-    hours: number
-    minutes: number
-    seconds: number
-  } | null>(null)
-
-  useEffect(() => {
-    const targetDate = parseStadiumLocalDate(dateStr, stadiumId)
-    const calculateTimeLeft = () => {
-      const difference = targetDate.getTime() - Date.now()
-      if (difference <= 0) {
-        setTimeLeft(null)
-        return
-      }
-      setTimeLeft({
-        days: Math.floor(difference / (1000 * 60 * 60 * 24)),
-        hours: Math.floor((difference / (1000 * 60 * 60)) % 24),
-        minutes: Math.floor((difference / 1000 / 60) % 60),
-        seconds: Math.floor((difference / 1000) % 60),
-      })
-    }
-    calculateTimeLeft()
-    const timer = setInterval(calculateTimeLeft, 1000)
-    return () => clearInterval(timer)
-  }, [dateStr, stadiumId])
-
-  if (!timeLeft) {
-    return (
-      <span className="text-[9px] font-bold text-emerald-450 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20 font-mono tracking-wider animate-pulse">
-        {formatCountdownTime(null, lang)}
-      </span>
-    )
-  }
-
-  return (
-    <div className="flex items-center gap-1 font-mono text-[9px] font-bold text-cyan-500/90 bg-cyan-500/5 px-2 py-0.5 rounded border border-cyan-500/10 shadow-xs">
-      <span>{formatCountdownTime(timeLeft, lang)}</span>
-    </div>
-  )
-}
-
-import { useEffect } from "react"
+import MatchCard from "@/components/dashboard/match-card"
 
 interface TeamDetailViewProps {
   selectedTeam: Team
@@ -108,19 +61,6 @@ export default function TeamDetailView({
   const selectedTeamPlayedMatches = useMemo(() => {
     return teamMatches.filter((m) => m.finished.toUpperCase() === "TRUE")
   }, [teamMatches])
-
-  const getTeamName = (teamId: string) => {
-    const team = teamNamesMap[teamId]
-    if (!team) return "TBD"
-    if (team.translations) {
-      try {
-        const parsed = typeof team.translations === "string" ? JSON.parse(team.translations) : team.translations
-        if (parsed && parsed[lang]) return parsed[lang]
-      } catch { }
-    }
-    if (lang === "ar" && team.name_fa) return team.name_fa
-    return team.name_en
-  }
 
   // Group players by position (Goalkeepers, Defenders, Midfielders, Forwards)
   const groupedPlayers = useMemo(() => {
@@ -252,74 +192,15 @@ export default function TeamDetailView({
             </h3>
             {selectedTeamUpcomingMatches.length > 0 ? (
               <div className="space-y-4">
-                {selectedTeamUpcomingMatches.map((match) => {
-                  const homeFlag = flagMap[match.home_team_id] || (match.home_team_name_en ? flagMap[match.home_team_name_en.toLowerCase()] : undefined)
-                  const awayFlag = flagMap[match.away_team_id] || (match.away_team_name_en ? flagMap[match.away_team_name_en.toLowerCase()] : undefined)
-                  return (
-                    <div
-                      key={match._id}
-                      onClick={() => router.push(`/match/${getGameSlug(match)}`)}
-                      className="p-5 rounded-2xl bg-slate-900/30 border border-slate-900 hover:border-slate-805 hover:bg-slate-900/50 transition-all flex flex-col justify-between gap-4 group shadow-xs cursor-pointer"
-                    >
-                      <div className="flex items-center justify-between text-[10px] text-slate-500 pb-1 border-b border-slate-900/30">
-                        <span>
-                          {translate("group", lang)} {match.group} • {translate("matchday", lang)} {match.matchday}
-                        </span>
-                        <Countdown dateStr={match.local_date} stadiumId={match.stadium_id} lang={lang} />
-                      </div>
-
-                      <div className="flex items-center justify-between my-1">
-                        <div
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            dispatch(setSelectedTeamId(match.home_team_id))
-                          }}
-                          className="flex items-center gap-2 flex-1 min-w-0 cursor-pointer hover:bg-slate-850/40 p-1.5 rounded-xl transition-all group/team"
-                        >
-                          {homeFlag ? (
-                            <div className="relative w-8 h-5.5 overflow-hidden rounded border border-slate-855 shrink-0">
-                              <Image src={homeFlag} alt="" fill className="object-cover" unoptimized />
-                            </div>
-                          ) : (
-                            <span className="text-xs">🏴</span>
-                          )}
-                          <span className="font-semibold text-xs text-slate-200 truncate group-hover/team:text-cyan-400 transition-colors">
-                            {getTeamName(match.home_team_id)}
-                          </span>
-                        </div>
-
-                        <span className="text-[10px] text-slate-605 font-bold font-mono px-3">VS</span>
-
-                        <div
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            dispatch(setSelectedTeamId(match.away_team_id))
-                          }}
-                          className="flex items-center justify-end gap-2 flex-1 min-w-0 cursor-pointer hover:bg-slate-850/40 p-1.5 rounded-xl transition-all group/team"
-                        >
-                          <span className="font-semibold text-xs text-slate-200 truncate group-hover/team:text-cyan-400 transition-colors">
-                            {getTeamName(match.away_team_id)}
-                          </span>
-                          {awayFlag ? (
-                            <div className="relative w-8 h-5.5 overflow-hidden rounded border border-slate-855 shrink-0">
-                              <Image src={awayFlag} alt="" fill className="object-cover" unoptimized />
-                            </div>
-                          ) : (
-                            <span className="text-xs">🏴</span>
-                          )}
-                        </div>
-                      </div>
-
-                      <div className="text-[10px] text-slate-505 flex items-center gap-1.5 pt-1 border-t border-slate-900/30">
-                        <MapPin className="w-3.5 h-3.5 text-slate-600" />
-                        <span>
-                          {stadiumNameGetter(match.stadium_id) || `#${match.stadium_id}`} |{" "}
-                          {formatLocalTime(parseStadiumLocalDate(match.local_date, match.stadium_id), lang)}
-                        </span>
-                      </div>
-                    </div>
-                  )
-                })}
+                {selectedTeamUpcomingMatches.map((match) => (
+                  <MatchCard
+                    key={match._id || match.id}
+                    match={match}
+                    flagMap={flagMap}
+                    stadiumName={stadiumNameGetter(match.stadium_id)}
+                    teamNamesMap={teamNamesMap}
+                  />
+                ))}
               </div>
             ) : (
               <div className="text-center py-12 bg-slate-900/10 rounded-2xl border border-slate-900/40 text-slate-505 text-xs">
@@ -336,90 +217,15 @@ export default function TeamDetailView({
             </h3>
             {selectedTeamPlayedMatches.length > 0 ? (
               <div className="space-y-4">
-                {selectedTeamPlayedMatches.map((match) => {
-                  const homeFlag = flagMap[match.home_team_id] || (match.home_team_name_en ? flagMap[match.home_team_name_en.toLowerCase()] : undefined)
-                  const awayFlag = flagMap[match.away_team_id] || (match.away_team_name_en ? flagMap[match.away_team_name_en.toLowerCase()] : undefined)
-                  return (
-                    <div
-                      key={match._id}
-                      onClick={() => router.push(`/match/${getGameSlug(match)}`)}
-                      className="p-5 rounded-2xl bg-slate-900/30 border border-slate-900 hover:border-slate-855 hover:bg-slate-900/50 transition-all flex flex-col justify-between gap-4 group shadow-xs cursor-pointer"
-                    >
-                      <div className="flex items-center justify-between text-[10px] text-slate-500 pb-1 border-b border-slate-900/30">
-                        <span>
-                          {translate("group", lang)} {match.group} • {translate("matchday", lang)} {match.matchday}
-                        </span>
-                        <span className="font-bold text-emerald-400 bg-emerald-500/10 px-2.5 py-0.5 rounded border border-emerald-500/10 font-mono text-xs">
-                          {match.home_score} : {match.away_score}
-                        </span>
-                      </div>
-
-                      <div className="flex items-center justify-between my-1">
-                        <div
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            dispatch(setSelectedTeamId(match.home_team_id))
-                          }}
-                          className="flex items-center gap-2 flex-1 min-w-0 cursor-pointer hover:bg-slate-850/40 p-1.5 rounded-xl transition-all group/team"
-                        >
-                          {homeFlag ? (
-                            <div className="relative w-8 h-5.5 overflow-hidden rounded border border-slate-855 shrink-0">
-                              <Image src={homeFlag} alt="" fill className="object-cover" unoptimized />
-                            </div>
-                          ) : (
-                            <span className="text-xs">🏴</span>
-                          )}
-                          <span className="font-semibold text-xs text-slate-200 truncate group-hover/team:text-emerald-400 transition-colors">
-                            {getTeamName(match.home_team_id)}
-                          </span>
-                        </div>
-
-                        <span className="text-[10px] text-slate-605 font-bold font-mono px-3">VS</span>
-
-                        <div
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            dispatch(setSelectedTeamId(match.away_team_id))
-                          }}
-                          className="flex items-center justify-end gap-2 flex-1 min-w-0 cursor-pointer hover:bg-slate-850/40 p-1.5 rounded-xl transition-all group/team"
-                        >
-                          <span className="font-semibold text-xs text-slate-200 truncate group-hover/team:text-emerald-400 transition-colors">
-                            {getTeamName(match.away_team_id)}
-                          </span>
-                          {awayFlag ? (
-                            <div className="relative w-8 h-5.5 overflow-hidden rounded border border-slate-855 shrink-0">
-                              <Image src={awayFlag} alt="" fill className="object-cover" unoptimized />
-                            </div>
-                          ) : (
-                            <span className="text-xs">🏴</span>
-                          )}
-                        </div>
-                      </div>
-
-                      <div className="text-[10px] text-slate-550 flex items-center gap-1.5 pt-1 border-t border-slate-900/30 my-1">
-                        <MapPin className="w-3 h-3 text-slate-600" />
-                        <span>
-                          {stadiumNameGetter(match.stadium_id) || `#${match.stadium_id}`} |{" "}
-                          {formatLocalTime(parseStadiumLocalDate(match.local_date, match.stadium_id), lang)}
-                        </span>
-                      </div>
-
-                      {((match.home_scorers && match.home_scorers !== "null") ||
-                        (match.away_scorers && match.away_scorers !== "null")) && (
-                        <div className="bg-slate-955/40 p-2.5 rounded-xl border border-slate-955/80 flex flex-col gap-1 text-[9px] text-slate-550">
-                          <div className="flex justify-between gap-4">
-                            <div className="truncate flex-1">
-                              {match.home_scorers && match.home_scorers !== "null" ? match.home_scorers : ""}
-                            </div>
-                            <div className="truncate flex-1 text-right">
-                              {match.away_scorers && match.away_scorers !== "null" ? match.away_scorers : ""}
-                            </div>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  )
-                })}
+                {selectedTeamPlayedMatches.map((match) => (
+                  <MatchCard
+                    key={match._id || match.id}
+                    match={match}
+                    flagMap={flagMap}
+                    stadiumName={stadiumNameGetter(match.stadium_id)}
+                    teamNamesMap={teamNamesMap}
+                  />
+                ))}
               </div>
             ) : (
               <div className="text-center py-12 bg-slate-900/10 rounded-2xl border border-slate-900/40 text-slate-505 text-xs">
