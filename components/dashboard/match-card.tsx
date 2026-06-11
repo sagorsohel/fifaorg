@@ -13,7 +13,7 @@ import {
   parseStadiumLocalDate,
   formatCountdownTime,
 } from "@/lib/i18n"
-import { formatScorers } from "@/lib/utils"
+import { formatScorers, getScorersArray } from "@/lib/utils"
 
 // Countdown Component for upcoming matches
 function Countdown({ dateStr, stadiumId, lang }: { dateStr: string; stadiumId: string; lang: LanguageCode }) {
@@ -81,8 +81,8 @@ export default function MatchCard({ match, flagMap, stadiumName, teamNamesMap }:
   const isLive = !isFinished && !!(match.time_elapsed && match.time_elapsed !== "" && match.time_elapsed !== "null" && match.time_elapsed.toLowerCase() !== "notstarted")
   const shouldShowScore = isLive || isFinished
 
-  const formattedHomeScorers = formatScorers(match.home_scorers)
-  const formattedAwayScorers = formatScorers(match.away_scorers)
+  const homeScorersList = getScorersArray(match.home_scorers)
+  const awayScorersList = getScorersArray(match.away_scorers)
 
   const homeFlag = flagMap[match.home_team_id] || (match.home_team_name_en ? flagMap[match.home_team_name_en.toLowerCase()] : undefined)
   const awayFlag = flagMap[match.away_team_id] || (match.away_team_name_en ? flagMap[match.away_team_name_en.toLowerCase()] : undefined)
@@ -227,9 +227,42 @@ export default function MatchCard({ match, flagMap, stadiumName, teamNamesMap }:
           )}
         </div>
       </div>
+      {/* Scorers */}
+      {shouldShowScore && (homeScorersList.length > 0 || awayScorersList.length > 0) && (
+        <div className="bg-slate-955/50 p-2.5 rounded-xl border border-slate-950/80 flex flex-col gap-1 text-[10px]">
+          <span className="font-semibold text-slate-500 uppercase tracking-wider text-[9px] block">
+            ⚽ {translate("goal_scorers", lang)}
+          </span>
+          <div className="flex justify-between gap-4">
+            {/* Home Scorers */}
+            <div className="text-slate-400 font-medium flex-1 font-sans flex  gap-1 min-w-0">
+              {homeScorersList.length > 0 ? (
+                homeScorersList.map((scorer, idx) => (
+                  <div key={idx} className="truncate border rounded-[6px] px-1">{scorer}</div>
+                ))
+              ) : (
+                <div>-</div>
+              )}
+            </div>
 
+            {/* Divider */}
+            <div className="border-l border-slate-800/80 shrink-0 self-stretch"></div>
+
+            {/* Away Scorers */}
+            <div className="text-slate-400 font-medium flex-1 text-right font-sans flex flex-col gap-0.5 min-w-0">
+              {awayScorersList.length > 0 ? (
+                awayScorersList.map((scorer, idx) => (
+                  <div key={idx} className="truncate">{scorer}</div>
+                ))
+              ) : (
+                <div>-</div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
       {/* Stadium & Scorers footer info */}
-      <div className="mt-4 pt-3 border-t flex justify-between items-center border-slate-900/40  gap-2 text-slate-400 text-xs">
+      <div className="pt-3 border-t flex justify-between items-center border-slate-900/40  gap-2 text-slate-400 text-xs">
         {/* Stadium details */}
         <div className="flex items-center justify-between text-[11px] text-slate-505 w-full">
           <div className="flex items-center gap-1.5">
@@ -241,34 +274,19 @@ export default function MatchCard({ match, flagMap, stadiumName, teamNamesMap }:
           className={`px-2 py-0.5 rounded font-semibold text-[10px] tracking-wide uppercase ${isFinished
             ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
             : isLive
-            ? "bg-red-500/10 text-red-500 border border-red-500/20 animate-pulse"
-            : "bg-cyan-500/10 text-cyan-400 border border-cyan-500/20"
+              ? "bg-red-500/10 text-red-500 border border-red-500/20 animate-pulse"
+              : "bg-cyan-500/10 text-cyan-400 border border-cyan-500/20"
             }`}
         >
           {isFinished
             ? translate("finished", lang)
             : isLive
-            ? (lang === "ar" ? "مباشر" : "LIVE")
-            : translate("upcoming", lang)}
+              ? (lang === "ar" ? "مباشر" : "LIVE")
+              : translate("upcoming", lang)}
         </span>
 
 
-        {/* Scorers */}
-        {shouldShowScore && (formattedHomeScorers || formattedAwayScorers) && (
-          <div className="bg-slate-955/50 p-2.5 rounded-xl border border-slate-950/80 flex flex-col gap-1 text-[10px]">
-            <span className="font-semibold text-slate-500 uppercase tracking-wider text-[9px]">
-              ⚽ {translate("goal_scorers", lang)}
-            </span>
-            <div className="flex justify-between gap-4">
-              <div className="text-slate-400 font-medium truncate flex-1 font-sans">
-                {formattedHomeScorers}
-              </div>
-              <div className="text-slate-400 font-medium truncate flex-1 text-right font-sans">
-                {formattedAwayScorers}
-              </div>
-            </div>
-          </div>
-        )}
+
       </div>
     </div>
   )

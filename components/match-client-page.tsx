@@ -40,7 +40,7 @@ import {
   formatLocalTime,
   formatCountdownTime,
 } from "@/lib/i18n"
-import { formatScorers } from "@/lib/utils"
+import { formatScorers, getScorersArray } from "@/lib/utils"
 
 // Countdown Component for upcoming matches
 function Countdown({ dateStr, stadiumId, lang }: { dateStr: string; stadiumId: string; lang: LanguageCode }) {
@@ -584,8 +584,8 @@ export default function MatchClientPage({ slug }: { slug: string }) {
   const homeName = getTeamName(selectedGameHomeTeam, selectedGame.home_team_name_en || selectedGame.home_team_label || "TBD", lang)
   const awayName = getTeamName(selectedGameAwayTeam, selectedGame.away_team_name_en || selectedGame.away_team_label || "TBD", lang)
 
-  const formattedHomeScorers = formatScorers(selectedGame.home_scorers)
-  const formattedAwayScorers = formatScorers(selectedGame.away_scorers)
+  const homeScorersList = getScorersArray(selectedGame.home_scorers)
+  const awayScorersList = getScorersArray(selectedGame.away_scorers)
 
   return (
     <>
@@ -909,17 +909,35 @@ export default function MatchClientPage({ slug }: { slug: string }) {
               </div>
 
               {/* Goal Scorers inside schedule card */}
-              {shouldShowScore && (formattedHomeScorers || formattedAwayScorers) && (
+              {shouldShowScore && (homeScorersList.length > 0 || awayScorersList.length > 0) && (
                 <div className="bg-slate-955/60 p-3.5 rounded-xl border border-slate-900/60 text-[10px] space-y-2">
                   <span className="font-bold text-slate-505 uppercase tracking-wider block">⚽ {translate("goal_scorers", lang)}</span>
-                  <div className="flex justify-between gap-4 text-slate-300">
-                    <div className="truncate flex-1 flex flex-col gap-0.5">
+                  <div className="flex items-center justify-between gap-4 text-slate-300">
+                    {/* Home Scorers */}
+                    <div className="truncate flex-1 flex flex-col gap-0.5 min-w-0">
                       <span className="text-[7px] text-slate-500 uppercase tracking-wider font-bold mb-0.5">{selectedGame.home_team_name_en || (lang === "ar" ? "المضيف" : "HOME")}</span>
-                      {formattedHomeScorers || "-"}
+                      {homeScorersList.length > 0 ? (
+                        homeScorersList.map((scorer, idx) => (
+                          <div key={idx} className="truncate">{scorer}</div>
+                        ))
+                      ) : (
+                        <div>-</div>
+                      )}
                     </div>
-                    <div className="truncate flex-1 text-right flex flex-col gap-0.5">
+                    
+                    {/* Divider */}
+                    <div className="border-l border-slate-800/85 shrink-0 self-stretch"></div>
+                    
+                    {/* Away Scorers */}
+                    <div className="truncate flex-1 text-right flex flex-col gap-0.5 min-w-0">
                       <span className="text-[7px] text-slate-500 uppercase tracking-wider font-bold mb-0.5">{selectedGame.away_team_name_en || (lang === "ar" ? "الضيف" : "AWAY")}</span>
-                      {formattedAwayScorers || "-"}
+                      {awayScorersList.length > 0 ? (
+                        awayScorersList.map((scorer, idx) => (
+                          <div key={idx} className="truncate">{scorer}</div>
+                        ))
+                      ) : (
+                        <div>-</div>
+                      )}
                     </div>
                   </div>
                 </div>
