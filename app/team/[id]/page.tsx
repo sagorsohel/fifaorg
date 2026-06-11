@@ -178,22 +178,7 @@ export default function TeamPage({ params }: { params: Promise<{ id: string }> }
         <div className="fixed -top-40 -left-40 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none z-0"></div>
         <div className="fixed top-1/2 -right-40 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none z-0"></div>
 
-        {/* Header Banner */}
-        <header className="sticky top-0 z-40 bg-slate-900 backdrop-blur-md border-b border-slate-900 mb-3">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-xl bg-linear-to-br from-cyan-500 to-emerald-500 flex items-center justify-center shadow-lg shadow-cyan-500/15">
-                <Trophy className="w-6 h-6 text-slate-950" />
-              </div>
-              <div>
-                <h1 className="text-xl font-bold tracking-tight bg-linear-to-r from-cyan-400 to-emerald-400 bg-clip-text text-transparent">
-                  {translate("title", lang)}
-                </h1>
-                <p className="text-xs text-slate-400">{translate("match_center", lang)}</p>
-              </div>
-            </div>
-          </div>
-        </header>
+
 
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-4 animate-pulse relative z-10">
           <div className="p-6 rounded-3xl bg-slate-900/60 border border-slate-900 shadow-xl flex flex-col md:flex-row items-center justify-between gap-6 max-w-4xl mx-auto w-full">
@@ -228,49 +213,7 @@ export default function TeamPage({ params }: { params: Promise<{ id: string }> }
       <div className="fixed -top-40 -left-40 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none z-0"></div>
       <div className="fixed top-1/2 -right-40 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none z-0"></div>
 
-      {/* Header Banner */}
-      <header className="sticky top-0 z-40 bg-slate-900 backdrop-blur-md border-b border-slate-900 mb-3">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Link href="/" className="w-12 h-12 rounded-xl bg-linear-to-br from-cyan-500 to-emerald-500 flex items-center justify-center shadow-lg shadow-cyan-500/15 cursor-pointer">
-              <Trophy className="w-6 h-6 text-slate-950" />
-            </Link>
-            <div>
-              <h1 className="text-xl font-bold tracking-tight bg-linear-to-r from-cyan-400 to-emerald-400 bg-clip-text text-transparent">
-                {translate("title", lang)}
-              </h1>
-              <p className="text-xs text-slate-400">{translate("match_center", lang)}</p>
-            </div>
-          </div>
 
-          {/* Language selector */}
-          <div className="hidden sm:flex items-center gap-2 z-50">
-            <DropdownMenu>
-              <DropdownMenuTrigger className="bg-slate-900 border border-slate-800 text-xs font-bold text-slate-200 px-3.5 py-2.5 rounded-xl hover:border-cyan-500/30 focus:outline-hidden transition-all cursor-pointer shadow-xs flex items-center gap-1.5 capitalize">
-                <span>{LANGUAGES.find((l) => l.code === lang)?.name || "Language"}</span>
-                <span className="text-[10px] text-slate-555">▼</span>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="bg-slate-900 border border-slate-800 text-slate-200 rounded-xl min-w-[120px] shadow-xl p-1 z-50">
-                {LANGUAGES.map((l) => (
-                  <DropdownMenuItem
-                    key={l.code}
-                    onClick={() => {
-                      dispatch(setLanguage(l.code))
-                      try {
-                        localStorage.setItem("worldcup2026_lang", l.code)
-                      } catch { }
-                    }}
-                    className={`cursor-pointer px-3 py-2 text-xs rounded-lg transition-all focus:bg-cyan-500/15 focus:text-cyan-400 font-bold ${lang === l.code ? "bg-cyan-500/10 text-cyan-400" : "text-slate-355"
-                      }`}
-                  >
-                    {l.name}
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-        </div>
-      </header>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 space-y-6 pb-28 sm:pb-8 relative z-10 animate-fade-in">
         {/* Back row */}

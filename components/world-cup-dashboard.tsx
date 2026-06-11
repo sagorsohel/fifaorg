@@ -298,23 +298,6 @@ export default function WorldCupDashboard() {
         <div className="fixed -top-40 -left-40 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none"></div>
         <div className="fixed top-1/2 -right-40 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
 
-        {/* Top Banner Header */}
-        <header className="sticky top-0 z-40 bg-slate-950/80 backdrop-blur-md border-b border-slate-900">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-xl bg-linear-to-br from-cyan-500 to-emerald-500 flex items-center justify-center shadow-lg shadow-cyan-500/15">
-                <Trophy className="w-6 h-6 text-slate-950" />
-              </div>
-              <div>
-                <h1 className="text-xl font-bold tracking-tight bg-linear-to-r from-cyan-400 to-emerald-400 bg-clip-text text-transparent">
-                  {translate("title", lang)}
-                </h1>
-                <p className="text-xs text-slate-400">{translate("subtitle", lang)}</p>
-              </div>
-            </div>
-          </div>
-        </header>
-
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <DashboardSkeleton />
         </main>
@@ -348,64 +331,8 @@ export default function WorldCupDashboard() {
       <div className="fixed -top-40 -left-40 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none"></div>
       <div className="fixed top-1/2 -right-40 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
 
-      {/* Top Banner Header */}
-      <header className="sticky top-0 z-40 bg-slate-955/80 backdrop-blur-md border-b border-slate-900">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col sm:flex-row items-center justify-between gap-4">
-          {/* Logo & Brand */}
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-xl bg-linear-to-br from-cyan-500 to-emerald-500 flex items-center justify-center shadow-lg shadow-cyan-500/15">
-              <Trophy className="w-6 h-6 text-slate-950" />
-            </div>
-            <div>
-              <h1 className="text-xl font-bold tracking-tight bg-linear-to-r from-cyan-400 to-emerald-400 bg-clip-text text-transparent">
-                {translate("title", lang)}
-              </h1>
-              <p className="text-xs text-slate-400">{translate("subtitle", lang)}</p>
-            </div>
-          </div>
-
-          {/* Action Filters / Theme */}
-          <div className="hidden sm:flex items-center gap-3">
-            {/* Language Selector Dropdown */}
-            <div className="flex items-center gap-2 z-50">
-              <DropdownMenu>
-                <DropdownMenuTrigger className="bg-slate-900 border border-slate-800 text-xs font-bold text-slate-200 px-3.5 py-2.5 rounded-xl hover:border-cyan-500/30 focus:outline-hidden transition-all cursor-pointer shadow-xs flex items-center gap-1.5 capitalize">
-                  <span>{LANGUAGES.find((l) => l.code === lang)?.name || "Language"}</span>
-                  <span className="text-[10px] text-slate-505">▼</span>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="bg-slate-900 border border-slate-800 text-slate-200 rounded-xl min-w-[120px] shadow-xl p-1 z-50">
-                  {LANGUAGES.map((l) => (
-                    <DropdownMenuItem
-                      key={l.code}
-                      onClick={() => {
-                        dispatch(setLanguage(l.code))
-                        try {
-                          localStorage.setItem("worldcup2026_lang", l.code)
-                        } catch { }
-                      }}
-                      className={`cursor-pointer px-3 py-2 text-xs rounded-lg transition-all focus:bg-cyan-500/15 focus:text-cyan-400 font-bold ${lang === l.code ? "bg-cyan-500/10 text-cyan-400" : "text-slate-300"
-                        }`}
-                    >
-                      {l.name}
-                    </DropdownMenuItem>
-                  ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
-
-            {/* Refresh indicator */}
-            <button
-              onClick={handleRefetch}
-              className="p-2 rounded-lg bg-slate-900 border border-slate-800 hover:bg-slate-800 transition-colors cursor-pointer"
-              title="Refetch API Data"
-            >
-              <RefreshCw className="w-4 h-4 text-emerald-400" />
-            </button>
-          </div>
-        </div>
-      </header>
-
       <main className="sm:max-w-7xl w-full mx-auto px-2 sm:px-6 lg:px-8 py-8 space-y-8 pb-28 sm:pb-8">
+
         {selectedTeam ? (
           <TeamDetailView
             selectedTeam={selectedTeam}

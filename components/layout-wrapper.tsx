@@ -6,6 +6,7 @@ import { setLanguage } from "@/lib/features/uiSlice"
 import { detectBrowserLanguage, LANGUAGES } from "@/lib/i18n"
 import { Footer } from "./footer"
 import { MobileNav } from "./mobile-nav"
+import { Navbar } from "./navbar"
 
 export function LayoutWrapper({ children }: { children: React.ReactNode }) {
   const dispatch = useAppDispatch()
@@ -32,6 +33,7 @@ export function LayoutWrapper({ children }: { children: React.ReactNode }) {
 
   return (
     <div dir={dir} className="min-h-screen bg-slate-950 text-slate-100 transition-all duration-300 relative flex flex-col justify-between">
+      <Navbar />
       <div className="flex-1 w-full relative z-10">
         {children}
       </div>
