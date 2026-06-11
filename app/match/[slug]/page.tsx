@@ -126,7 +126,7 @@ function AdScriptContainer({ scriptHtml, className }: { scriptHtml?: string; cla
   // Attempt to parse width and height from the ad configuration (e.g. from atOptions)
   const widthMatch = scriptHtml.match(/'width'\s*:\s*(\d+)/) || scriptHtml.match(/"width"\s*:\s*(\d+)/)
   const heightMatch = scriptHtml.match(/'height'\s*:\s*(\d+)/) || scriptHtml.match(/"height"\s*:\s*(\d+)/)
-  
+
   const width = widthMatch ? parseInt(widthMatch[1], 10) : 320
   const height = heightMatch ? parseInt(heightMatch[1], 10) : 50
 
@@ -358,7 +358,7 @@ export default function MatchCenterPage({ params }: { params: Promise<{ slug: st
   const awayName = getTeamName(selectedGameAwayTeam, selectedGame.away_team_name_en || selectedGame.away_team_label || "TBD", lang)
 
   return (
-    <div dir={LANGUAGES.find(l => l.code === lang)?.dir || "ltr"} className="min-h-screen bg-slate-955 text-slate-100 font-sans pb-28 sm:pb-16 transition-all duration-300 relative overflow-x-hidden">
+    <div dir={LANGUAGES.find(l => l.code === lang)?.dir || "ltr"} className="min-h-screen bg-slate-955 text-slate-100 font-sans pb-28 sm:pb-16 transition-all duration-300 relative">
       {/* Page Background Image */}
       {selectedGame.bg_image && (
         <div className="fixed inset-0 z-0 select-none pointer-events-none">
@@ -379,7 +379,7 @@ export default function MatchCenterPage({ params }: { params: Promise<{ slug: st
 
 
       {/* Header Banner */}
-      <header className="sticky top-0 z-40 bg-slate-900 backdrop-blur-md border-b border-slate-900 mb-8">
+      <header className="sticky top-0 z-40 bg-slate-900 backdrop-blur-md border-b border-slate-900 mb-3">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 rounded-xl bg-linear-to-br from-cyan-500 to-emerald-500 flex items-center justify-center shadow-lg shadow-cyan-500/15">
@@ -408,11 +408,10 @@ export default function MatchCenterPage({ params }: { params: Promise<{ slug: st
                       setLang(l.code)
                       try {
                         localStorage.setItem("worldcup2026_lang", l.code)
-                      } catch (err) {}
+                      } catch (err) { }
                     }}
-                    className={`cursor-pointer px-3 py-2 text-xs rounded-lg transition-all focus:bg-cyan-500/15 focus:text-cyan-400 font-bold ${
-                      lang === l.code ? "bg-cyan-500/10 text-cyan-400" : "text-slate-355"
-                    }`}
+                    className={`cursor-pointer px-3 py-2 text-xs rounded-lg transition-all focus:bg-cyan-500/15 focus:text-cyan-400 font-bold ${lang === l.code ? "bg-cyan-500/10 text-cyan-400" : "text-slate-355"
+                      }`}
                   >
                     {l.name}
                   </DropdownMenuItem>
@@ -423,7 +422,7 @@ export default function MatchCenterPage({ params }: { params: Promise<{ slug: st
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8 animate-fade-in relative z-10">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-3 animate-fade-in relative z-10">
         {/* Match Scoreboard Header Card (Sleek and compact) */}
         <div className="p-4 rounded-2xl bg-linear-to-r from-slate-900 to-slate-900 border border-slate-900 shadow-xl flex flex-col gap-4 relative overflow-hidden max-w-4xl mx-auto">
           <div className="absolute top-0 right-0 w-64 h-64 bg-cyan-500/5 rounded-full blur-3xl pointer-events-none"></div>
@@ -847,7 +846,7 @@ export default function MatchCenterPage({ params }: { params: Promise<{ slug: st
       {/* ── Mobile Bottom Navigation Bar ── */}
       <nav
         aria-label="Mobile navigation"
-        className="sm:hidden fixed bottom-4 left-1/2 -translate-x-1/2 z-50 flex items-end px-4 rounded-[2rem] bg-slate-900/90 backdrop-blur-xl border border-slate-800/80 shadow-2xl shadow-black/40"
+        className="sm:hidden fixed bottom-4 left-1/2 -translate-x-1/2 z-50 flex items-end px-4 rounded-[12px] bg-slate-900/90 backdrop-blur-xl border border-slate-800/80 shadow-2xl shadow-black/40"
         style={{ minWidth: 320, height: 64, paddingBottom: 8, gap: 4 }}
       >
         {/* Fixtures Tab */}
@@ -862,7 +861,7 @@ export default function MatchCenterPage({ params }: { params: Promise<{ slug: st
           style={{ paddingBottom: 2 }}
         >
           {activeTab === "matches" && !selectedTeamId ? (
-            <span className="absolute -top-8 left-1/2 -translate-x-1/2 flex flex-col items-center justify-center w-[58px] h-[58px] rounded-full bg-linear-to-br from-cyan-400 to-cyan-600 shadow-xl shadow-cyan-500/50 border-[3px] border-slate-900 transition-all duration-300">
+            <span className="absolute -top-2 left-1/2 -translate-x-1/2 flex flex-col items-center justify-center w-[58px] h-[58px] rounded-full bg-linear-to-br from-cyan-400 to-cyan-600 shadow-xl shadow-cyan-500/50 border-[3px] border-slate-900 transition-all duration-300">
               <span className="text-xl leading-none select-none">⚽</span>
               <span className="text-[8px] font-black uppercase tracking-wider text-white leading-none mt-0.5 select-none">Fixtures</span>
             </span>
@@ -889,7 +888,7 @@ export default function MatchCenterPage({ params }: { params: Promise<{ slug: st
           style={{ paddingBottom: 2 }}
         >
           {activeTab === "teams" && !selectedTeamId ? (
-            <span className="absolute -top-8 left-1/2 -translate-x-1/2 flex flex-col items-center justify-center w-[58px] h-[58px] rounded-full bg-linear-to-br from-emerald-400 to-emerald-600 shadow-xl shadow-emerald-500/50 border-[3px] border-slate-900 transition-all duration-300">
+            <span className="absolute -top-2 left-1/2 -translate-x-1/2 flex flex-col items-center justify-center w-[58px] h-[58px] rounded-full bg-linear-to-br from-emerald-400 to-emerald-600 shadow-xl shadow-emerald-500/50 border-[3px] border-slate-900 transition-all duration-300">
               <span className="text-xl leading-none select-none">🏆</span>
               <span className="text-[8px] font-black uppercase tracking-wider text-white leading-none mt-0.5 select-none">Teams</span>
             </span>
@@ -921,11 +920,10 @@ export default function MatchCenterPage({ params }: { params: Promise<{ slug: st
                     setLang(l.code)
                     try {
                       localStorage.setItem("worldcup2026_lang", l.code)
-                    } catch (err) {}
+                    } catch (err) { }
                   }}
-                  className={`cursor-pointer px-3 py-2 text-xs rounded-lg transition-all focus:bg-cyan-500/15 focus:text-cyan-400 font-bold ${
-                    lang === l.code ? "bg-cyan-500/10 text-cyan-400" : "text-slate-300"
-                  }`}
+                  className={`cursor-pointer px-3 py-2 text-xs rounded-lg transition-all focus:bg-cyan-500/15 focus:text-cyan-400 font-bold ${lang === l.code ? "bg-cyan-500/10 text-cyan-400" : "text-slate-300"
+                    }`}
                 >
                   {l.name}
                 </DropdownMenuItem>
