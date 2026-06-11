@@ -101,7 +101,7 @@ export default function MatchCard({ match, flagMap, stadiumName, teamNamesMap }:
   return (
     <div
       onClick={() => router.push(`/match/${getGameSlug(match)}`)}
-      className="bg-slate-900/30 border border-slate-600/60 hover:bg-slate-900/60 backdrop-blur-xs hover:border-slate-800 rounded-2xl p-2 flex flex-col justify-between transition-all duration-300 hover:-translate-y-0.5 group shadow-xs hover:shadow-md cursor-pointer"
+      className="bg-slate-900/30 border border-slate-600/60 hover:bg-slate-900/60 backdrop-blur-xs hover:border-slate-800 rounded-2xl p-2 sm:p-5 flex flex-col justify-between transition-all duration-300 hover:-translate-y-0.5 group shadow-xs hover:shadow-md cursor-pointer"
     >
       {/* Card Header info */}
       <div className="flex items-center justify-between text-slate-400 text-xs mb-4 pb-2 border-b border-slate-900/40">

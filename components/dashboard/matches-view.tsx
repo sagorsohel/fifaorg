@@ -54,7 +54,7 @@ export default function MatchesView({
             </div>
 
             {/* Matches Box */}
-            <div className="p-6 rounded-3xl bg-slate-950/20 border border-slate-900/60 shadow-xl">
+            <div className="sm:p-6 p-2 rounded-3xl bg-slate-950/20 border border-slate-900/60 shadow-xl">
               {/* Games Grid */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 {matches.map((match) => (

@@ -185,11 +185,34 @@ export default function WorldCupDashboard() {
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase().trim()
       filtered = filtered.filter((game) => {
+        const homeTeam = teamNamesMap[game.home_team_id]
+        const awayTeam = teamNamesMap[game.away_team_id]
+
+        const matchTeam = (team: Team | undefined, label: string | undefined, dbNameEn: string | undefined) => {
+          if (label && label.toLowerCase().includes(query)) return true
+          if (dbNameEn && dbNameEn.toLowerCase().includes(query)) return true
+          if (!team) return false
+
+          if (team.name_en && team.name_en.toLowerCase().includes(query)) return true
+          if (team.name_fa && team.name_fa.toLowerCase().includes(query)) return true
+          if (team.fifa_code && team.fifa_code.toLowerCase().includes(query)) return true
+
+          if (team.translations) {
+            try {
+              const parsed = typeof team.translations === "string" ? JSON.parse(team.translations) : team.translations
+              if (parsed && typeof parsed === "object") {
+                return Object.values(parsed).some((val) =>
+                  typeof val === "string" && val.toLowerCase().includes(query)
+                )
+              }
+            } catch { }
+          }
+          return false
+        }
+
         return (
-          (game.home_team_name_en && game.home_team_name_en.toLowerCase().includes(query)) ||
-          (game.away_team_name_en && game.away_team_name_en.toLowerCase().includes(query)) ||
-          (game.home_team_label && game.home_team_label.toLowerCase().includes(query)) ||
-          (game.away_team_label && game.away_team_label.toLowerCase().includes(query)) ||
+          matchTeam(homeTeam, game.home_team_label, game.home_team_name_en) ||
+          matchTeam(awayTeam, game.away_team_label, game.away_team_name_en) ||
           `group ${game.group}`.toLowerCase().includes(query) ||
           `matchday ${game.matchday}`.toLowerCase().includes(query)
         )
@@ -215,7 +238,7 @@ export default function WorldCupDashboard() {
     return filtered.sort((a, b) => {
       return parseStadiumLocalDate(a.local_date, a.stadium_id).getTime() - parseStadiumLocalDate(b.local_date, b.stadium_id).getTime()
     })
-  }, [gamesData, searchQuery, filterStatus, selectedGroup])
+  }, [gamesData, searchQuery, filterStatus, selectedGroup, teamNamesMap])
 
   // Group games by date for display
   const gamesGroupedByDate = useMemo(() => {
@@ -302,7 +325,7 @@ export default function WorldCupDashboard() {
   // Handle Error State
   if (isTeamsError || isGamesError || isStadiumsError) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-slate-955 text-white p-6">
+      <div className="flex flex-col items-center justify-center min-h-screen bg-slate-955 text-white p-3 sm:p-6">
         <div className="p-8 max-w-md w-full bg-slate-900/80 backdrop-blur-md rounded-2xl border border-red-500/30 text-center shadow-2xl">
           <XCircle className="w-16 h-16 text-red-500 mx-auto mb-4 animate-bounce" />
           <h2 className="text-2xl font-bold mb-2 text-red-400">Failed to load tournament data</h2>
@@ -360,9 +383,8 @@ export default function WorldCupDashboard() {
                           localStorage.setItem("worldcup2026_lang", l.code)
                         } catch { }
                       }}
-                      className={`cursor-pointer px-3 py-2 text-xs rounded-lg transition-all focus:bg-cyan-500/15 focus:text-cyan-400 font-bold ${
-                        lang === l.code ? "bg-cyan-500/10 text-cyan-400" : "text-slate-300"
-                      }`}
+                      className={`cursor-pointer px-3 py-2 text-xs rounded-lg transition-all focus:bg-cyan-500/15 focus:text-cyan-400 font-bold ${lang === l.code ? "bg-cyan-500/10 text-cyan-400" : "text-slate-300"
+                        }`}
                     >
                       {l.name}
                     </DropdownMenuItem>
@@ -383,7 +405,7 @@ export default function WorldCupDashboard() {
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 pb-28 sm:pb-8">
+      <main className="sm:max-w-7xl w-full mx-auto px-2 sm:px-6 lg:px-8 py-8 space-y-8 pb-28 sm:pb-8">
         {selectedTeam ? (
           <TeamDetailView
             selectedTeam={selectedTeam}
