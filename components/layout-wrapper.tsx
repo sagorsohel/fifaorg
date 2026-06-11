@@ -56,6 +56,46 @@ export function LayoutWrapper({ children }: { children: React.ReactNode }) {
     initLanguage()
   }, [dispatch])
 
+  useEffect(() => {
+    const handleContextMenu = (e: MouseEvent) => {
+      e.preventDefault()
+    }
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Disable F12 key
+      if (e.key === "F12") {
+        e.preventDefault()
+        return
+      }
+
+      // Disable Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+Shift+C
+      if (e.ctrlKey && e.shiftKey && ["I", "J", "C", "i", "j", "c"].includes(e.key)) {
+        e.preventDefault()
+        return
+      }
+
+      // Disable Ctrl+U (View Source)
+      if (e.ctrlKey && ["U", "u"].includes(e.key)) {
+        e.preventDefault()
+        return
+      }
+
+      // Disable Cmd+Opt+I, Cmd+Opt+J, Cmd+Opt+C, Cmd+Opt+U (macOS equivalents)
+      if (e.metaKey && e.altKey && ["I", "J", "C", "U", "i", "j", "c", "u"].includes(e.key)) {
+        e.preventDefault()
+        return
+      }
+    }
+
+    document.addEventListener("contextmenu", handleContextMenu)
+    document.addEventListener("keydown", handleKeyDown)
+
+    return () => {
+      document.removeEventListener("contextmenu", handleContextMenu)
+      document.removeEventListener("keydown", handleKeyDown)
+    }
+  }, [])
+
   const dir = LANGUAGES.find((l) => l.code === lang)?.dir || "ltr"
 
   return (
