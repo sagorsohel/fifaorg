@@ -106,7 +106,7 @@ export default function FilterSection() {
             {/* Status Selector Dropdown */}
             <div className="flex z-20 flex-1 sm:flex-none">
               <DropdownMenu>
-                <DropdownMenuTrigger className="w-full sm:w-auto bg-slate-950 border border-slate-905 text-xs font-bold text-slate-200 px-3 py-2 sm:py-1.5 rounded-lg hover:border-cyan-500/30 focus:outline-hidden transition-all cursor-pointer shadow-xs flex items-center justify-between sm:justify-start gap-1.5 capitalize">
+                <DropdownMenuTrigger className="w-full sm:w-auto bg-slate-950 border border-slate-800 text-xs font-bold text-slate-200 px-3 py-2 sm:py-1.5 rounded-lg hover:border-cyan-500/30 focus:outline-hidden transition-all cursor-pointer shadow-xs flex items-center justify-between sm:justify-start gap-1.5 capitalize">
                   <span>
                     {filterStatus === "all"
                       ? translate("all_matches", lang)
@@ -142,7 +142,7 @@ export default function FilterSection() {
             {/* Stage Selector (Desktop Dropdown) */}
             <div className="hidden sm:flex z-20 flex-1 sm:flex-none animate-fade-in">
               <DropdownMenu>
-                <DropdownMenuTrigger className="w-full sm:w-auto bg-slate-950 border border-slate-905 text-xs font-bold text-slate-200 px-3 py-2 sm:py-1.5 rounded-lg hover:border-cyan-500/30 focus:outline-hidden transition-all cursor-pointer shadow-xs flex items-center justify-between sm:justify-start gap-1.5 capitalize">
+                <DropdownMenuTrigger className="w-full sm:w-auto bg-slate-950 border border-slate-700 text-xs font-bold text-slate-200 px-3 py-2 sm:py-1.5 rounded-lg hover:border-cyan-500/30 focus:outline-hidden transition-all cursor-pointer shadow-xs flex items-center justify-between sm:justify-start gap-1.5 capitalize">
                   <span className="truncate max-w-[110px] sm:max-w-none">
                     {stages.find((s) => s.id === selectedGroup)?.label || translate("all_matches", lang)}
                   </span>
