@@ -520,22 +520,27 @@ export default function MatchCenterPage({ params }: { params: Promise<{ slug: st
             {/* Home Team */}
             <Link
               href={`/team/${selectedGameHomeTeam ? getTeamSlug(selectedGameHomeTeam) : selectedGame.home_team_id}`}
-              className="flex flex-1 items-center gap-3 min-w-0 justify-start cursor-pointer hover:text-cyan-400 group/team transition-all duration-200"
+              className="flex flex-1 items-center gap-2 sm:gap-3 min-w-0 justify-start cursor-pointer hover:text-cyan-400 group/team transition-all duration-200"
             >
               {selectedGameHomeFlag ? (
-                <div className="relative w-12 h-8 overflow-hidden rounded-md border border-slate-800 shadow-sm shrink-0 group-hover/team:border-cyan-500/50 transition-colors">
+                <div className="relative w-8 h-5.5 sm:w-12 sm:h-8 overflow-hidden rounded-md border border-slate-800 shadow-sm shrink-0 group-hover/team:border-cyan-500/50 transition-colors">
                   <Image src={selectedGameHomeFlag} alt={homeName} fill className="object-cover" unoptimized />
                 </div>
               ) : (
-                <div className="w-12 h-8 bg-slate-800 rounded-md shrink-0 flex items-center justify-center text-xl">🏴</div>
+                <div className="w-8 h-5.5 sm:w-12 sm:h-8 bg-slate-800 rounded-md shrink-0 flex items-center justify-center text-xs sm:text-xl">🏴</div>
               )}
-              <span className="font-extrabold text-slate-100 text-xs sm:text-base truncate group-hover/team:text-cyan-400 transition-colors">
-                {homeName}
+              <span className="font-extrabold text-slate-100 text-xs sm:text-base group-hover/team:text-cyan-400 transition-colors shrink-0 whitespace-nowrap">
+                <span className="sm:hidden">
+                  {selectedGameHomeTeam?.fifa_code || selectedGame.home_team_id.toUpperCase().substring(0, 3)}
+                </span>
+                <span className="hidden sm:inline truncate">
+                  {homeName}
+                </span>
               </span>
             </Link>
 
             {/* score/time */}
-            <div className="px-3 flex flex-col items-center shrink-0">
+            <div className="px-2 sm:px-3 flex flex-col items-center shrink-0">
               {isFinished ? (
                 <div className="flex items-center gap-3 bg-slate-950 px-4 py-1 rounded-xl border border-slate-900 shadow-inner font-mono font-bold text-base sm:text-lg text-emerald-400">
                   <span>{selectedGame.home_score}</span>
@@ -558,17 +563,22 @@ export default function MatchCenterPage({ params }: { params: Promise<{ slug: st
             {/* Away Team */}
             <Link
               href={`/team/${selectedGameAwayTeam ? getTeamSlug(selectedGameAwayTeam) : selectedGame.away_team_id}`}
-              className="flex flex-1 items-center justify-end gap-3 min-w-0 cursor-pointer hover:text-cyan-400 group/team transition-all duration-200"
+              className="flex flex-1 items-center justify-end gap-2 sm:gap-3 min-w-0 cursor-pointer hover:text-cyan-400 group/team transition-all duration-200"
             >
-              <span className="font-extrabold text-slate-100 text-xs sm:text-base truncate group-hover/team:text-cyan-400 transition-colors">
-                {awayName}
+              <span className="font-extrabold text-slate-100 text-xs sm:text-base group-hover/team:text-cyan-400 transition-colors shrink-0 whitespace-nowrap">
+                <span className="sm:hidden">
+                  {selectedGameAwayTeam?.fifa_code || selectedGame.away_team_id.toUpperCase().substring(0, 3)}
+                </span>
+                <span className="hidden sm:inline truncate">
+                  {awayName}
+                </span>
               </span>
               {selectedGameAwayFlag ? (
-                <div className="relative w-12 h-8 overflow-hidden rounded-md border border-slate-800 shadow-sm shrink-0 group-hover/team:border-cyan-500/50 transition-colors">
+                <div className="relative w-8 h-5.5 sm:w-12 sm:h-8 overflow-hidden rounded-md border border-slate-800 shadow-sm shrink-0 group-hover/team:border-cyan-500/50 transition-colors">
                   <Image src={selectedGameAwayFlag} alt={awayName} fill className="object-cover" unoptimized />
                 </div>
               ) : (
-                <div className="w-12 h-8 bg-slate-800 rounded-md shrink-0 flex items-center justify-center text-xl">🏴</div>
+                <div className="w-8 h-5.5 sm:w-12 sm:h-8 bg-slate-800 rounded-md shrink-0 flex items-center justify-center text-xs sm:text-xl">🏴</div>
               )}
             </Link>
           </div>
