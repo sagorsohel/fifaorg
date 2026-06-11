@@ -53,7 +53,7 @@ function AdScriptContainer({ scriptHtml, className }: { scriptHtml?: string; cla
 
 export default function AdCard({ scriptHtml }: { scriptHtml?: string }) {
   return (
-    <div className="bg-slate-900/30 border-slate-900/60 border border-dashed rounded-2xl p-5 flex flex-col justify-center items-center h-full min-h-[180px] shadow-xs relative overflow-hidden">
+    <div className="bg-slate-900/30 border-slate-700/60 border  rounded-2xl p-5 flex flex-col justify-center items-center h-full min-h-[180px] shadow-xs relative overflow-hidden">
       {scriptHtml ? (
         <AdScriptContainer scriptHtml={scriptHtml} className="w-full h-full flex justify-center items-center" />
       ) : (

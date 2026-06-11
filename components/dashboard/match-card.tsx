@@ -105,15 +105,7 @@ export default function MatchCard({ match, flagMap, stadiumName, teamNamesMap }:
 
         {!isFinished && <Countdown dateStr={match.local_date} stadiumId={match.stadium_id} lang={lang} />}
 
-        <span
-          className={`px-2 py-0.5 rounded font-semibold text-[10px] tracking-wide uppercase ${
-            isFinished
-              ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
-              : "bg-cyan-500/10 text-cyan-400 border border-cyan-500/20"
-          }`}
-        >
-          {isFinished ? translate("finished", lang) : translate("upcoming", lang)}
-        </span>
+
       </div>
 
       {/* Teams and Scores row */}
@@ -203,7 +195,7 @@ export default function MatchCard({ match, flagMap, stadiumName, teamNamesMap }:
       </div>
 
       {/* Stadium & Scorers footer info */}
-      <div className="mt-4 pt-3 border-t border-slate-900/40 flex flex-col gap-2 text-slate-400 text-xs">
+      <div className="mt-4 pt-3 border-t flex justify-between items-center border-slate-900/40  gap-2 text-slate-400 text-xs">
         {/* Stadium details */}
         <div className="flex items-center justify-between text-[11px] text-slate-505 w-full">
           <div className="flex items-center gap-1.5">
@@ -211,6 +203,15 @@ export default function MatchCard({ match, flagMap, stadiumName, teamNamesMap }:
             <span>{stadiumName}</span>
           </div>
         </div>
+        <span
+          className={`px-2 py-0.5 rounded font-semibold text-[10px] tracking-wide uppercase ${isFinished
+            ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+            : "bg-cyan-500/10 text-cyan-400 border border-cyan-500/20"
+            }`}
+        >
+          {isFinished ? translate("finished", lang) : translate("upcoming", lang)}
+        </span>
+
 
         {/* Scorers */}
         {isFinished &&
