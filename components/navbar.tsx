@@ -166,15 +166,25 @@ export function Navbar() {
 
           {/* Action Filters / Language Dropdown */}
           <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
+            {/* Matches Link */}
+
+            <Link
+              href="/"
+              className="bg-slate-900 border border-slate-800 text-slate-200 font-bold hover:border-cyan-500/30 hover:text-cyan-400 shadow-md px-2.5 sm:px-4 py-2 sm:py-2.5 rounded-lg sm:rounded-xl text-[9px] sm:text-xs uppercase cursor-pointer hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 flex items-center gap-1 sm:gap-1.5 select-none shrink-0"
+            >
+              <Trophy className="w-3 sm:w-3.5 h-3 sm:h-3.5" />
+              <span className="hidden md:inline">{translate("matches", lang)}</span>
+            </Link>
+
+
             {/* Member Button */}
             <a
               href={referralLink}
-
               rel="noopener noreferrer"
               className="bg-linear-to-r from-cyan-500 to-emerald-500 text-gray-200 font-bold hover:brightness-110 shadow-md px-2.5 sm:px-4 py-2 sm:py-2.5 rounded-lg sm:rounded-xl text-[9px] sm:text-xs uppercase cursor-pointer hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 flex items-center gap-1 sm:gap-1.5 select-none shrink-0"
             >
               <User className="w-3 sm:w-3.5 h-3 sm:h-3.5" />
-              <span>{MEMBERSHIP_TRANSLATIONS[lang] || MEMBERSHIP_TRANSLATIONS["en"]}</span>
+              <span className="hidden md:inline">{MEMBERSHIP_TRANSLATIONS[lang] || MEMBERSHIP_TRANSLATIONS["en"]}</span>
             </a>
 
             {/* Language Selector Dropdown */}
