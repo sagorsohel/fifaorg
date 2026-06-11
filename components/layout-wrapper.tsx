@@ -5,7 +5,7 @@ import { useAppSelector, useAppDispatch } from "@/lib/store"
 import { setLanguage } from "@/lib/features/uiSlice"
 import { detectBrowserLanguage, LANGUAGES, mapCountryToLanguage } from "@/lib/i18n"
 import { Footer } from "./footer"
-import { MobileNav } from "./mobile-nav"
+// import { MobileNav } from "./mobile-nav"
 import { Navbar } from "./navbar"
 
 export function LayoutWrapper({ children }: { children: React.ReactNode }) {
@@ -60,7 +60,7 @@ export function LayoutWrapper({ children }: { children: React.ReactNode }) {
         {children}
       </div>
       <Footer />
-      <MobileNav />
+      {/* <MobileNav /> */}
     </div>
   )
 }
