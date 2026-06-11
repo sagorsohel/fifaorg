@@ -576,6 +576,10 @@ export default function MatchClientPage({ slug }: { slug: string }) {
   }
 
   const isFinished = selectedGame.finished.toUpperCase() === "TRUE"
+  const gameDate = parseStadiumLocalDate(selectedGame.local_date, selectedGame.stadium_id)
+  const hasStarted = Date.now() >= gameDate.getTime()
+  const isLive = !!(selectedGame.time_elapsed && selectedGame.time_elapsed !== "" && selectedGame.time_elapsed !== "null")
+  const shouldShowScore = isFinished || isLive
   const homeName = getTeamName(selectedGameHomeTeam, selectedGame.home_team_name_en || selectedGame.home_team_label || "TBD", lang)
   const awayName = getTeamName(selectedGameAwayTeam, selectedGame.away_team_name_en || selectedGame.away_team_label || "TBD", lang)
 
@@ -644,11 +648,23 @@ export default function MatchClientPage({ slug }: { slug: string }) {
 
             {/* score/time */}
             <div className="px-2 sm:px-3 flex flex-col items-center shrink-0">
-              {isFinished ? (
-                <div className="flex items-center gap-3 bg-slate-950 px-4 py-1 rounded-xl border border-slate-900 shadow-inner font-mono font-bold text-base sm:text-lg text-emerald-400">
-                  <span>{selectedGame.home_score}</span>
-                  <span className="text-slate-655 text-xs font-sans">:</span>
-                  <span>{selectedGame.away_score}</span>
+              {shouldShowScore ? (
+                <div className="flex flex-col items-center gap-1.5">
+                  <div className="flex items-center gap-3 bg-slate-950 px-4 py-1 rounded-xl border border-slate-900 shadow-inner font-mono font-bold text-base sm:text-lg text-emerald-400">
+                    <span>{selectedGame.home_score}</span>
+                    <span className="text-slate-655 text-xs font-sans">:</span>
+                    <span>{selectedGame.away_score}</span>
+                  </div>
+                  {isLive && selectedGame.time_elapsed && (
+                    <span className="text-[9px] font-bold text-red-500 bg-red-500/10 px-2 py-0.5 rounded border border-red-500/20 uppercase tracking-widest font-mono animate-pulse">
+                      {(() => {
+                        if (selectedGame.time_elapsed.toLowerCase() === "live") {
+                          return lang === "ar" ? "مباشر" : "LIVE"
+                        }
+                        return selectedGame.time_elapsed
+                      })()}
+                    </span>
+                  )}
                 </div>
               ) : (
                 <div className="text-center bg-slate-950 px-4 py-1.5 rounded-xl border border-slate-900 min-w-[70px]">
@@ -698,10 +714,16 @@ export default function MatchClientPage({ slug }: { slug: string }) {
             <span
               className={`px-2.5 py-0.5 rounded-md font-bold text-[10px] tracking-wide uppercase ${isFinished
                 ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                : isLive
+                ? "bg-red-500/10 text-red-500 border border-red-500/20 animate-pulse"
                 : "bg-cyan-500/10 text-cyan-400 border border-cyan-500/20"
                 }`}
             >
-              {isFinished ? translate("finished", lang) : translate("upcoming", lang)}
+              {isFinished
+                ? translate("finished", lang)
+                : isLive
+                ? (lang === "ar" ? "مباشر" : "LIVE")
+                : translate("upcoming", lang)}
             </span>
           </div>
         </div>
@@ -883,7 +905,7 @@ export default function MatchClientPage({ slug }: { slug: string }) {
               </div>
 
               {/* Goal Scorers inside schedule card */}
-              {isFinished &&
+              {shouldShowScore &&
                 ((selectedGame.home_scorers && selectedGame.home_scorers !== "null") ||
                   (selectedGame.away_scorers && selectedGame.away_scorers !== "null")) && (
                   <div className="bg-slate-955/60 p-3.5 rounded-xl border border-slate-900/60 text-[10px] space-y-2">
@@ -977,39 +999,39 @@ export default function MatchClientPage({ slug }: { slug: string }) {
                 {/* Stat 1: Possession */}
                 <div className="space-y-1">
                   <div className="flex justify-between text-[9px] font-bold text-slate-400">
-                    <span>{isFinished ? "53%" : "50%"}</span>
+                    <span>{shouldShowScore ? "53%" : "50%"}</span>
                     <span className="text-slate-505 uppercase text-[8px] tracking-wider">{translate("possession", lang)}</span>
-                    <span>{isFinished ? "47%" : "50%"}</span>
+                    <span>{shouldShowScore ? "47%" : "50%"}</span>
                   </div>
                   <div className="w-full h-1 bg-slate-900 rounded-full overflow-hidden flex">
-                    <div className="h-full bg-cyan-500" style={{ width: isFinished ? "53%" : "50%" }}></div>
-                    <div className="h-full bg-emerald-500" style={{ width: isFinished ? "47%" : "50%" }}></div>
+                    <div className="h-full bg-cyan-500" style={{ width: shouldShowScore ? "53%" : "50%" }}></div>
+                    <div className="h-full bg-emerald-500" style={{ width: shouldShowScore ? "47%" : "50%" }}></div>
                   </div>
                 </div>
 
                 {/* Stat 2: Shots */}
                 <div className="space-y-1">
                   <div className="flex justify-between text-[9px] font-bold text-slate-400">
-                    <span>{isFinished ? "14" : "0"}</span>
+                    <span>{shouldShowScore ? "14" : "0"}</span>
                     <span className="text-slate-505 uppercase text-[8px] tracking-wider">{translate("shots", lang)}</span>
-                    <span>{isFinished ? "8" : "0"}</span>
+                    <span>{shouldShowScore ? "8" : "0"}</span>
                   </div>
                   <div className="w-full h-1 bg-slate-900 rounded-full overflow-hidden flex">
-                    <div className="h-full bg-cyan-500" style={{ width: isFinished ? "63%" : "50%" }}></div>
-                    <div className="h-full bg-emerald-500" style={{ width: isFinished ? "37%" : "50%" }}></div>
+                    <div className="h-full bg-cyan-500" style={{ width: shouldShowScore ? "63%" : "50%" }}></div>
+                    <div className="h-full bg-emerald-500" style={{ width: shouldShowScore ? "37%" : "50%" }}></div>
                   </div>
                 </div>
 
                 {/* Stat 3: Fouls */}
                 <div className="space-y-1">
                   <div className="flex justify-between text-[9px] font-bold text-slate-400">
-                    <span>{isFinished ? "9" : "0"}</span>
+                    <span>{shouldShowScore ? "9" : "0"}</span>
                     <span className="text-slate-505 uppercase text-[8px] tracking-wider">{translate("fouls", lang)}</span>
-                    <span>{isFinished ? "11" : "0"}</span>
+                    <span>{shouldShowScore ? "11" : "0"}</span>
                   </div>
                   <div className="w-full h-1 bg-slate-900 rounded-full overflow-hidden flex">
-                    <div className="h-full bg-cyan-500" style={{ width: isFinished ? "45%" : "50%" }}></div>
-                    <div className="h-full bg-emerald-500" style={{ width: isFinished ? "55%" : "50%" }}></div>
+                    <div className="h-full bg-cyan-500" style={{ width: shouldShowScore ? "45%" : "50%" }}></div>
+                    <div className="h-full bg-emerald-500" style={{ width: shouldShowScore ? "55%" : "50%" }}></div>
                   </div>
                 </div>
               </div>

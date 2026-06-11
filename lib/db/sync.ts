@@ -70,6 +70,7 @@ export async function performSync() {
         iso2: team.iso2 || null,
         groups: team.groups || null,
         translations: serializedTeamTrans,
+        fifa_team_id: team.fifa_team_id || null,
       }
     })
 
@@ -85,6 +86,7 @@ export async function performSync() {
           iso2: sql`VALUES(iso2)`,
           groups: sql`VALUES(groups)`,
           translations: sql`VALUES(translations)`,
+          fifa_team_id: sql`VALUES(fifa_team_id)`,
         }
       })
   }
@@ -151,6 +153,9 @@ export async function performSync() {
         time_elapsed: game.time_elapsed || null,
         type: game.type || null,
         slug: gameSlug,
+        referral_link: game.referral_link || null,
+        modal_image: game.modal_image || null,
+        bg_image: game.bg_image || null,
       }
     })
 
@@ -169,6 +174,9 @@ export async function performSync() {
           finished: sql`VALUES(finished)`,
           time_elapsed: sql`VALUES(time_elapsed)`,
           slug: sql`VALUES(slug)`,
+          referral_link: sql`VALUES(referral_link)`,
+          modal_image: sql`VALUES(modal_image)`,
+          bg_image: sql`VALUES(bg_image)`,
         }
       })
   }
@@ -213,6 +221,9 @@ export async function performGamesSync() {
         time_elapsed: game.time_elapsed || null,
         type: game.type || null,
         slug: gameSlug,
+        referral_link: game.referral_link || null,
+        modal_image: game.modal_image || null,
+        bg_image: game.bg_image || null,
       }
     })
 
@@ -231,6 +242,9 @@ export async function performGamesSync() {
           finished: sql`VALUES(finished)`,
           time_elapsed: sql`VALUES(time_elapsed)`,
           slug: sql`VALUES(slug)`,
+          referral_link: sql`VALUES(referral_link)`,
+          modal_image: sql`VALUES(modal_image)`,
+          bg_image: sql`VALUES(bg_image)`,
         }
       })
   }

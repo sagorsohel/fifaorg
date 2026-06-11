@@ -778,6 +778,12 @@ export default function AdminDashboardPage() {
                             const stadiumName = stadium ? `${stadium.name_en}, ${stadium.city_en}` : `Stadium ID: #${match.stadium_id}`
                             const hasCustom = !!(match.referral_link || match.modal_image || match.bg_image)
 
+                            const isFinished = match.finished.toUpperCase() === "TRUE"
+                            const gameDate = parseStadiumLocalDate(match.local_date, match.stadium_id)
+                            const hasStarted = Date.now() >= gameDate.getTime()
+                            const isLive = !!(match.time_elapsed && match.time_elapsed !== "" && match.time_elapsed !== "null")
+                            const shouldShowScore = isFinished || isLive
+
                             return (
                               <div
                                 key={match.id}
@@ -812,11 +818,18 @@ export default function AdminDashboardPage() {
                                   </div>
 
                                   {/* Score */}
-                                  <div className="px-3 shrink-0">
-                                    {match.finished.toUpperCase() === "TRUE" ? (
-                                      <span className="font-mono font-extrabold text-slate-450 bg-slate-950 border border-slate-900 px-3 py-0.5 rounded text-xs">
-                                        {match.home_score} : {match.away_score}
-                                      </span>
+                                  <div className="px-3 shrink-0 flex flex-col items-center gap-1">
+                                    {shouldShowScore ? (
+                                      <>
+                                        <span className="font-mono font-extrabold text-slate-450 bg-slate-950 border border-slate-900 px-3 py-0.5 rounded text-xs">
+                                          {match.home_score} : {match.away_score}
+                                        </span>
+                                        {isLive && match.time_elapsed && (
+                                          <span className="text-[8px] font-bold text-red-500 bg-red-500/10 px-1 py-0.2 rounded border border-red-500/20 uppercase tracking-widest font-mono animate-pulse">
+                                            {match.time_elapsed}
+                                          </span>
+                                        )}
+                                      </>
                                     ) : (
                                       <span className="font-mono text-[8px] font-bold text-cyan-500 bg-cyan-500/5 border border-cyan-500/10 px-2 py-0.5 rounded uppercase tracking-wider">
                                         Upcoming

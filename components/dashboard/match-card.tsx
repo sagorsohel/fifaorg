@@ -75,6 +75,10 @@ export default function MatchCard({ match, flagMap, stadiumName, teamNamesMap }:
 
   const lang = useAppSelector((state) => state.ui.language)
   const isFinished = match.finished.toUpperCase() === "TRUE"
+  const gameDate = parseStadiumLocalDate(match.local_date, match.stadium_id)
+  const hasStarted = Date.now() >= gameDate.getTime()
+  const isLive = !!(match.time_elapsed && match.time_elapsed !== "" && match.time_elapsed !== "null")
+  const shouldShowScore = isFinished || isLive
 
   const homeFlag = flagMap[match.home_team_id] || (match.home_team_name_en ? flagMap[match.home_team_name_en.toLowerCase()] : undefined)
   const awayFlag = flagMap[match.away_team_id] || (match.away_team_name_en ? flagMap[match.away_team_name_en.toLowerCase()] : undefined)
@@ -151,11 +155,23 @@ export default function MatchCard({ match, flagMap, stadiumName, teamNamesMap }:
 
         {/* Match Center: Score / Kickoff Time Button */}
         <div className="px-4 flex items-center justify-center shrink-0">
-          {isFinished ? (
-            <div className="flex items-center gap-2 bg-slate-950 px-4 py-1.5 rounded-xl border border-slate-855 shadow-inner font-mono font-bold text-lg text-emerald-400">
-              <span>{match.home_score}</span>
-              <span className="text-slate-655 text-sm font-sans">:</span>
-              <span>{match.away_score}</span>
+          {shouldShowScore ? (
+            <div className="flex flex-col items-center gap-1">
+              <div className="flex items-center gap-2 bg-slate-950 px-4 py-1.5 rounded-xl border border-slate-855 shadow-inner font-mono font-bold text-lg text-emerald-400">
+                <span>{match.home_score}</span>
+                <span className="text-slate-655 text-sm font-sans">:</span>
+                <span>{match.away_score}</span>
+              </div>
+              {isLive && match.time_elapsed && (
+                <span className="text-[8px] font-bold text-red-500 bg-red-550/10 px-2 py-0.5 rounded border border-red-500/25 uppercase tracking-widest font-mono animate-pulse">
+                  {(() => {
+                    if (match.time_elapsed.toLowerCase() === "live") {
+                      return lang === "ar" ? "مباشر" : "LIVE"
+                    }
+                    return match.time_elapsed
+                  })()}
+                </span>
+              )}
             </div>
           ) : (
             <button
@@ -220,15 +236,21 @@ export default function MatchCard({ match, flagMap, stadiumName, teamNamesMap }:
         <span
           className={`px-2 py-0.5 rounded font-semibold text-[10px] tracking-wide uppercase ${isFinished
             ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+            : isLive
+            ? "bg-red-500/10 text-red-500 border border-red-500/20 animate-pulse"
             : "bg-cyan-500/10 text-cyan-400 border border-cyan-500/20"
             }`}
         >
-          {isFinished ? translate("finished", lang) : translate("upcoming", lang)}
+          {isFinished
+            ? translate("finished", lang)
+            : isLive
+            ? (lang === "ar" ? "مباشر" : "LIVE")
+            : translate("upcoming", lang)}
         </span>
 
 
         {/* Scorers */}
-        {isFinished &&
+        {shouldShowScore &&
           ((match.home_scorers && match.home_scorers !== "null") ||
             (match.away_scorers && match.away_scorers !== "null")) && (
             <div className="bg-slate-955/50 p-2.5 rounded-xl border border-slate-950/80 flex flex-col gap-1 text-[10px]">
