@@ -579,7 +579,7 @@ export default function MatchClientPage({ slug }: { slug: string }) {
   const gameDate = parseStadiumLocalDate(selectedGame.local_date, selectedGame.stadium_id)
   const hasStarted = Date.now() >= gameDate.getTime()
   const isLive = !!(selectedGame.time_elapsed && selectedGame.time_elapsed !== "" && selectedGame.time_elapsed !== "null")
-  const shouldShowScore = isFinished || isLive
+  const shouldShowScore = isLive
   const homeName = getTeamName(selectedGameHomeTeam, selectedGame.home_team_name_en || selectedGame.home_team_label || "TBD", lang)
   const awayName = getTeamName(selectedGameAwayTeam, selectedGame.away_team_name_en || selectedGame.away_team_label || "TBD", lang)
 

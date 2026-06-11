@@ -782,7 +782,7 @@ export default function AdminDashboardPage() {
                             const gameDate = parseStadiumLocalDate(match.local_date, match.stadium_id)
                             const hasStarted = Date.now() >= gameDate.getTime()
                             const isLive = !!(match.time_elapsed && match.time_elapsed !== "" && match.time_elapsed !== "null")
-                            const shouldShowScore = isFinished || isLive
+                            const shouldShowScore = isLive
 
                             return (
                               <div

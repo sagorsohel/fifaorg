@@ -78,7 +78,7 @@ export default function MatchCard({ match, flagMap, stadiumName, teamNamesMap }:
   const gameDate = parseStadiumLocalDate(match.local_date, match.stadium_id)
   const hasStarted = Date.now() >= gameDate.getTime()
   const isLive = !!(match.time_elapsed && match.time_elapsed !== "" && match.time_elapsed !== "null")
-  const shouldShowScore = isFinished || isLive
+  const shouldShowScore = isLive
 
   const homeFlag = flagMap[match.home_team_id] || (match.home_team_name_en ? flagMap[match.home_team_name_en.toLowerCase()] : undefined)
   const awayFlag = flagMap[match.away_team_id] || (match.away_team_name_en ? flagMap[match.away_team_name_en.toLowerCase()] : undefined)
