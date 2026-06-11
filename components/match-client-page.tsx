@@ -809,14 +809,7 @@ export default function MatchClientPage({ slug }: { slug: string }) {
               </div>
 
               {/* Footer */}
-              <div className="text-center pt-2 border-t border-slate-900/60 shrink-0">
-                <p className="text-slate-400 text-[10px] font-semibold">
-                  {translate("already_account", lang)}{" "}
-                  <span className="text-cyan-500 hover:text-cyan-400 cursor-pointer font-bold transition-colors">
-                    {translate("login", lang)}
-                  </span>
-                </p>
-              </div>
+
             </div>
           )}
         </div>
@@ -1063,12 +1056,12 @@ export default function MatchClientPage({ slug }: { slug: string }) {
 
         {isMobile && (
           <Dialog open={showInlineSignup} onOpenChange={setShowInlineSignup}>
-            <DialogContent className="bg-slate-955/95 backdrop-blur-md border border-cyan-500/25 text-slate-100 max-w-sm rounded-3xl p-5 shadow-[0_0_50px_rgba(6,182,212,0.15)] outline-hidden" showCloseButton={false}>
+            <DialogContent className="bg-slate-955/95 backdrop-blur-md border border-cyan-500/25 text-slate-100 max-w-[22rem]  rounded-3xl p-5 shadow-[0_0_50px_rgba(6,182,212,0.15)] outline-hidden" showCloseButton={false}>
               {/* Header */}
               <div className="flex items-center justify-between border-b border-slate-900/60 pb-3">
                 <div className="flex items-center gap-2 text-cyan-500">
                   <Tv className="w-5 h-5 text-cyan-500" />
-                  <span className="font-bold text-sm tracking-wider uppercase text-slate-100">
+                  <span className="font-bold text-[12px] tracking-wider uppercase text-slate-100">
                     {translate("title", lang)}
                   </span>
                 </div>
@@ -1082,14 +1075,14 @@ export default function MatchClientPage({ slug }: { slug: string }) {
 
               {/* Body */}
               <div className="flex flex-col justify-center items-center gap-4 my-2">
-                <h3 className="text-center font-bold text-sm sm:text-base text-slate-100 leading-snug px-2">
+                <h3 className="text-center font-bold text-[12px] text-slate-100 leading-snug px-2">
                   {translate("signup_title", lang)}
                 </h3>
 
                 {/* Main action button */}
                 <button
                   onClick={handleActionRedirect}
-                  className="w-full py-3 bg-cyan-700 hover:bg-cyan-600 active:scale-[0.98] transition-all rounded-xl text-slate-955 font-extrabold tracking-wider text-xs sm:text-sm shadow-lg shadow-cyan-500/20 hover:shadow-cyan-500/35 cursor-pointer uppercase"
+                  className="w-fit px-3 py-3 bg-cyan-700 hover:bg-cyan-600 active:scale-[0.98] transition-all rounded-xl text-slate-955 font-extrabold tracking-wider text-xs sm:text-sm shadow-lg shadow-cyan-500/20 hover:shadow-cyan-500/35 cursor-pointer uppercase"
                 >
                   {translate("signup_btn", lang)}
                 </button>
