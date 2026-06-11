@@ -4,19 +4,38 @@ import { sql } from "drizzle-orm"
 import { getGameSlug } from "../services/apiSlice"
 import { teamTranslations, stadiumTranslations } from "./translations"
 
-async function fetchFromApi(endpoint: string) {
+async function fetchFromApi(endpoint: string, timeoutMs = 5000) {
   let res
   try {
-    res = await fetch(`http://worldcup26.ir:3050/get/${endpoint}`)
+    const controller = new AbortController()
+    const id = setTimeout(() => controller.abort(), timeoutMs)
+    try {
+      res = await fetch(`http://worldcup26.ir:3050/get/${endpoint}`, {
+        signal: controller.signal,
+        cache: "no-store"
+      })
+    } finally {
+      clearTimeout(id)
+    }
   } catch (err) {
-    console.warn(`Sync fetch for ${endpoint} via domain failed, falling back to direct IP address.`)
-    res = await fetch(`http://82.115.13.31:3050/get/${endpoint}`)
+    console.warn(`Sync fetch for ${endpoint} via domain failed, falling back to direct IP address. Error:`, err)
+    const controller = new AbortController()
+    const id = setTimeout(() => controller.abort(), timeoutMs)
+    try {
+      res = await fetch(`http://82.115.13.31:3050/get/${endpoint}`, {
+        signal: controller.signal,
+        cache: "no-store"
+      })
+    } finally {
+      clearTimeout(id)
+    }
   }
   if (!res.ok) {
     throw new Error(`Failed to fetch ${endpoint}: ${res.status}`)
   }
   return res.json()
 }
+
 
 export async function performSync() {
   await ensureTablesExist()
@@ -161,3 +180,66 @@ export async function performSync() {
     games: gamesList.length
   }
 }
+
+export async function performGamesSync() {
+  await ensureTablesExist()
+
+  console.log("Games-only Sync Started...")
+
+  // Fetch games API
+  const gamesData = await fetchFromApi("games")
+  const gamesList = gamesData?.games || []
+
+  console.log(`Fetched ${gamesList.length} games for games-only sync.`)
+
+  if (gamesList.length > 0) {
+    const gamesValues = gamesList.map((game: any) => {
+      const gameSlug = getGameSlug(game)
+      return {
+        id: game.id,
+        _id: game._id,
+        home_team_id: game.home_team_id,
+        away_team_id: game.away_team_id,
+        home_score: game.home_score || "0",
+        away_score: game.away_score || "0",
+        home_scorers: game.home_scorers || null,
+        away_scorers: game.away_scorers || null,
+        group: game.group || null,
+        matchday: game.matchday || null,
+        local_date: game.local_date || null,
+        persian_date: game.persian_date || null,
+        stadium_id: game.stadium_id || null,
+        finished: game.finished || "FALSE",
+        time_elapsed: game.time_elapsed || null,
+        type: game.type || null,
+        slug: gameSlug,
+      }
+    })
+
+    await db
+      .insert(games)
+      .values(gamesValues)
+      .onDuplicateKeyUpdate({
+        set: {
+          home_score: sql`VALUES(home_score)`,
+          away_score: sql`VALUES(away_score)`,
+          home_scorers: sql`VALUES(home_scorers)`,
+          away_scorers: sql`VALUES(away_scorers)`,
+          local_date: sql`VALUES(local_date)`,
+          persian_date: sql`VALUES(persian_date)`,
+          stadium_id: sql`VALUES(stadium_id)`,
+          finished: sql`VALUES(finished)`,
+          time_elapsed: sql`VALUES(time_elapsed)`,
+          slug: sql`VALUES(slug)`,
+        }
+      })
+  }
+
+  console.log("Games-only Sync Completed Successfully!")
+  return {
+    games: gamesList.length
+  }
+}
+
+
+

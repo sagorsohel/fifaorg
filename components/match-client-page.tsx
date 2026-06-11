@@ -349,7 +349,8 @@ export default function MatchClientPage({ slug }: { slug: string }) {
 
   // API Queries via RTK Query
   const { data: teamsData, isLoading: isTeamsLoading } = useGetTeamsQuery()
-  const { data: gamesData, isLoading: isGamesLoading } = useGetGamesQuery()
+  const [pollingInterval, setPollingInterval] = useState(0)
+  const { data: gamesData, isLoading: isGamesLoading } = useGetGamesQuery(undefined, { pollingInterval })
   const { data: stadiumsData, isLoading: isStadiumsLoading } = useGetStadiumsQuery()
 
   const selectedGame = useMemo(() => {
@@ -366,6 +367,33 @@ export default function MatchClientPage({ slug }: { slug: string }) {
     if (!selectedGame || !teamsData?.teams) return null
     return teamsData.teams.find((t) => t.id === selectedGame.away_team_id || t._id === selectedGame.away_team_id)
   }, [selectedGame, teamsData])
+
+  useEffect(() => {
+    if (!selectedGame) {
+      setPollingInterval(0)
+      return
+    }
+    if (selectedGame.finished.toUpperCase() === "TRUE") {
+      setPollingInterval(0)
+      return
+    }
+
+    try {
+      const kickoff = new Date(selectedGame.local_date)
+      const now = new Date()
+      const diff = kickoff.getTime() - now.getTime()
+      
+      // If live or starting in next 15 minutes: poll every 30 seconds
+      if (diff <= 15 * 60 * 1000 && diff >= -4 * 60 * 60 * 1000) {
+        setPollingInterval(30000)
+      } else {
+        setPollingInterval(0)
+      }
+    } catch {
+      setPollingInterval(0)
+    }
+  }, [selectedGame])
+
 
   const { utcDateString, utcTimeString } = useMemo(() => {
     if (!selectedGame) return { utcDateString: "", utcTimeString: "" }
