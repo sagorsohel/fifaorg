@@ -8,8 +8,22 @@ export async function GET() {
     await ensureTablesExist()
     let adsData = await db.select().from(ads).where(eq(ads.id, "global")).then(r => r[0])
     if (!adsData) {
-      await db.insert(ads).values({ id: "global", hero_ads: "", modal_ads: "", header_ads: "" })
-      adsData = { id: "global", hero_ads: "", modal_ads: "", header_ads: "" }
+      await db.insert(ads).values({ 
+        id: "global", 
+        hero_ads: "", 
+        modal_ads: "", 
+        header_ads: "",
+        membership_ref_link: "",
+        signin_ref_link: ""
+      })
+      adsData = { 
+        id: "global", 
+        hero_ads: "", 
+        modal_ads: "", 
+        header_ads: "",
+        membership_ref_link: "",
+        signin_ref_link: ""
+      }
     }
     return NextResponse.json({ success: true, ads: adsData })
   } catch (err: any) {
@@ -20,13 +34,15 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     await ensureTablesExist()
-    const { hero_ads, modal_ads, header_ads } = await request.json()
+    const { hero_ads, modal_ads, header_ads, membership_ref_link, signin_ref_link } = await request.json()
 
     await db.update(ads)
       .set({
         hero_ads: hero_ads ?? "",
         modal_ads: modal_ads ?? "",
-        header_ads: header_ads ?? ""
+        header_ads: header_ads ?? "",
+        membership_ref_link: membership_ref_link ?? "",
+        signin_ref_link: signin_ref_link ?? ""
       })
       .where(eq(ads.id, "global"))
 

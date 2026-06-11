@@ -307,6 +307,8 @@ export default function MatchClientPage({ slug }: { slug: string }) {
     header_ads?: string
     hero_ads?: string
     modal_ads?: string
+    membership_ref_link?: string
+    signin_ref_link?: string
   } | null>(null)
 
   useEffect(() => {
@@ -440,15 +442,9 @@ export default function MatchClientPage({ slug }: { slug: string }) {
   }
 
   const handleActionRedirect = () => {
-    const targetUrl = (selectedGame && selectedGame.referral_link)
-      ? selectedGame.referral_link
-      : "https://lightsalmon-hummingbird-478538.hostingersite.com/register"
+    const targetUrl = adsConfig?.signin_ref_link || (selectedGame && selectedGame.referral_link) || "https://lightsalmon-hummingbird-478538.hostingersite.com/register"
 
-    if (isMobile) {
-      window.location.href = targetUrl
-    } else {
-      // window.open(targetUrl, "_blank")
-    }
+    window.location.href = targetUrl
   }
 
   // Loading state fallback

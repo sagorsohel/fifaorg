@@ -98,12 +98,22 @@ export async function ensureTablesExist() {
         \`id\` varchar(50) PRIMARY KEY,
         \`hero_ads\` text,
         \`modal_ads\` text,
-        \`header_ads\` text
+        \`header_ads\` text,
+        \`membership_ref_link\` text,
+        \`signin_ref_link\` text
       )
     `)
 
     try {
-      await poolConnection.query("INSERT IGNORE INTO `ads` (`id`, `hero_ads`, `modal_ads`, `header_ads`) VALUES ('global', '', '', '')")
+      await poolConnection.query("INSERT IGNORE INTO `ads` (`id`, `hero_ads`, `modal_ads`, `header_ads`, `membership_ref_link`, `signin_ref_link`) VALUES ('global', '', '', '', '', '')")
+    } catch (err) {}
+
+    try {
+      await poolConnection.query("ALTER TABLE `ads` ADD COLUMN `membership_ref_link` TEXT NULL")
+    } catch (err) {}
+
+    try {
+      await poolConnection.query("ALTER TABLE `ads` ADD COLUMN `signin_ref_link` TEXT NULL")
     } catch (err) {}
 
     // Self-healing columns for existing tables

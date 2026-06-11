@@ -111,6 +111,8 @@ export function Navbar() {
   const { data: gamesData } = useGetGamesQuery()
   const [adsConfig, setAdsConfig] = useState<{
     hero_ads?: string
+    membership_ref_link?: string
+    signin_ref_link?: string
   } | null>(null)
 
   useEffect(() => {
@@ -125,6 +127,10 @@ export function Navbar() {
   }, [])
 
   const referralLink = (() => {
+    if (adsConfig?.membership_ref_link) {
+      return adsConfig.membership_ref_link
+    }
+
     const defaultLink = "https://lightsalmon-hummingbird-478538.hostingersite.com/register"
     if (!pathname) return defaultLink
 
