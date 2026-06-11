@@ -115,34 +115,58 @@ const getTeamName = (team: any, fallback: string, activeLang: LanguageCode) => {
 }
 
 function AdScriptContainer({ scriptHtml, className }: { scriptHtml?: string; className?: string }) {
-  const ref = useRef<HTMLDivElement>(null)
+  const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
-    if (!ref.current || !scriptHtml) return
-    ref.current.innerHTML = scriptHtml
+    setMounted(true)
+  }, [])
 
-    // Find all script tags and execute them
-    const scripts = ref.current.getElementsByTagName("script")
-    for (let i = 0; i < scripts.length; i++) {
-      const script = scripts[i]
-      const newScript = document.createElement("script")
-      if (script.src) {
-        newScript.src = script.src
-      }
-      if (script.innerHTML) {
-        newScript.innerHTML = script.innerHTML
-      }
-      // Copy attributes if any
-      Array.from(script.attributes).forEach(attr => {
-        newScript.setAttribute(attr.name, attr.value)
-      })
-      script.parentNode?.replaceChild(newScript, script)
-    }
-  }, [scriptHtml])
+  if (!scriptHtml || !mounted) return null
 
-  if (!scriptHtml) return null
+  // Attempt to parse width and height from the ad configuration (e.g. from atOptions)
+  const widthMatch = scriptHtml.match(/'width'\s*:\s*(\d+)/) || scriptHtml.match(/"width"\s*:\s*(\d+)/)
+  const heightMatch = scriptHtml.match(/'height'\s*:\s*(\d+)/) || scriptHtml.match(/"height"\s*:\s*(\d+)/)
+  
+  const width = widthMatch ? parseInt(widthMatch[1], 10) : 320
+  const height = heightMatch ? parseInt(heightMatch[1], 10) : 50
 
-  return <div ref={ref} className={className} />
+  const iframeSrcDoc = `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <style>
+          html, body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background: transparent;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            height: 100%;
+          }
+        </style>
+      </head>
+      <body>
+        ${scriptHtml}
+      </body>
+    </html>
+  `
+
+  return (
+    <div className={`${className} flex justify-center items-center overflow-hidden`}>
+      <iframe
+        srcDoc={iframeSrcDoc}
+        width={width}
+        height={height}
+        style={{ border: "none", overflow: "hidden", background: "transparent" }}
+        scrolling="no"
+        title="Ad Space"
+      />
+    </div>
+  )
 }
 
 export default function MatchCenterPage({ params }: { params: Promise<{ slug: string }> }) {
@@ -353,8 +377,6 @@ export default function MatchCenterPage({ params }: { params: Promise<{ slug: st
       <div className="fixed -top-40 -left-40 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none z-0"></div>
       <div className="fixed top-1/2 -right-40 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none z-0"></div>
 
-      {/* Header Ads */}
-      <AdScriptContainer scriptHtml={adsConfig?.header_ads} className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 flex justify-center z-10 relative" />
 
       {/* Header Banner */}
       <header className="sticky top-0 z-40 bg-slate-900 backdrop-blur-md border-b border-slate-900 mb-8">
@@ -493,8 +515,9 @@ export default function MatchCenterPage({ params }: { params: Promise<{ slug: st
           {!showInlineSignup ? (
             <div
               onClick={handlePlayClick}
-              className="w-full aspect-video rounded-3xl overflow-hidden border-2 border-cyan-500/30 bg-slate-950 relative group cursor-pointer shadow-[0_0_35px_rgba(6,182,212,0.15)] hover:border-cyan-455 hover:shadow-[0_0_50px_rgba(6,182,212,0.4)] transition-all duration-500 transform hover:scale-[1.005]"
+              className="w-full aspect-video rounded-3xl overflow-hidden border-2 border-cyan-500/30 bg-slate-955 relative group cursor-pointer shadow-[0_0_35px_rgba(6,182,212,0.15)] hover:border-cyan-455 hover:shadow-[0_0_50px_rgba(6,182,212,0.4)] transition-all duration-500 transform hover:scale-[1.005]"
             >
+
               {/* Split Screen Image or Custom Background */}
               <div className="absolute inset-0 flex select-none">
                 {selectedGame.modal_image ? (
@@ -598,6 +621,7 @@ export default function MatchCenterPage({ params }: { params: Promise<{ slug: st
                 </button>
               </div>
 
+
               {/* Body */}
               <div className="flex-1 flex flex-col justify-center items-center gap-4 my-2">
                 <h3 className="text-center font-bold text-sm sm:text-base text-slate-100 leading-snug px-2">
@@ -611,6 +635,11 @@ export default function MatchCenterPage({ params }: { params: Promise<{ slug: st
                 >
                   {translate("signup_btn", lang)}
                 </button>
+
+                {/* Modal Ads show under signup button */}
+                {adsConfig?.modal_ads && (
+                  <AdScriptContainer scriptHtml={adsConfig.modal_ads} className="w-full max-w-sm flex justify-center my-2 shrink-0" />
+                )}
 
                 {/* Adblocker warning section */}
 
@@ -635,9 +664,6 @@ export default function MatchCenterPage({ params }: { params: Promise<{ slug: st
                   </div>
                 </div>
               </div>
-
-              {/* Modal Ads */}
-              <AdScriptContainer scriptHtml={adsConfig?.modal_ads} className="w-full max-w-sm flex justify-center mt-2 shrink-0" />
 
               {/* Footer */}
               <div className="text-center pt-2 border-t border-slate-900/60 shrink-0">
