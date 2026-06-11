@@ -19,12 +19,14 @@ export function LayoutWrapper({ children }: { children: React.ReactNode }) {
         const saved = localStorage.getItem("worldcup2026_lang")
         if (saved) {
           dispatch(setLanguage(saved as any))
+          document.cookie = `worldcup2026_lang=${saved}; path=/; max-age=31536000`
           return
         }
 
         // 1. Initial guess based on timezone/browser locale (instant)
         const detected = detectBrowserLanguage()
         dispatch(setLanguage(detected))
+        document.cookie = `worldcup2026_lang=${detected}; path=/; max-age=31536000`
 
         // 2. Fetch region/country based on IP (background)
         const res = await fetch("/api/detect-region")
@@ -35,6 +37,7 @@ export function LayoutWrapper({ children }: { children: React.ReactNode }) {
             if (mappedLang) {
               dispatch(setLanguage(mappedLang))
               localStorage.setItem("worldcup2026_lang", mappedLang)
+              document.cookie = `worldcup2026_lang=${mappedLang}; path=/; max-age=31536000`
               return
             }
           }
@@ -42,9 +45,11 @@ export function LayoutWrapper({ children }: { children: React.ReactNode }) {
 
         // If fetch fails or no mapped language, save the initial timezone/browser locale guess
         localStorage.setItem("worldcup2026_lang", detected)
+        document.cookie = `worldcup2026_lang=${detected}; path=/; max-age=31536000`
       } catch (e) {
         const detected = detectBrowserLanguage()
         dispatch(setLanguage(detected))
+        document.cookie = `worldcup2026_lang=${detected}; path=/; max-age=31536000`
       }
     }
 

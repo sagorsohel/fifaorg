@@ -5,7 +5,7 @@ import Link from "next/link"
 import Image from "next/image"
 import { usePathname } from "next/navigation"
 import { Trophy, User } from "lucide-react"
-import { useAppDispatch, useAppSelector } from "@/lib/store"
+import { useAppDispatch, useAppSelector, RootState } from "@/lib/store"
 import { setLanguage } from "@/lib/features/uiSlice"
 import {
   DropdownMenu,
@@ -106,7 +106,7 @@ function AdScriptContainer({ scriptHtml, className }: { scriptHtml?: string; cla
 
 export function Navbar() {
   const dispatch = useAppDispatch()
-  const lang = useAppSelector((state) => state.ui.language)
+  const lang = useAppSelector((state: RootState) => state.ui.language)
   const pathname = usePathname()
   const { data: gamesData } = useGetGamesQuery()
   const [adsConfig, setAdsConfig] = useState<{
@@ -237,6 +237,7 @@ export function Navbar() {
                         dispatch(setLanguage(l.code))
                         try {
                           localStorage.setItem("worldcup2026_lang", l.code)
+                          document.cookie = `worldcup2026_lang=${l.code}; path=/; max-age=31536000`
                         } catch { }
                       }}
                       className={`cursor-pointer px-3 py-2 text-xs rounded-lg transition-all focus:bg-cyan-500/15 focus:text-cyan-400 font-bold ${lang === l.code ? "bg-cyan-500/10 text-cyan-400" : "text-slate-300"
