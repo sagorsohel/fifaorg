@@ -174,9 +174,6 @@ export async function performSync() {
           finished: sql`VALUES(finished)`,
           time_elapsed: sql`VALUES(time_elapsed)`,
           slug: sql`VALUES(slug)`,
-          referral_link: sql`VALUES(referral_link)`,
-          modal_image: sql`VALUES(modal_image)`,
-          bg_image: sql`VALUES(bg_image)`,
         }
       })
   }
@@ -248,9 +245,6 @@ export async function performGamesSync() {
           finished: sql`VALUES(finished)`,
           time_elapsed: sql`VALUES(time_elapsed)`,
           slug: sql`VALUES(slug)`,
-          referral_link: sql`VALUES(referral_link)`,
-          modal_image: sql`VALUES(modal_image)`,
-          bg_image: sql`VALUES(bg_image)`,
         }
       })
   }
