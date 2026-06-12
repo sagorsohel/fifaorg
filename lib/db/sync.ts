@@ -4,7 +4,7 @@ import { sql } from "drizzle-orm"
 import { getGameSlug } from "../services/apiSlice"
 import { teamTranslations, stadiumTranslations } from "./translations"
 
-async function fetchFromApi(endpoint: string, timeoutMs = 5000) {
+async function fetchFromApi(endpoint: string, timeoutMs = 15000) {
   let res
   try {
     const controller = new AbortController()
