@@ -1314,13 +1314,13 @@ export function parseStadiumLocalDate(localDateStr: string, stadiumId: string): 
     // Determine UTC offset for the stadium in June/July 2026 (DST offsets)
     let offset = -5 // Default to Central Time (UTC-5)
     
-    if (["11", "12", "13", "14", "15", "16"].includes(stadiumId)) {
+    if (["7", "8", "9", "10", "11", "12"].includes(stadiumId)) {
       offset = -4 // Eastern Time USA/Canada (EDT, UTC-4)
-    } else if (["8", "9", "10"].includes(stadiumId)) {
+    } else if (["4", "5", "6"].includes(stadiumId)) {
       offset = -5 // Central Time USA (CDT, UTC-5)
     } else if (["1", "2", "3"].includes(stadiumId)) {
       offset = -6 // CST Mexico (UTC-6)
-    } else if (["4", "5", "6", "7"].includes(stadiumId)) {
+    } else if (["13", "14", "15", "16"].includes(stadiumId)) {
       offset = -7 // Pacific Time USA/Canada (PDT, UTC-7)
     }
 
