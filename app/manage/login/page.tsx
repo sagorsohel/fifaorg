@@ -18,7 +18,7 @@ export default function AdminLoginPage() {
       if (isAuth === "true") {
         router.push("/manage/dashboard")
       }
-    } catch (e) {}
+    } catch (e) { }
   }, [router])
 
   const handleLogin = (e: React.FormEvent) => {
@@ -28,7 +28,7 @@ export default function AdminLoginPage() {
 
     // Simulate standard latency
     setTimeout(() => {
-      if (email === "admin@gmail.com" && password === "123456") {
+      if (email === "admin@gmail.com" && password === "sohoj@sohoj") {
         try {
           localStorage.setItem("worldcup2026_admin_auth", "true")
           router.push("/manage/dashboard")
