@@ -189,7 +189,6 @@ export function Navbar() {
                 alt="FIFA WC26 on Screen Logo"
                 fill
                 className="object-contain p-1"
-                unoptimized
               />
             </div>
             <div>
@@ -206,6 +205,7 @@ export function Navbar() {
 
             <Link
               href="/"
+              aria-label={translate("matches", lang) || "Matches"}
               className="bg-slate-900 border border-slate-800 text-slate-200 font-bold hover:border-cyan-500/30 hover:text-cyan-400 shadow-md px-2.5 sm:px-4 py-2 sm:py-2.5 rounded-lg sm:rounded-xl text-[9px] sm:text-xs uppercase cursor-pointer hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 flex items-center gap-1 sm:gap-1.5 select-none shrink-0"
             >
               <Trophy className="w-3 sm:w-3.5 h-3 sm:h-3.5" />
@@ -220,6 +220,7 @@ export function Navbar() {
                   window.open(referralLink, "_blank", "noopener,noreferrer")
                 }
               }}
+              aria-label={MEMBERSHIP_TRANSLATIONS[lang] || MEMBERSHIP_TRANSLATIONS["en"]}
               className="bg-linear-to-r from-cyan-500 to-emerald-500 text-gray-200 font-bold hover:brightness-110 shadow-md px-2.5 sm:px-4 py-2 sm:py-2.5 rounded-lg sm:rounded-xl text-[9px] sm:text-xs uppercase cursor-pointer hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 flex items-center gap-1 sm:gap-1.5 select-none shrink-0 border-0"
             >
               <User className="w-3 sm:w-3.5 h-3 sm:h-3.5" />
@@ -257,9 +258,15 @@ export function Navbar() {
           </div>
         </div>
       </header>
-      {activeAdHtml && (
-        <div className="w-full flex justify-center py-2 bg-slate-955/50 border-b border-slate-900/40 relative z-30">
-          <AdScriptContainer scriptHtml={activeAdHtml} className="max-w-7xl mx-auto w-full flex justify-center" />
+      {(adsConfig === null || activeAdHtml) && (
+        <div className="w-full flex justify-center py-2 bg-slate-955/50 border-b border-slate-900/40 relative z-30 min-h-[66px] sm:min-h-[106px] overflow-hidden">
+          {activeAdHtml ? (
+            <AdScriptContainer scriptHtml={activeAdHtml} className="max-w-7xl mx-auto w-full flex justify-center" />
+          ) : (
+            <div className="animate-pulse w-full h-full flex items-center justify-center text-[10px] text-slate-600 tracking-wider font-mono">
+              ADVERTISEMENT LOADING...
+            </div>
+          )}
         </div>
       )}
     </>

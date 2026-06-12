@@ -385,7 +385,7 @@ export default function MatchClientPage({ slug }: { slug: string }) {
       const kickoff = new Date(selectedGame.local_date)
       const now = new Date()
       const diff = kickoff.getTime() - now.getTime()
-      
+
       // If live or starting in next 15 minutes: poll every 2 minutes
       if (diff <= 15 * 60 * 1000 && diff >= -4 * 60 * 60 * 1000) {
         setPollingInterval(120000)
@@ -602,7 +602,6 @@ export default function MatchClientPage({ slug }: { slug: string }) {
             alt=""
             fill
             className="object-cover "
-            unoptimized
           />
           <div className="absolute inset-0 bg-linear-to-b from-black/90 via-slate-800/80 to-slate-955/95"></div>
         </div>
@@ -637,7 +636,7 @@ export default function MatchClientPage({ slug }: { slug: string }) {
             >
               {selectedGameHomeFlag ? (
                 <div className="relative w-8 h-5.5 sm:w-12 sm:h-8 overflow-hidden rounded-md border border-slate-800 shadow-sm shrink-0 group-hover/team:border-cyan-500/50 transition-colors">
-                  <Image src={selectedGameHomeFlag} alt={homeName} fill className="object-cover" unoptimized />
+                  <Image src={selectedGameHomeFlag} alt={homeName} fill className="object-cover" />
                 </div>
               ) : (
                 <div className="w-8 h-5.5 sm:w-12 sm:h-8 bg-slate-800 rounded-md shrink-0 flex items-center justify-center text-xs sm:text-xl">🏴</div>
@@ -700,7 +699,7 @@ export default function MatchClientPage({ slug }: { slug: string }) {
               </span>
               {selectedGameAwayFlag ? (
                 <div className="relative w-8 h-5.5 sm:w-12 sm:h-8 overflow-hidden rounded-md border border-slate-800 shadow-sm shrink-0 group-hover/team:border-cyan-500/50 transition-colors">
-                  <Image src={selectedGameAwayFlag} alt={awayName} fill className="object-cover" unoptimized />
+                  <Image src={selectedGameAwayFlag} alt={awayName} fill className="object-cover" />
                 </div>
               ) : (
                 <div className="w-8 h-5.5 sm:w-12 sm:h-8 bg-slate-800 rounded-md shrink-0 flex items-center justify-center text-xs sm:text-xl">🏴</div>
@@ -721,15 +720,15 @@ export default function MatchClientPage({ slug }: { slug: string }) {
               className={`px-2.5 py-0.5 rounded-md font-bold text-[10px] tracking-wide uppercase ${isFinished
                 ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
                 : isLive
-                ? "bg-red-500/10 text-red-500 border border-red-500/20 animate-pulse"
-                : "bg-cyan-500/10 text-cyan-400 border border-cyan-500/20"
+                  ? "bg-red-500/10 text-red-500 border border-red-500/20 animate-pulse"
+                  : "bg-cyan-500/10 text-cyan-400 border border-cyan-500/20"
                 }`}
             >
               {isFinished
                 ? translate("finished", lang)
                 : isLive
-                ? (lang === "ar" ? "مباشر" : "LIVE")
-                : translate("upcoming", lang)}
+                  ? (lang === "ar" ? "مباشر" : "LIVE")
+                  : translate("upcoming", lang)}
             </span>
           </div>
         </div>
@@ -751,7 +750,6 @@ export default function MatchClientPage({ slug }: { slug: string }) {
                       alt=""
                       fill
                       className="object-cover opacity-85 scale-100 group-hover:scale-[1.03] transition-transform duration-500"
-                      unoptimized
                     />
                   </div>
                 ) : (
@@ -763,7 +761,6 @@ export default function MatchClientPage({ slug }: { slug: string }) {
                           alt=""
                           fill
                           className="object-cover blur-xs opacity-75 scale-110"
-                          unoptimized
                         />
                       ) : (
                         <div className="w-full h-full bg-slate-900" />
@@ -777,7 +774,6 @@ export default function MatchClientPage({ slug }: { slug: string }) {
                           alt=""
                           fill
                           className="object-cover blur-xs opacity-75 scale-110"
-                          unoptimized
                         />
                       ) : (
                         <div className="w-full h-full bg-slate-900" />
@@ -926,10 +922,10 @@ export default function MatchClientPage({ slug }: { slug: string }) {
                         <div>-</div>
                       )}
                     </div>
-                    
+
                     {/* Divider */}
                     <div className="border-l border-slate-800/85 shrink-0 self-stretch"></div>
-                    
+
                     {/* Away Scorers */}
                     <div className="truncate flex-1 text-right flex flex-col gap-0.5 min-w-0">
                       <span className="text-[7px] text-slate-500 uppercase tracking-wider font-bold mb-0.5">{selectedGame.away_team_name_en || (lang === "ar" ? "الضيف" : "AWAY")}</span>
