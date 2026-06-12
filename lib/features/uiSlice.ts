@@ -9,6 +9,7 @@ export interface UiState {
   selectedGroup: string // "all" or specific group name "A" - "L"
   selectedTeamId: string | null
   selectedGameId: string | null
+  detectedTimezone: string | null
 }
 
 const initialState: UiState = {
@@ -19,6 +20,7 @@ const initialState: UiState = {
   selectedGroup: "all",
   selectedTeamId: null,
   selectedGameId: null,
+  detectedTimezone: null,
 }
 
 export const uiSlice = createSlice({
@@ -46,6 +48,9 @@ export const uiSlice = createSlice({
     setSelectedGameId: (state, action: PayloadAction<string | null>) => {
       state.selectedGameId = action.payload
     },
+    setDetectedTimezone: (state, action: PayloadAction<string | null>) => {
+      state.detectedTimezone = action.payload
+    },
     resetFilters: (state) => {
       state.searchQuery = ""
       state.filterStatus = "all"
@@ -64,6 +69,7 @@ export const {
   setSelectedGroup,
   setSelectedTeamId,
   setSelectedGameId,
+  setDetectedTimezone,
   resetFilters,
 } = uiSlice.actions
 

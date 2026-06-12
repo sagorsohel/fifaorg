@@ -39,6 +39,7 @@ import {
   parseStadiumLocalDate,
   formatLocalTime,
   formatCountdownTime,
+  getTimezoneAbbr,
 } from "@/lib/i18n"
 import { formatScorers, getScorersArray } from "@/lib/utils"
 
@@ -271,6 +272,7 @@ export default function MatchClientPage({ slug }: { slug: string }) {
   const [showInlineSignup, setShowInlineSignup] = useState(false)
 
   const lang = useAppSelector((state) => state.ui.language)
+  const detectedTimezone = useAppSelector((state) => state.ui.detectedTimezone)
 
   useEffect(() => {
     if (!isBuffering) return
@@ -672,12 +674,14 @@ export default function MatchClientPage({ slug }: { slug: string }) {
                   )}
                 </div>
               ) : (
-                <div className="text-center bg-slate-950 px-4 py-1.5 rounded-xl border border-slate-900 min-w-[70px]">
-                  <p className="font-mono text-xs font-bold text-cyan-500">
+                <div className="text-center bg-slate-955 px-4 py-1.5 rounded-xl border border-slate-900 min-w-[70px]">
+                  <p className="font-mono text-xs font-bold text-cyan-500" suppressHydrationWarning>
                     {(() => {
                       const gameDate = parseStadiumLocalDate(selectedGame.local_date, selectedGame.stadium_id)
                       const localeStr = lang === "en-us" ? "en-US" : lang === "pt" ? "pt-BR" : lang === "es-la" ? "es-419" : lang
-                      return gameDate.toLocaleTimeString(localeStr, { hour: "2-digit", minute: "2-digit" })
+                      const timeString = gameDate.toLocaleTimeString(localeStr, { hour: "2-digit", minute: "2-digit", timeZone: detectedTimezone || undefined })
+                      const tzAbbr = detectedTimezone ? getTimezoneAbbr(detectedTimezone, gameDate) : ""
+                      return tzAbbr ? `${timeString} ` : timeString
                     })()}
                   </p>
                 </div>
@@ -898,10 +902,10 @@ export default function MatchClientPage({ slug }: { slug: string }) {
             {/* Column 1: Match Schedule */}
             <div className="bg-slate-900/90 backdrop-blur-md border border-slate-800/80 rounded-2xl p-5 space-y-4">
               <span className="text-[10px] font-bold text-slate-505 uppercase tracking-wider block">{translate("match_schedule", lang)}</span>
-              <div className="flex items-center gap-3 bg-slate-950/50 p-3 rounded-xl border border-slate-900/60 text-xs">
+              <div className="flex items-center gap-3 bg-slate-955/50 p-3 rounded-xl border border-slate-900/60 text-xs">
                 <Calendar className="w-4 h-4 text-cyan-500" />
                 <div className="flex flex-col">
-                  <span className="font-semibold text-slate-200">{formatLocalTime(parseStadiumLocalDate(selectedGame.local_date, selectedGame.stadium_id), lang)}</span>
+                  <span className="font-semibold text-slate-200" suppressHydrationWarning>{formatLocalTime(parseStadiumLocalDate(selectedGame.local_date, selectedGame.stadium_id), lang, detectedTimezone)}</span>
                   <span className="text-[10px] text-slate-455">{translate("local_kickoff", lang)}</span>
                 </div>
               </div>

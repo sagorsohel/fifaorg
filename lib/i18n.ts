@@ -1353,8 +1353,115 @@ export function adjustGameStatus(game: any): any {
   return game
 }
 
+// Helper to map and sanitize timezone names, hiding numeric offsets like +6 or GMT+6
+export function getTimezoneAbbr(timeZone: string, date: Date): string {
+  if (!timeZone) return ""
+  
+  const knownAbbrs: Record<string, string> = {
+    "Asia/Dhaka": "BST",
+    "Asia/Kolkata": "IST",
+    "Asia/Tokyo": "JST",
+    "Europe/Moscow": "MSK",
+    "Europe/Volgograd": "MSK",
+    "Europe/Kirov": "MSK",
+    "Europe/Astrakhan": "MSK",
+    "Europe/Saratov": "MSK",
+    "Europe/Ulyanovsk": "MSK",
+    "Asia/Baku": "AZT",
+    "Asia/Tbilisi": "GET",
+    "Asia/Yerevan": "AMT",
+    "Europe/Samara": "SAMT",
+    "Asia/Dubai": "GST",
+    "Asia/Karachi": "PKT",
+    "Asia/Almaty": "ALMT",
+    "Asia/Urumqi": "AST",
+    "Asia/Bangkok": "ICT",
+    "Asia/Jakarta": "WIB",
+    "Asia/Shanghai": "CST",
+    "Asia/Hong_Kong": "HKT",
+    "Asia/Taipei": "CST",
+    "Asia/Seoul": "KST",
+    "Asia/Singapore": "SGT",
+    "Australia/Perth": "AWST",
+    "Australia/Adelaide": "ACST",
+    "Australia/Darwin": "ACST",
+    "Australia/Sydney": "AEST",
+    "Australia/Melbourne": "AEST",
+    "Australia/Brisbane": "AEST",
+    "Pacific/Auckland": "NZST",
+    "Europe/London": "BST",
+    "Europe/Dublin": "IST",
+    "Europe/Paris": "CEST",
+    "Europe/Berlin": "CEST",
+    "Europe/Rome": "CEST",
+    "Europe/Madrid": "CEST",
+    "Europe/Amsterdam": "CEST",
+    "Europe/Brussels": "CEST",
+    "Europe/Vienna": "CEST",
+    "Europe/Warsaw": "CEST",
+    "Europe/Prague": "CEST",
+    "Europe/Budapest": "CEST",
+    "Europe/Belgrade": "CEST",
+    "Europe/Zurich": "CEST",
+    "Europe/Stockholm": "CEST",
+    "Europe/Oslo": "CEST",
+    "Europe/Copenhagen": "CEST",
+    "Europe/Helsinki": "EEST",
+    "Europe/Athens": "EEST",
+    "Europe/Bucharest": "EEST",
+    "Europe/Kiev": "EEST",
+    "Europe/Kyiv": "EEST",
+    "Europe/Sofia": "EEST",
+    "Europe/Istanbul": "TRT",
+    "Asia/Riyadh": "AST",
+    "Asia/Baghdad": "AST",
+    "Asia/Kuwait": "AST",
+    "Asia/Qatar": "AST",
+    "Africa/Nairobi": "EAT",
+    "Africa/Cairo": "EET",
+    "Africa/Johannesburg": "SAST",
+    "America/New_York": "EDT",
+    "America/Chicago": "CDT",
+    "America/Denver": "MDT",
+    "America/Phoenix": "MST",
+    "America/Los_Angeles": "PDT",
+    "America/Anchorage": "AKDT",
+    "America/Honolulu": "HST",
+    "America/Sao_Paulo": "BRT",
+    "America/Argentina/Buenos_Aires": "ART",
+    "America/Bogota": "COT",
+    "America/Lima": "PET",
+    "America/Mexico_City": "CST",
+    "UTC": "UTC",
+    "GMT": "GMT"
+  }
+
+  if (knownAbbrs[timeZone]) {
+    return knownAbbrs[timeZone]
+  }
+
+  try {
+    const formatter = new Intl.DateTimeFormat("en-US", {
+      timeZone,
+      timeZoneName: "short"
+    })
+    const parts = formatter.formatToParts(date)
+    const tzPart = parts.find(p => p.type === "timeZoneName")
+    if (tzPart) {
+      const val = tzPart.value.trim()
+      // Ignore if it contains numeric digits, + or -
+      const hasDigitOrSign = /[\d+\-–—]/.test(val) || /[০১২৩৪৫৬৭৮৯]/.test(val)
+      if (!hasDigitOrSign && val.length >= 2 && val.length <= 5) {
+        return val.toUpperCase()
+      }
+    }
+  } catch (e) {}
+
+  return ""
+}
+
 // Format Date object in the user local timezone and locale string
-export function formatLocalTime(date: Date, lang: LanguageCode): string {
+export function formatLocalTime(date: Date, lang: LanguageCode, timeZone?: string | null): string {
   try {
     // Standardize browser locale format strings
     let locale = "en-GB"
@@ -1363,14 +1470,18 @@ export function formatLocalTime(date: Date, lang: LanguageCode): string {
     else if (lang === "es-la") locale = "es-419"
     else locale = lang
 
-    return date.toLocaleString(locale, {
+    const dateStr = date.toLocaleString(locale, {
       weekday: "long",
       year: "numeric",
       month: "long",
       day: "numeric",
       hour: "2-digit",
-      minute: "2-digit"
+      minute: "2-digit",
+      timeZone: timeZone || undefined
     })
+
+    const tzAbbr = timeZone ? getTimezoneAbbr(timeZone, date) : ""
+    return tzAbbr ? `${dateStr} ${tzAbbr}` : dateStr
   } catch (e) {
     return date.toString()
   }

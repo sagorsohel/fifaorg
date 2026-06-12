@@ -105,7 +105,7 @@ export default function NotFound() {
             </span>
             <span>Today's Matches Only</span>
           </h3>
-          <span className="text-xs font-mono font-bold text-slate-500 uppercase tracking-widest bg-slate-900 px-3 py-1 rounded-md border border-slate-900/60">
+          <span className="text-xs font-mono font-bold text-slate-500 uppercase tracking-widest bg-slate-900 px-3 py-1 rounded-md border border-slate-900/60" suppressHydrationWarning>
             {new Date().toLocaleDateString(lang === "ar" ? "ar" : "en-US", { month: "short", day: "numeric", year: "numeric" })}
           </span>
         </div>

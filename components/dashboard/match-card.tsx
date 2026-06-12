@@ -12,6 +12,7 @@ import {
   translate,
   parseStadiumLocalDate,
   formatCountdownTime,
+  getTimezoneAbbr,
 } from "@/lib/i18n"
 import { formatScorers, getScorersArray } from "@/lib/utils"
 
@@ -75,6 +76,7 @@ export default function MatchCard({ match, flagMap, stadiumName, teamNamesMap }:
   const router = useRouter()
 
   const lang = useAppSelector((state) => state.ui.language)
+  const detectedTimezone = useAppSelector((state) => state.ui.detectedTimezone)
   const isFinished = match.finished.toUpperCase() === "TRUE" || match.time_elapsed?.toLowerCase() === "finished"
   const gameDate = parseStadiumLocalDate(match.local_date, match.stadium_id)
   const hasStarted = Date.now() >= gameDate.getTime()
@@ -189,11 +191,13 @@ export default function MatchCard({ match, flagMap, stadiumName, teamNamesMap }:
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-cyan-550"></span>
               </span>
-              <span>
+              <span suppressHydrationWarning>
                 {(() => {
                   const gameDate = parseStadiumLocalDate(match.local_date, match.stadium_id)
                   const localeStr = lang === "en-us" ? "en-US" : lang === "pt" ? "pt-BR" : lang === "es-la" ? "es-419" : lang
-                  return gameDate.toLocaleTimeString(localeStr, { hour: "2-digit", minute: "2-digit" })
+                  const timeString = gameDate.toLocaleTimeString(localeStr, { hour: "2-digit", minute: "2-digit", timeZone: detectedTimezone || undefined })
+                  const tzAbbr = detectedTimezone ? getTimezoneAbbr(detectedTimezone, gameDate) : ""
+                  return tzAbbr ? `${timeString} ` : timeString
                 })()}
               </span>
             </button>

@@ -2,7 +2,7 @@
 
 import { useEffect } from "react"
 import { useAppSelector, useAppDispatch } from "@/lib/store"
-import { setLanguage } from "@/lib/features/uiSlice"
+import { setLanguage, setDetectedTimezone } from "@/lib/features/uiSlice"
 import { detectBrowserLanguage, LANGUAGES, mapCountryToLanguage } from "@/lib/i18n"
 import { usePathname } from "next/navigation"
 import { Footer } from "./footer"
@@ -19,11 +19,56 @@ export function LayoutWrapper({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     // Detect browser, local storage, or IP-based region and sync to Redux
     const initLanguage = async () => {
+      const getRegionData = async () => {
+        try {
+          const isLocalhost = typeof window !== "undefined" && (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1")
+          if (isLocalhost) {
+            // Fetch directly from client-side IP api to route through browser VPN extension
+            const clientRes = await fetch("https://ipwhois.app/json/", { signal: AbortSignal.timeout(3000) })
+            if (clientRes.ok) {
+              const clientData = await clientRes.json()
+              if (clientData && clientData.timezone) {
+                return {
+                  timezone: clientData.timezone,
+                  country_code: clientData.country_code || null
+                }
+              }
+            }
+          }
+        } catch (e) {
+          console.error("Client side IP lookup failed, falling back to server:", e)
+        }
+
+        try {
+          const res = await fetch("/api/detect-region")
+          if (res.ok) {
+            return await res.json()
+          }
+        } catch (e) {}
+        return null
+      }
+
       try {
+        // Set initial timezone guess instantly
+        try {
+          const localTz = Intl.DateTimeFormat().resolvedOptions().timeZone
+          if (localTz) {
+            dispatch(setDetectedTimezone(localTz))
+          }
+        } catch (tzErr) {}
+
         const saved = localStorage.getItem("worldcup2026_lang")
         if (saved) {
           dispatch(setLanguage(saved as any))
           document.cookie = `worldcup2026_lang=${saved}; path=/; max-age=31536000`
+          
+          // Still fetch IP-based timezone background even if language is saved
+          try {
+            const data = await getRegionData()
+            if (data && data.timezone) {
+              dispatch(setDetectedTimezone(data.timezone))
+            }
+          } catch (e) {}
           return
         }
 
@@ -32,11 +77,13 @@ export function LayoutWrapper({ children }: { children: React.ReactNode }) {
         dispatch(setLanguage(detected))
         document.cookie = `worldcup2026_lang=${detected}; path=/; max-age=31536000`
 
-        // 2. Fetch region/country based on IP (background)
-        const res = await fetch("/api/detect-region")
-        if (res.ok) {
-          const data = await res.json()
-          if (data && data.country_code) {
+        // 2. Fetch region/country/timezone based on IP (background)
+        const data = await getRegionData()
+        if (data) {
+          if (data.timezone) {
+            dispatch(setDetectedTimezone(data.timezone))
+          }
+          if (data.country_code) {
             const mappedLang = mapCountryToLanguage(data.country_code)
             if (mappedLang) {
               dispatch(setLanguage(mappedLang))

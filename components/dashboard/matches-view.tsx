@@ -47,7 +47,7 @@ export default function MatchesView({
             {/* Date Heading */}
             <div className="flex items-center gap-3">
               <div className="h-px flex-1 bg-linear-to-r from-transparent to-slate-800/80"></div>
-              <span className="text-xs font-bold uppercase tracking-wider text-slate-400 bg-slate-900/80 px-4 py-1.5 rounded-full border border-slate-900">
+              <span className="text-xs font-bold uppercase tracking-wider text-slate-400 bg-slate-900/80 px-4 py-1.5 rounded-full border border-slate-900" suppressHydrationWarning>
                 {date}
               </span>
               <div className="h-px flex-1 bg-linear-to-l from-transparent to-slate-800/80"></div>

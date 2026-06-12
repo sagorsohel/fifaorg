@@ -39,7 +39,7 @@ import TeamsView from "@/components/dashboard/teams-view"
 import TeamDetailView from "@/components/dashboard/team-detail-view"
 
 // Localized Date formatter helper for grouped headings
-function formatLocalDateOnly(date: Date, lang: LanguageCode): string {
+function formatLocalDateOnly(date: Date, lang: LanguageCode, timeZone?: string | null): string {
   try {
     let locale = "en-GB"
     if (lang === "en-us") locale = "en-US"
@@ -52,6 +52,7 @@ function formatLocalDateOnly(date: Date, lang: LanguageCode): string {
       year: "numeric",
       month: "long",
       day: "numeric",
+      timeZone: timeZone || undefined
     })
   } catch {
     return date.toDateString()
@@ -91,6 +92,7 @@ export default function WorldCupDashboard() {
   const activeTab = useAppSelector((state) => state.ui.activeTab)
   const selectedGroup = useAppSelector((state) => state.ui.selectedGroup)
   const selectedTeamId = useAppSelector((state) => state.ui.selectedTeamId)
+  const detectedTimezone = useAppSelector((state) => state.ui.detectedTimezone)
 
   // API Queries via RTK Query
   const {
@@ -247,7 +249,7 @@ export default function WorldCupDashboard() {
 
     processedGames.forEach((game) => {
       const parsed = parseStadiumLocalDate(game.local_date, game.stadium_id)
-      const dateKey = formatLocalDateOnly(parsed, lang)
+      const dateKey = formatLocalDateOnly(parsed, lang, detectedTimezone)
 
       if (!groups[dateKey]) {
         groups[dateKey] = []
@@ -259,7 +261,7 @@ export default function WorldCupDashboard() {
       date,
       matches,
     }))
-  }, [processedGames, lang])
+  }, [processedGames, lang, detectedTimezone])
 
   // Group teams by their respective groups A to L
   const teamsGroupedByGroup = useMemo(() => {
