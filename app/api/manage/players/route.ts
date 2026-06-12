@@ -3,6 +3,7 @@ import { db, ensureTablesExist } from "@/lib/db"
 import { players } from "@/lib/db/schema"
 import { eq } from "drizzle-orm"
 import crypto from "crypto"
+import { sanitizeImageUrl } from "@/lib/utils"
 
 // GET: Retrieve players by team_id
 export async function GET(request: NextRequest) {
@@ -41,6 +42,7 @@ export async function POST(request: Request) {
     const parsedJersey = jersey_num ? parseInt(jersey_num, 10) : null
     const parsedWeight = weight ? parseFloat(weight) : null
     const parsedHeight = height ? parseFloat(height) : null
+    const sanitizedPic = sanitizeImageUrl(picture_url)
 
     if (id) {
       // Update existing player
@@ -52,7 +54,7 @@ export async function POST(request: Request) {
           position: position || null,
           weight: parsedWeight,
           height: parsedHeight,
-          picture_url: picture_url || null,
+          picture_url: sanitizedPic,
           fifa_id: fifa_id || null,
         })
         .where(eq(players.id, id))
@@ -69,7 +71,7 @@ export async function POST(request: Request) {
         position: position || null,
         weight: parsedWeight,
         height: parsedHeight,
-        picture_url: picture_url || null,
+        picture_url: sanitizedPic,
         fifa_id: fifa_id || null,
       })
 

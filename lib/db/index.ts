@@ -192,6 +192,59 @@ export function ensureTablesExist(): Promise<void> {
         await poolConnection.query("ALTER TABLE `games` ADD COLUMN `bg_image` TEXT NULL")
       } catch (err) {}
 
+      // Self-heal localhost/127.0.0.1 absolute URLs in games and players tables to relative paths
+      try {
+        await poolConnection.query(`
+          UPDATE \`games\` 
+          SET \`modal_image\` = REPLACE(\`modal_image\`, 'http://localhost:3000', '')
+          WHERE \`modal_image\` LIKE 'http://localhost:3000%'
+        `)
+        await poolConnection.query(`
+          UPDATE \`games\` 
+          SET \`bg_image\` = REPLACE(\`bg_image\`, 'http://localhost:3000', '')
+          WHERE \`bg_image\` LIKE 'http://localhost:3000%'
+        `)
+        await poolConnection.query(`
+          UPDATE \`players\` 
+          SET \`picture_url\` = REPLACE(\`picture_url\`, 'http://localhost:3000', '')
+          WHERE \`picture_url\` LIKE 'http://localhost:3000%'
+        `)
+
+        await poolConnection.query(`
+          UPDATE \`games\` 
+          SET \`modal_image\` = REPLACE(\`modal_image\`, 'https://localhost:3000', '')
+          WHERE \`modal_image\` LIKE 'https://localhost:3000%'
+        `)
+        await poolConnection.query(`
+          UPDATE \`games\` 
+          SET \`bg_image\` = REPLACE(\`bg_image\`, 'https://localhost:3000', '')
+          WHERE \`bg_image\` LIKE 'https://localhost:3000%'
+        `)
+        await poolConnection.query(`
+          UPDATE \`players\` 
+          SET \`picture_url\` = REPLACE(\`picture_url\`, 'https://localhost:3000', '')
+          WHERE \`picture_url\` LIKE 'https://localhost:3000%'
+        `)
+
+        await poolConnection.query(`
+          UPDATE \`games\` 
+          SET \`modal_image\` = REPLACE(\`modal_image\`, 'http://127.0.0.1:3000', '')
+          WHERE \`modal_image\` LIKE 'http://127.0.0.1:3000%'
+        `)
+        await poolConnection.query(`
+          UPDATE \`games\` 
+          SET \`bg_image\` = REPLACE(\`bg_image\`, 'http://127.0.0.1:3000', '')
+          WHERE \`bg_image\` LIKE 'http://127.0.0.1:3000%'
+        `)
+        await poolConnection.query(`
+          UPDATE \`players\` 
+          SET \`picture_url\` = REPLACE(\`picture_url\`, 'http://127.0.0.1:3000', '')
+          WHERE \`picture_url\` LIKE 'http://127.0.0.1:3000%'
+        `)
+      } catch (err) {
+        console.warn("Failed to sanitize localhost in games/players tables during self-heal:", err)
+      }
+
       console.log("Database tables verified/created successfully.")
     } catch (err) {
       ensureTablesPromise = null // Reset so next calls can retry

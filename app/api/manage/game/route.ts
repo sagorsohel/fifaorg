@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 import { db, ensureTablesExist } from "@/lib/db"
 import { games } from "@/lib/db/schema"
 import { eq } from "drizzle-orm"
+import { sanitizeImageUrl } from "@/lib/utils"
 
 export async function POST(request: Request) {
   try {
@@ -15,8 +16,8 @@ export async function POST(request: Request) {
     await db.update(games)
       .set({
         referral_link: referral_link || null,
-        modal_image: modal_image || null,
-        bg_image: bg_image || null
+        modal_image: sanitizeImageUrl(modal_image),
+        bg_image: sanitizeImageUrl(bg_image)
       })
       .where(eq(games.id, id))
 

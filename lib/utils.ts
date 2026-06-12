@@ -40,4 +40,12 @@ export function getScorersArray(scorersStr: string | null | undefined): string[]
     return p.trim()
   }).filter(Boolean)
 }
-
+export function sanitizeImageUrl(url: string | null | undefined): string | null {
+  if (!url) return null
+  const cleaned = url.trim()
+  const uploadIndex = cleaned.indexOf("/uploads/")
+  if (uploadIndex !== -1) {
+    return cleaned.slice(uploadIndex)
+  }
+  return cleaned || null
+}

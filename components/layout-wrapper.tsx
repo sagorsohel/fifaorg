@@ -8,11 +8,13 @@ import { usePathname } from "next/navigation"
 import { Footer } from "./footer"
 // import { MobileNav } from "./mobile-nav"
 import { Navbar } from "./navbar"
+import { useTheme } from "next-themes"
 
 export function LayoutWrapper({ children }: { children: React.ReactNode }) {
   const dispatch = useAppDispatch()
   const lang = useAppSelector((state) => state.ui.language)
   const pathname = usePathname()
+  const { theme, setTheme } = useTheme()
 
   useEffect(() => {
     // Detect browser, local storage, or IP-based region and sync to Redux
@@ -98,12 +100,18 @@ export function LayoutWrapper({ children }: { children: React.ReactNode }) {
     }
   }, [])
 
+  useEffect(() => {
+    if (pathname?.startsWith("/manage") && theme !== "dark") {
+      setTheme("dark")
+    }
+  }, [pathname, theme, setTheme])
+
   const dir = LANGUAGES.find((l) => l.code === lang)?.dir || "ltr"
   const isManageRoute = pathname?.startsWith("/manage")
 
   if (isManageRoute) {
     return (
-      <div dir={dir} className="min-h-screen bg-slate-955 text-slate-100 font-sans antialiased relative">
+      <div dir={dir} className="dark min-h-screen bg-slate-955 text-slate-100 font-sans antialiased relative">
         {children}
       </div>
     )
