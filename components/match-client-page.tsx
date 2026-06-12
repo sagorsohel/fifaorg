@@ -313,7 +313,11 @@ export default function MatchClientPage({ slug }: { slug: string }) {
     signin_ref_link?: string
   } | null>(null)
 
-  const [currentModalAd, setCurrentModalAd] = useState<"hero" | "hero2">("hero")
+  const [currentModalAd, setCurrentModalAd] = useState<"hero" | "hero2">(() => {
+    const cycleMs = 180000 // 3 minutes total cycle (2 min + 1 min)
+    const currentMs = Date.now() % cycleMs
+    return currentMs < 120000 ? "hero" : "hero2"
+  })
 
   useEffect(() => {
     fetch("/api/manage/ads")
@@ -329,17 +333,15 @@ export default function MatchClientPage({ slug }: { slug: string }) {
   useEffect(() => {
     if (!adsConfig?.hero_ads || !adsConfig?.hero2_ads) return
 
-    let timer: NodeJS.Timeout
-    const runLoop = () => {
-      const delay = currentModalAd === "hero" ? 40000 : 20000
-      timer = setTimeout(() => {
-        setCurrentModalAd((prev) => (prev === "hero" ? "hero2" : "hero"))
-      }, delay)
-    }
+    const interval = setInterval(() => {
+      const cycleMs = 180000
+      const currentMs = Date.now() % cycleMs
+      const nextAd = currentMs < 120000 ? "hero" : "hero2"
+      setCurrentModalAd(nextAd)
+    }, 1000)
 
-    runLoop()
-    return () => clearTimeout(timer)
-  }, [currentModalAd, adsConfig])
+    return () => clearInterval(interval)
+  }, [adsConfig])
 
   const activeModalAdHtml = (() => {
     if (adsConfig?.hero_ads && adsConfig?.hero2_ads) {

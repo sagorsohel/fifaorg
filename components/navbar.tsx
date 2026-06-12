@@ -116,7 +116,11 @@ export function Navbar() {
     signin_ref_link?: string
   } | null>(null)
 
-  const [currentAd, setCurrentAd] = useState<"hero" | "hero2">("hero")
+  const [currentAd, setCurrentAd] = useState<"hero" | "hero2">(() => {
+    const cycleMs = 180000 // 3 minutes total cycle (2 min + 1 min)
+    const currentMs = Date.now() % cycleMs
+    return currentMs < 120000 ? "hero" : "hero2"
+  })
 
   useEffect(() => {
     fetch("/api/manage/ads")
@@ -132,17 +136,15 @@ export function Navbar() {
   useEffect(() => {
     if (!adsConfig?.hero_ads || !adsConfig?.hero2_ads) return
 
-    let timer: NodeJS.Timeout
-    const runLoop = () => {
-      const delay = currentAd === "hero" ? 40000 : 20000
-      timer = setTimeout(() => {
-        setCurrentAd((prev) => (prev === "hero" ? "hero2" : "hero"))
-      }, delay)
-    }
+    const interval = setInterval(() => {
+      const cycleMs = 180000
+      const currentMs = Date.now() % cycleMs
+      const nextAd = currentMs < 120000 ? "hero" : "hero2"
+      setCurrentAd(nextAd)
+    }, 1000)
 
-    runLoop()
-    return () => clearTimeout(timer)
-  }, [currentAd, adsConfig])
+    return () => clearInterval(interval)
+  }, [adsConfig])
 
   const activeAdHtml = (() => {
     if (currentAd === "hero" && adsConfig?.hero_ads) {

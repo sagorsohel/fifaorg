@@ -52,22 +52,24 @@ function AdScriptContainer({ scriptHtml, className }: { scriptHtml?: string; cla
 }
 
 export default function AdCard({ scriptHtml, scriptHtml2 }: { scriptHtml?: string; scriptHtml2?: string }) {
-  const [currentAd, setCurrentAd] = useState<"ad1" | "ad2">("ad1")
+  const [currentAd, setCurrentAd] = useState<"ad1" | "ad2" >(() => {
+    const cycleMs = 180000 // 3 minutes total cycle (2 min + 1 min)
+    const currentMs = Date.now() % cycleMs
+    return currentMs < 120000 ? "ad1" : "ad2"
+  })
 
   useEffect(() => {
     if (!scriptHtml || !scriptHtml2) return
 
-    let timer: NodeJS.Timeout
-    const runLoop = () => {
-      const delay = currentAd === "ad1" ? 40000 : 20000
-      timer = setTimeout(() => {
-        setCurrentAd((prev) => (prev === "ad1" ? "ad2" : "ad1"))
-      }, delay)
-    }
+    const interval = setInterval(() => {
+      const cycleMs = 180000
+      const currentMs = Date.now() % cycleMs
+      const nextAd = currentMs < 120000 ? "ad1" : "ad2"
+      setCurrentAd(nextAd)
+    }, 1000)
 
-    runLoop()
-    return () => clearTimeout(timer)
-  }, [currentAd, scriptHtml, scriptHtml2])
+    return () => clearInterval(interval)
+  }, [scriptHtml, scriptHtml2])
 
   const activeHtml = (() => {
     if (currentAd === "ad1" && scriptHtml) return scriptHtml
