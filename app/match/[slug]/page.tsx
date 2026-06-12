@@ -2,7 +2,7 @@ import { Metadata } from "next"
 import { db } from "@/lib/db"
 import { games, teams } from "@/lib/db/schema"
 import MatchClientPage from "@/components/match-client-page"
-import { LanguageCode } from "@/lib/i18n"
+import { LanguageCode, adjustGameStatus } from "@/lib/i18n"
 import { getLanguageFromServer, getLocalizedTeamName } from "@/lib/i18n-server"
 
 const METADATA_TRANSLATIONS: Record<string, Record<string, string>> = {
@@ -108,7 +108,8 @@ const METADATA_TRANSLATIONS: Record<string, Record<string, string>> = {
 
 async function getGameAndTeamsBySlug(slug: string) {
   try {
-    const allGames = await db.select().from(games)
+    const allGamesRaw = await db.select().from(games)
+    const allGames = allGamesRaw.map(adjustGameStatus)
     const allTeams = await db.select().from(teams)
 
     const teamMap = new Map(allTeams.map((t) => [t.id, t]))

@@ -1331,6 +1331,28 @@ export function parseStadiumLocalDate(localDateStr: string, stadiumId: string): 
   }
 }
 
+// Helper to automatically fix wrong "finished" status from external API
+// if the current time is before the kickoff time of the game
+export function adjustGameStatus(game: any): any {
+  if (!game || !game.local_date) return game
+  try {
+    const kickoff = parseStadiumLocalDate(game.local_date, game.stadium_id)
+    const now = new Date()
+    if (now.getTime() < kickoff.getTime()) {
+      return {
+        ...game,
+        finished: "FALSE",
+        time_elapsed: "notstarted",
+        home_score: "0",
+        away_score: "0",
+      }
+    }
+  } catch (e) {
+    console.error("Error adjusting game status:", e)
+  }
+  return game
+}
+
 // Format Date object in the user local timezone and locale string
 export function formatLocalTime(date: Date, lang: LanguageCode): string {
   try {

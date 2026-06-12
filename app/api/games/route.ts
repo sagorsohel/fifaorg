@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 import { db, ensureTablesExist } from "@/lib/db"
 import { games } from "@/lib/db/schema"
 import { performGamesSync } from "@/lib/db/sync"
+import { adjustGameStatus } from "@/lib/i18n"
 
 const globalForSync = global as unknown as {
   lastSyncTime: number | undefined
@@ -11,7 +12,8 @@ const globalForSync = global as unknown as {
 export async function GET() {
   try {
     await ensureTablesExist()
-    let gamesList = await db.select().from(games)
+    let gamesListRaw = await db.select().from(games)
+    let gamesList = gamesListRaw.map(adjustGameStatus)
 
     // Check if any game is live or starting soon
     const isLiveOrStartingSoon = gamesList.some((game) => {
@@ -49,7 +51,8 @@ export async function GET() {
       try {
         await globalForSync.syncPromise
         // Re-fetch games from database to include the newly synced live scores
-        gamesList = await db.select().from(games)
+        const refetchedList = await db.select().from(games)
+        gamesList = refetchedList.map(adjustGameStatus)
       } catch (err) {
         console.error("On-demand games sync failed:", err)
       }
