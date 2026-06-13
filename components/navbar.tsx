@@ -188,6 +188,7 @@ export function Navbar() {
                 src="/logo.png"
                 alt="FIFA WC26 on Screen Logo"
                 fill
+                sizes="(max-width: 640px) 36px, 48px"
                 className="object-contain p-1"
               />
             </div>
