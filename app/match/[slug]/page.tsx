@@ -159,17 +159,26 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
   const homeName = getLocalizedTeamName(matchInfo.homeTeam, "TBD", lang)
   const awayName = getLocalizedTeamName(matchInfo.awayTeam, "TBD", lang)
-  
+
   const titleTemplate = METADATA_TRANSLATIONS.title_template[lang] || METADATA_TRANSLATIONS.title_template["en"]
   const descTemplate = METADATA_TRANSLATIONS.desc_template[lang] || METADATA_TRANSLATIONS.desc_template["en"]
 
   const title = titleTemplate.replace("{home}", homeName).replace("{away}", awayName)
   const description = descTemplate.replace("{home}", homeName).replace("{away}", awayName)
-  const images = matchInfo.homeTeam?.flag ? [matchInfo.homeTeam.flag] : []
+  const siteUrl = "https://fifaonscreen.com"
+
+  let images = [`${siteUrl}/logo.png`]
+  if (matchInfo.game.modal_image) {
+    const modalImg = matchInfo.game.modal_image
+    images = [modalImg.startsWith("/") ? `${siteUrl}${modalImg}` : modalImg]
+  } else if (matchInfo.homeTeam?.flag) {
+    images = [matchInfo.homeTeam.flag]
+  }
 
   return {
     title,
     description,
+    metadataBase: new URL(siteUrl),
     openGraph: {
       title,
       description,

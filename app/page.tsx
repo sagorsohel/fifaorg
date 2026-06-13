@@ -74,18 +74,33 @@ export async function generateMetadata(): Promise<Metadata> {
   const title = METADATA_TRANSLATIONS.title[lang] || METADATA_TRANSLATIONS.title["en"]
   const description = METADATA_TRANSLATIONS.description[lang] || METADATA_TRANSLATIONS.description["en"]
 
+  const siteUrl = "https://fifaonscreen.com"
+  const imageUrl = `${siteUrl}/logo.png`
+
   return {
     title,
     description,
+    metadataBase: new URL(siteUrl),
     openGraph: {
       title,
       description,
+      url: siteUrl,
+      siteName: "FIFAonScreen",
       type: "website",
+      images: [
+        {
+          url: imageUrl,
+          width: 512,
+          height: 512,
+          alt: "FIFA WC26 on Screen Logo",
+        }
+      ]
     },
     twitter: {
       card: "summary_large_image",
       title,
       description,
+      images: [imageUrl],
     },
   }
 }

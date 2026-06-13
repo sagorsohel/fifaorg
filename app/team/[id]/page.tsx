@@ -141,11 +141,13 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
 
   const title = titleTemplate.replace("{team}", teamName)
   const description = descTemplate.replace("{team}", teamName)
-  const images = team.flag ? [team.flag] : []
+  const siteUrl = "https://fifaonscreen.com"
+  const images = team.flag ? [team.flag] : [`${siteUrl}/logo.png`]
 
   return {
     title,
     description,
+    metadataBase: new URL(siteUrl),
     openGraph: {
       title,
       description,

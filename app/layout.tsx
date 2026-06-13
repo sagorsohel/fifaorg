@@ -12,9 +12,34 @@ import { db, ensureTablesExist } from "@/lib/db"
 import { ads } from "@/lib/db/schema"
 import { eq } from "drizzle-orm"
 
+const siteUrl = "https://fifaonscreen.com"
+const imageUrl = `${siteUrl}/logo.png`
+
 export const metadata: Metadata = {
   title: "LIVE | FIFA WC26 on Screen",
   description: "World Cup 2026 Live Scores, Results and Fixtures. Don't miss a single match. Stream all 104 matches live on FIFAonScreen.",
+  metadataBase: new URL(siteUrl),
+  openGraph: {
+    title: "LIVE | FIFA WC26 on Screen",
+    description: "World Cup 2026 Live Scores, Results and Fixtures. Don't miss a single match. Stream all 104 matches live on FIFAonScreen.",
+    url: siteUrl,
+    siteName: "FIFAonScreen",
+    type: "website",
+    images: [
+      {
+        url: imageUrl,
+        width: 512,
+        height: 512,
+        alt: "FIFA WC26 on Screen Logo",
+      }
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "LIVE | FIFA WC26 on Screen",
+    description: "World Cup 2026 Live Scores, Results and Fixtures. Don't miss a single match. Stream all 104 matches live on FIFAonScreen.",
+    images: [imageUrl],
+  }
 }
 
 const geist = Geist({ subsets: ['latin'], variable: '--font-sans' })
@@ -72,7 +97,7 @@ export default async function RootLayout({
   children: React.ReactNode
 }>) {
   const { headerAds, modalAds } = await getAds()
-  
+
   const headerScripts = parseScriptTags(headerAds)
   const headerNonScriptHtml = getNonScriptHtml(headerAds)
 
