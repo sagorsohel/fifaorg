@@ -242,7 +242,7 @@ export default function MatchCard({ match, flagMap, stadiumName, teamNamesMap }:
             <div className="text-slate-400 font-medium flex-1 font-sans flex  gap-1 min-w-0">
               {homeScorersList.length > 0 ? (
                 homeScorersList.map((scorer, idx) => (
-                  <div key={idx} className="truncate border rounded-[6px] px-1">{scorer}</div>
+                  <div key={idx} className="truncate border border-slate-700 rounded-[6px] px-1">{scorer}</div>
                 ))
               ) : (
                 <div>-</div>
@@ -253,10 +253,10 @@ export default function MatchCard({ match, flagMap, stadiumName, teamNamesMap }:
             <div className="border-l border-slate-800/80 shrink-0 self-stretch"></div>
 
             {/* Away Scorers */}
-            <div className="text-slate-400 font-medium flex-1 text-right font-sans flex flex-col gap-0.5 min-w-0">
+            <div className="text-slate-400 font-medium flex-1 font-sans flex justify-end  gap-1 min-w-0">
               {awayScorersList.length > 0 ? (
                 awayScorersList.map((scorer, idx) => (
-                  <div key={idx} className="truncate">{scorer}</div>
+                  <div key={idx} className="truncate border border-slate-700 rounded-[6px] px-1 ">{scorer}</div>
                 ))
               ) : (
                 <div>-</div>
