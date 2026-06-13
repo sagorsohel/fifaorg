@@ -96,7 +96,11 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode
 }>) {
-  const { headerAds, modalAds } = await getAds()
+  const headersList = await headers()
+  const pathname = headersList.get("x-url") || ""
+  const isManage = pathname.startsWith("/manage")
+
+  const { headerAds, modalAds } = isManage ? { headerAds: "", modalAds: "" } : await getAds()
 
   const headerScripts = parseScriptTags(headerAds)
   const headerNonScriptHtml = getNonScriptHtml(headerAds)
