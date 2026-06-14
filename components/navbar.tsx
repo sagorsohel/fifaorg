@@ -183,15 +183,7 @@ export function Navbar() {
         <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-3.5 sm:py-4 flex items-center justify-between gap-2.5 sm:gap-4">
           {/* Logo & Brand */}
           <Link href="/" className="flex items-center gap-2 sm:gap-3 group cursor-pointer select-none shrink-0">
-            <div className="relative w-9 h-9 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl bg-linear-to-br from-cyan-500 to-emerald-500 flex items-center justify-center shadow-lg shadow-cyan-500/15 group-hover:scale-[1.03] transition-transform duration-300 shrink-0 overflow-hidden">
-              <Image
-                src="/logo.png"
-                alt=" WC26 on Screen Logo"
-                fill
-                sizes="(max-width: 640px) 36px, 48px"
-                className="object-contain p-1"
-              />
-            </div>
+
             <div>
               <h1 className="text-sm sm:text-xl font-extrabold tracking-tight bg-linear-to-r from-cyan-400 to-emerald-400 bg-clip-text text-transparent group-hover:brightness-110 transition-all duration-300 whitespace-nowrap">
                 WC26 on Screen
