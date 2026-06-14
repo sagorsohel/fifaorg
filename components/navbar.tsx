@@ -186,7 +186,7 @@ export function Navbar() {
             <div className="relative w-9 h-9 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl bg-linear-to-br from-cyan-500 to-emerald-500 flex items-center justify-center shadow-lg shadow-cyan-500/15 group-hover:scale-[1.03] transition-transform duration-300 shrink-0 overflow-hidden">
               <Image
                 src="/logo.png"
-                alt="FIFA WC26 on Screen Logo"
+                alt=" WC26 on Screen Logo"
                 fill
                 sizes="(max-width: 640px) 36px, 48px"
                 className="object-contain p-1"
@@ -194,7 +194,7 @@ export function Navbar() {
             </div>
             <div>
               <h1 className="text-sm sm:text-xl font-extrabold tracking-tight bg-linear-to-r from-cyan-400 to-emerald-400 bg-clip-text text-transparent group-hover:brightness-110 transition-all duration-300 whitespace-nowrap">
-                FIFA WC26 on Screen
+                WC26 on Screen
               </h1>
               <p className="text-[10px] sm:text-xs text-slate-400 font-medium hidden sm:block">Stream World Cup 2026 Live Scores, Results and Fixtures.</p>
             </div>

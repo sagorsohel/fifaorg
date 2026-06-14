@@ -220,7 +220,7 @@ export default function TeamClientPage({ teamId }: { teamId: string }) {
                 {lang === "ar" && team.name_fa ? team.name_fa : team.name_en}
               </h2>
               <p className="text-sm text-slate-400 mt-1 font-mono font-medium">
-                FIFA Code: {team.fifa_code} | {translate("group", lang)}: {team.groups}
+                Code: {team.fifa_code} | {translate("group", lang)}: {team.groups}
               </p>
             </div>
           </div>
