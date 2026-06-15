@@ -187,7 +187,7 @@ export function Navbar() {
             onClick={() => {
               dispatch(setActiveTab("landing"))
             }}
-            className="flex items-center gap-2 sm:gap-3 group cursor-pointer select-none shrink-0"
+            className="flex items-center gap-1 sm:gap-1 group cursor-pointer select-none shrink-0"
           >
             <div className="relative w-8 h-8 sm:w-10 sm:h-10 shrink-0">
               <Image
