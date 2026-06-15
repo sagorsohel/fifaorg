@@ -348,7 +348,7 @@ export default function WorldCupDashboard() {
             <FilterSection />
 
             {/* MATCHES VIEW */}
-            {activeTab === "matches" && (
+            {(activeTab === "matches" || activeTab === "landing") && (
               <MatchesView
                 gamesGroupedByDate={gamesGroupedByDate}
                 flagMap={flagMap}

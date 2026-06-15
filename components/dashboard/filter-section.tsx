@@ -125,7 +125,7 @@ export default function FilterSection() {
 
       {/* Right Side: Unified Filters and Search */}
       <div className="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-3 flex-1 justify-start lg:justify-end w-full lg:w-auto">
-        {activeTab === "matches" && (
+        {(activeTab === "matches" || activeTab === "landing") && (
           <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
             <span className="hidden sm:inline-flex text-xs text-slate-400 items-center gap-1 shrink-0 font-sans">
               <SlidersHorizontal className="w-3.5 h-3.5 text-slate-500" />
@@ -225,7 +225,7 @@ export default function FilterSection() {
         )}
 
         {/* Search Box */}
-        {activeTab === "matches" && (
+        {(activeTab === "matches" || activeTab === "landing") && (
           <div className="relative w-full sm:w-28 shrink-0">
             <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-500" />
             <input
