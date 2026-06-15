@@ -500,7 +500,7 @@ export default function MatchClientPage({ slug }: { slug: string }) {
   }
 
   const handleActionRedirect = () => {
-    const targetUrl = adsConfig?.signin_ref_link || (selectedGame && selectedGame.referral_link) || "https://lightsalmon-hummingbird-478538.hostingersite.com/register"
+    const targetUrl = (selectedGame && selectedGame.referral_link) || adsConfig?.signin_ref_link || "https://lightsalmon-hummingbird-478538.hostingersite.com/register"
 
     window.location.href = targetUrl
   }
