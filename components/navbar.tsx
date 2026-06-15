@@ -191,7 +191,7 @@ export function Navbar() {
           >
             <div className="relative w-8 h-8 sm:w-10 sm:h-10 shrink-0">
               <Image
-                src="/logo.png"
+                src="/tvlog.png"
                 alt="WC26 Logo"
                 fill
                 className="object-contain group-hover:scale-105 transition-transform duration-300"

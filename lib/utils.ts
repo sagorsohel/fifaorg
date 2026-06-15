@@ -54,7 +54,7 @@ export function getImageUrl(url: string | null | undefined): string {
   if (!url) return ""
   const cleaned = url.trim()
   if (cleaned.startsWith("/uploads/")) {
-    const base = process.env.image_link || ""
+    const base = process.env.NEXT_PUBLIC_IMAGE_BASE_URL || process.env.image_link || ""
     const trimmedBase = base.replace(/\/$/, "")
     return trimmedBase ? `${trimmedBase}${cleaned}` : cleaned
   }

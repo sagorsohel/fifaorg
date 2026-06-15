@@ -3,6 +3,7 @@ import type { NextConfig } from "next"
 const nextConfig: NextConfig = {
   env: {
     image_link: process.env.image_link || "",
+    NEXT_PUBLIC_IMAGE_BASE_URL: process.env.NEXT_PUBLIC_IMAGE_BASE_URL || "",
   },
   images: {
     remotePatterns: [

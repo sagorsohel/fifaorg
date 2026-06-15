@@ -26,8 +26,8 @@ export async function POST(request: NextRequest) {
     const filePath = join(uploadDir, filename)
     await writeFile(filePath, buffer)
 
-    // Return the serving path prefixed with image_link if set
-    const imageLink = process.env.image_link || ""
+    // Return the serving path prefixed with image_link or NEXT_PUBLIC_IMAGE_BASE_URL if set
+    const imageLink = process.env.NEXT_PUBLIC_IMAGE_BASE_URL || process.env.image_link || ""
     const baseUrl = imageLink.replace(/\/$/, "")
     const returnUrl = baseUrl ? `${baseUrl}/uploads/${filename}` : `/uploads/${filename}`
 
