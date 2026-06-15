@@ -27,6 +27,7 @@ import {
 import {
   translate,
 } from "@/lib/i18n"
+import { getImageUrl } from "@/lib/utils"
 
 export default function TeamClientPage({ teamId }: { teamId: string }) {
   const dispatch = useAppDispatch()
@@ -205,7 +206,7 @@ export default function TeamClientPage({ teamId }: { teamId: string }) {
             {team.flag ? (
               <div className="relative w-28 h-20 overflow-hidden rounded-2xl border-2 border-slate-800 shadow-2xl shrink-0">
                 <Image
-                  src={team.flag}
+                  src={getImageUrl(team.flag)}
                   alt={team.name_en}
                   fill
                   className="object-cover"
@@ -328,7 +329,7 @@ export default function TeamClientPage({ teamId }: { teamId: string }) {
                           <div className="relative w-16 h-16 rounded-full border border-slate-850 overflow-hidden shrink-0 flex items-center justify-center bg-slate-955 shadow-inner">
                             {player.picture_url ? (
                               <Image
-                                src={player.picture_url}
+                                src={getImageUrl(player.picture_url)}
                                 alt={player.name}
                                 width={64}
                                 height={64}

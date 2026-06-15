@@ -7,6 +7,7 @@ import { Team } from "@/lib/services/apiSlice"
 import { useAppDispatch, useAppSelector } from "@/lib/store"
 import { setSelectedTeamId } from "@/lib/features/uiSlice"
 import { translate } from "@/lib/i18n"
+import { getImageUrl } from "@/lib/utils"
 
 interface TeamsViewProps {
   teamsGroupedByGroup: Record<string, Team[]>
@@ -97,7 +98,7 @@ export default function TeamsView({ teamsGroupedByGroup }: TeamsViewProps) {
                                 {team.flag ? (
                                   <div className="relative w-5 h-3.5 overflow-hidden rounded-[3px] border border-slate-900 shrink-0">
                                     <Image
-                                      src={team.flag}
+                                      src={getImageUrl(team.flag)}
                                       alt=""
                                       fill
                                       className="object-cover"

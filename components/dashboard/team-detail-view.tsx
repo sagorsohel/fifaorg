@@ -19,6 +19,7 @@ import {
   parseStadiumLocalDate,
 } from "@/lib/i18n"
 import MatchCard from "@/components/dashboard/match-card"
+import { getImageUrl } from "@/lib/utils"
 
 interface TeamDetailViewProps {
   selectedTeam: Team
@@ -122,7 +123,7 @@ export default function TeamDetailView({
           {selectedTeam.flag ? (
             <div className="relative w-28 h-20 overflow-hidden rounded-2xl border-2 border-slate-800 shadow-2xl shrink-0">
               <Image
-                src={selectedTeam.flag}
+                src={getImageUrl(selectedTeam.flag)}
                 alt={selectedTeam.name_en}
                 fill
                 className="object-cover"
@@ -285,7 +286,7 @@ export default function TeamDetailView({
                           <div className="relative w-16 h-16 rounded-full border border-slate-855 overflow-hidden shrink-0 flex items-center justify-center bg-slate-950 shadow-inner">
                             {player.picture_url ? (
                               <Image
-                                src={player.picture_url}
+                                src={getImageUrl(player.picture_url)}
                                 alt={player.name}
                                 width={64}
                                 height={64}

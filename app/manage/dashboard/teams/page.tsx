@@ -24,6 +24,7 @@ import {
   Team,
   Player
 } from "@/lib/services/apiSlice"
+import { getImageUrl } from "@/lib/utils"
 
 export default function ManageTeamsPage() {
   // Teams Search State
@@ -277,7 +278,7 @@ export default function ManageTeamsPage() {
             <div className="flex items-center gap-4 z-10">
               {selectedTeamForSquad.flag ? (
                 <div className="relative w-20 h-14 overflow-hidden rounded-xl border border-slate-800 shadow-lg shrink-0">
-                  <Image src={selectedTeamForSquad.flag} alt="" fill className="object-cover" unoptimized />
+                  <Image src={getImageUrl(selectedTeamForSquad.flag)} alt="" fill className="object-cover" unoptimized />
                 </div>
               ) : (
                 <div className="w-20 h-14 bg-slate-900 rounded-xl shrink-0 flex items-center justify-center text-xl">🏴</div>
@@ -360,7 +361,7 @@ export default function ManageTeamsPage() {
                     {/* Photo and Upload trigger */}
                     <div className="relative w-12 h-12 rounded-full bg-slate-900 border border-slate-800 overflow-hidden flex items-center justify-center shrink-0 group/photo cursor-pointer" title="Click to upload custom picture">
                       {player.picture_url ? (
-                        <img src={player.picture_url} alt="" className="w-full h-full object-cover font-sans" />
+                        <img src={getImageUrl(player.picture_url)} alt="" className="w-full h-full object-cover font-sans" />
                       ) : (
                         <span className="text-xs font-black text-slate-600">{player.name.substring(0, 2).toUpperCase()}</span>
                       )}
@@ -463,7 +464,7 @@ export default function ManageTeamsPage() {
                       <div className="flex items-center gap-3">
                         {team.flag ? (
                           <div className="relative w-10 h-7 rounded border border-slate-900/60 overflow-hidden shrink-0">
-                            <Image src={team.flag} alt="" fill className="object-cover" unoptimized />
+                            <Image src={getImageUrl(team.flag)} alt="" fill className="object-cover" unoptimized />
                           </div>
                         ) : (
                           <div className="w-10 h-7 bg-slate-900 rounded shrink-0 flex items-center justify-center text-xs">🏴</div>

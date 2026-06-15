@@ -41,7 +41,7 @@ import {
   formatCountdownTime,
   getTimezoneAbbr,
 } from "@/lib/i18n"
-import { formatScorers, getScorersArray } from "@/lib/utils"
+import { formatScorers, getScorersArray, getImageUrl } from "@/lib/utils"
 
 // Countdown Component for upcoming matches
 function Countdown({ dateStr, stadiumId, lang }: { dateStr: string; stadiumId: string; lang: LanguageCode }) {
@@ -600,7 +600,7 @@ export default function MatchClientPage({ slug }: { slug: string }) {
       {selectedGame.bg_image && (
         <div className="fixed inset-0 z-0 select-none pointer-events-none">
           <Image
-            src={selectedGame.bg_image}
+            src={getImageUrl(selectedGame.bg_image)}
             alt=""
             fill
             className="object-cover "
@@ -638,7 +638,7 @@ export default function MatchClientPage({ slug }: { slug: string }) {
             >
               {selectedGameHomeFlag ? (
                 <div className="relative w-8 h-5.5 sm:w-12 sm:h-8 overflow-hidden rounded-md border border-slate-800 shadow-sm shrink-0 group-hover/team:border-cyan-500/50 transition-colors">
-                  <Image src={selectedGameHomeFlag} alt={homeName} fill className="object-cover" />
+                  <Image src={getImageUrl(selectedGameHomeFlag)} alt={homeName} fill className="object-cover" />
                 </div>
               ) : (
                 <div className="w-8 h-5.5 sm:w-12 sm:h-8 bg-slate-800 rounded-md shrink-0 flex items-center justify-center text-xs sm:text-xl">🏴</div>
@@ -703,7 +703,7 @@ export default function MatchClientPage({ slug }: { slug: string }) {
               </span>
               {selectedGameAwayFlag ? (
                 <div className="relative w-8 h-5.5 sm:w-12 sm:h-8 overflow-hidden rounded-md border border-slate-800 shadow-sm shrink-0 group-hover/team:border-cyan-500/50 transition-colors">
-                  <Image src={selectedGameAwayFlag} alt={awayName} fill className="object-cover" />
+                  <Image src={getImageUrl(selectedGameAwayFlag)} alt={awayName} fill className="object-cover" />
                 </div>
               ) : (
                 <div className="w-8 h-5.5 sm:w-12 sm:h-8 bg-slate-800 rounded-md shrink-0 flex items-center justify-center text-xs sm:text-xl">🏴</div>
@@ -750,7 +750,7 @@ export default function MatchClientPage({ slug }: { slug: string }) {
                 {selectedGame.modal_image ? (
                   <div className="relative w-full h-full">
                     <Image
-                      src={selectedGame.modal_image}
+                      src={getImageUrl(selectedGame.modal_image)}
                       alt=""
                       fill
                       className="object-cover opacity-85 scale-100 group-hover:scale-[1.03] transition-transform duration-500"
@@ -761,7 +761,7 @@ export default function MatchClientPage({ slug }: { slug: string }) {
                     <div className="w-1/2 h-full relative overflow-hidden">
                       {selectedGameHomeFlag ? (
                         <Image
-                          src={selectedGameHomeFlag}
+                          src={getImageUrl(selectedGameHomeFlag)}
                           alt=""
                           fill
                           className="object-cover blur-xs opacity-75 scale-110"
@@ -774,7 +774,7 @@ export default function MatchClientPage({ slug }: { slug: string }) {
                     <div className="w-1/2 h-full relative overflow-hidden">
                       {selectedGameAwayFlag ? (
                         <Image
-                          src={selectedGameAwayFlag}
+                          src={getImageUrl(selectedGameAwayFlag)}
                           alt=""
                           fill
                           className="object-cover blur-xs opacity-75 scale-110"

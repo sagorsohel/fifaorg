@@ -26,10 +26,14 @@ export async function POST(request: NextRequest) {
     const filePath = join(uploadDir, filename)
     await writeFile(filePath, buffer)
 
-    // Return the local serving path
+    // Return the serving path prefixed with image_link if set
+    const imageLink = process.env.image_link || ""
+    const baseUrl = imageLink.replace(/\/$/, "")
+    const returnUrl = baseUrl ? `${baseUrl}/uploads/${filename}` : `/uploads/${filename}`
+
     return NextResponse.json({
       success: true,
-      url: `/uploads/${filename}`
+      url: returnUrl
     })
   } catch (err: any) {
     console.error("Upload API Error:", err)

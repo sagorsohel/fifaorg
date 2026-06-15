@@ -4,6 +4,7 @@ import { teams } from "@/lib/db/schema"
 import TeamClientPage from "@/components/team-client-page"
 import { LanguageCode } from "@/lib/i18n"
 import { getLanguageFromServer, getLocalizedTeamName } from "@/lib/i18n-server"
+import { getImageUrl } from "@/lib/utils"
 
 const METADATA_TRANSLATIONS: Record<string, Record<string, string>> = {
   title_template: {
@@ -142,7 +143,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   const title = titleTemplate.replace("{team}", teamName)
   const description = descTemplate.replace("{team}", teamName)
   const siteUrl = "https://fifaonscreen.com"
-  const images = team.flag ? [team.flag] : [`${siteUrl}/logo.png`]
+  const images = team.flag ? [getImageUrl(team.flag)] : [`${siteUrl}/logo.png`]
 
   return {
     title,

@@ -14,7 +14,7 @@ import {
   formatCountdownTime,
   getTimezoneAbbr,
 } from "@/lib/i18n"
-import { formatScorers, getScorersArray } from "@/lib/utils"
+import { formatScorers, getScorersArray, getImageUrl } from "@/lib/utils"
 
 // Countdown Component for upcoming matches
 function Countdown({ dateStr, stadiumId, lang }: { dateStr: string; stadiumId: string; lang: LanguageCode }) {
@@ -143,7 +143,7 @@ export default function MatchCard({ match, flagMap, stadiumName, teamNamesMap }:
           {homeFlag ? (
             <div className="relative w-9 h-6 overflow-hidden rounded-md border border-slate-800 shrink-0 shadow-xs">
               <Image
-                src={homeFlag}
+                src={getImageUrl(homeFlag)}
                 alt={getTeamName(match.home_team_id)}
                 fill
                 className="object-cover"
@@ -219,7 +219,7 @@ export default function MatchCard({ match, flagMap, stadiumName, teamNamesMap }:
           {awayFlag ? (
             <div className="relative w-9 h-6 overflow-hidden rounded-md border border-slate-800 shrink-0 shadow-xs">
               <Image
-                src={awayFlag}
+                src={getImageUrl(awayFlag)}
                 alt={getTeamName(match.away_team_id)}
                 fill
                 className="object-cover"

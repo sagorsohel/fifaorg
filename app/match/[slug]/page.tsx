@@ -4,6 +4,7 @@ import { games, teams } from "@/lib/db/schema"
 import MatchClientPage from "@/components/match-client-page"
 import { LanguageCode, adjustGameStatus } from "@/lib/i18n"
 import { getLanguageFromServer, getLocalizedTeamName } from "@/lib/i18n-server"
+import { getImageUrl } from "@/lib/utils"
 
 const METADATA_TRANSLATIONS: Record<string, Record<string, string>> = {
   title_template: {
@@ -169,10 +170,10 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
   let images = [`${siteUrl}/logo.png`]
   if (matchInfo.game.modal_image) {
-    const modalImg = matchInfo.game.modal_image
+    const modalImg = getImageUrl(matchInfo.game.modal_image)
     images = [modalImg.startsWith("/") ? `${siteUrl}${modalImg}` : modalImg]
   } else if (matchInfo.homeTeam?.flag) {
-    images = [matchInfo.homeTeam.flag]
+    images = [getImageUrl(matchInfo.homeTeam.flag)]
   }
 
   return {

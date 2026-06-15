@@ -49,3 +49,15 @@ export function sanitizeImageUrl(url: string | null | undefined): string | null 
   }
   return cleaned || null
 }
+
+export function getImageUrl(url: string | null | undefined): string {
+  if (!url) return ""
+  const cleaned = url.trim()
+  if (cleaned.startsWith("/uploads/")) {
+    const base = process.env.image_link || ""
+    const trimmedBase = base.replace(/\/$/, "")
+    return trimmedBase ? `${trimmedBase}${cleaned}` : cleaned
+  }
+  return cleaned
+}
+

@@ -24,6 +24,7 @@ import {
 } from "@/lib/services/apiSlice"
 
 import { parseStadiumLocalDate } from "@/lib/i18n"
+import { getImageUrl } from "@/lib/utils"
 
 // Localized Date formatter helper for date grouped headings
 function formatLocalDateOnly(date: Date): string {
@@ -321,7 +322,7 @@ export default function AdminDashboardPage() {
                           <div className="flex items-center gap-3 min-w-0 flex-1 justify-start">
                             {homeFlag ? (
                               <div className="relative w-8 h-5 overflow-hidden rounded border border-slate-900 shadow-xs shrink-0">
-                                <Image src={homeFlag} alt="" fill className="object-cover" unoptimized />
+                                <Image src={getImageUrl(homeFlag)} alt="" fill className="object-cover" unoptimized />
                               </div>
                             ) : (
                               <div className="w-8 h-5 bg-slate-900 rounded shrink-0 flex items-center justify-center text-xs">🏴</div>
@@ -354,7 +355,7 @@ export default function AdminDashboardPage() {
                             <span className="font-extrabold text-slate-202 text-xs sm:text-sm truncate text-right">{awayName}</span>
                             {awayFlag ? (
                               <div className="relative w-8 h-5 overflow-hidden rounded border border-slate-900 shadow-xs shrink-0">
-                                <Image src={awayFlag} alt="" fill className="object-cover" unoptimized />
+                                <Image src={getImageUrl(awayFlag)} alt="" fill className="object-cover" unoptimized />
                               </div>
                             ) : (
                               <div className="w-8 h-5 bg-slate-900 rounded shrink-0 flex items-center justify-center text-xs">🏴</div>
@@ -499,7 +500,7 @@ export default function AdminDashboardPage() {
                   {/* Preview Banner */}
                   {modalImage && (
                     <div className="mt-2.5 relative aspect-video w-full max-w-[280px] rounded-2xl overflow-hidden border border-slate-900 bg-slate-950 shadow-inner group/preview">
-                      <img src={modalImage} alt="Modal Banner Preview" className="w-full h-full object-cover" />
+                      <img src={getImageUrl(modalImage)} alt="Modal Banner Preview" className="w-full h-full object-cover" />
                       <button
                         type="button"
                         onClick={() => setModalImage("")}
@@ -545,7 +546,7 @@ export default function AdminDashboardPage() {
                   {/* Preview Backdrop */}
                   {bgImage && (
                     <div className="mt-2.5 relative aspect-video w-full max-w-[280px] rounded-2xl overflow-hidden border border-slate-900 bg-slate-950 shadow-inner group/preview">
-                      <img src={bgImage} alt="Video Backdrop Preview" className="w-full h-full object-cover" />
+                      <img src={getImageUrl(bgImage)} alt="Video Backdrop Preview" className="w-full h-full object-cover" />
                       <button
                         type="button"
                         onClick={() => setBgImage("")}
