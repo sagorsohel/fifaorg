@@ -182,8 +182,22 @@ export function Navbar() {
       <header className="sticky top-0 z-40 bg-slate-955/80 backdrop-blur-md border-b border-slate-900 w-full">
         <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-3.5 sm:py-4 flex items-center justify-between gap-2.5 sm:gap-4">
           {/* Logo & Brand */}
-          <Link href="/" className="flex items-center gap-2 sm:gap-3 group cursor-pointer select-none shrink-0">
-
+          <Link
+            href="/"
+            onClick={() => {
+              dispatch(setActiveTab("landing"))
+            }}
+            className="flex items-center gap-2 sm:gap-3 group cursor-pointer select-none shrink-0"
+          >
+            <div className="relative w-8 h-8 sm:w-10 sm:h-10 shrink-0">
+              <Image
+                src="/logo.png"
+                alt="WC26 Logo"
+                fill
+                className="object-contain group-hover:scale-105 transition-transform duration-300"
+                priority
+              />
+            </div>
             <div>
               <h1 className="text-sm sm:text-xl font-extrabold tracking-tight bg-linear-to-r from-cyan-400 to-emerald-400 bg-clip-text text-transparent group-hover:brightness-110 transition-all duration-300 whitespace-nowrap">
                 WC26 on Screen

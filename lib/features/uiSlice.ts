@@ -5,7 +5,7 @@ export interface UiState {
   language: LanguageCode
   searchQuery: string
   filterStatus: "all" | "finished" | "upcoming"
-  activeTab: "matches" | "teams"
+  activeTab: "landing" | "matches" | "teams"
   selectedGroup: string // "all" or specific group name "A" - "L"
   selectedTeamId: string | null
   selectedGameId: string | null
@@ -36,7 +36,7 @@ export const uiSlice = createSlice({
     setFilterStatus: (state, action: PayloadAction<"all" | "finished" | "upcoming">) => {
       state.filterStatus = action.payload
     },
-    setActiveTab: (state, action: PayloadAction<"matches" | "teams">) => {
+    setActiveTab: (state, action: PayloadAction<"landing" | "matches" | "teams">) => {
       state.activeTab = action.payload
     },
     setSelectedGroup: (state, action: PayloadAction<string>) => {
