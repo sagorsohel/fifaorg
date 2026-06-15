@@ -227,7 +227,7 @@ export function Navbar() {
             <button
               onClick={() => {
                 if (referralLink) {
-                  window.open(referralLink, "_blank", "noopener,noreferrer")
+                  window.location.href = referralLink
                 }
               }}
               aria-label={MEMBERSHIP_TRANSLATIONS[lang] || MEMBERSHIP_TRANSLATIONS["en"]}
