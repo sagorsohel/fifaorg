@@ -36,7 +36,25 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     await ensureTablesExist()
-    const { hero_ads, hero2_ads, modal_ads, header_ads, membership_ref_link, signin_ref_link } = await request.json()
+    let { hero_ads, hero2_ads, modal_ads, header_ads, membership_ref_link, signin_ref_link } = await request.json()
+
+    const isBase64 = request.headers.get("x-encoded-payload") === "base64"
+    if (isBase64) {
+      const safeDecode = (str?: string) => {
+        if (!str) return ""
+        try {
+          return Buffer.from(str, "base64").toString("utf-8")
+        } catch {
+          return str
+        }
+      }
+      hero_ads = safeDecode(hero_ads)
+      hero2_ads = safeDecode(hero2_ads)
+      modal_ads = safeDecode(modal_ads)
+      header_ads = safeDecode(header_ads)
+      membership_ref_link = safeDecode(membership_ref_link)
+      signin_ref_link = safeDecode(signin_ref_link)
+    }
 
     await db.update(ads)
       .set({

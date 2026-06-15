@@ -40,17 +40,28 @@ export default function ReferralLinksPage() {
     setReferralsSaving(true)
     setReferralsMessage({ text: "", type: "success" })
 
+    const safeBtoa = (str: string) => {
+      try {
+        return btoa(unescape(encodeURIComponent(str || "")))
+      } catch (err) {
+        return str || ""
+      }
+    }
+
     try {
       const res = await fetch("/api/manage/ads", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          "x-encoded-payload": "base64"
+        },
         body: JSON.stringify({
-          hero_ads: heroAds,
-          hero2_ads: hero2Ads,
-          modal_ads: modalAds,
-          header_ads: headerAds,
-          membership_ref_link: membershipRefLink,
-          signin_ref_link: signinRefLink
+          hero_ads: safeBtoa(heroAds),
+          hero2_ads: safeBtoa(hero2Ads),
+          modal_ads: safeBtoa(modalAds),
+          header_ads: safeBtoa(headerAds),
+          membership_ref_link: safeBtoa(membershipRefLink),
+          signin_ref_link: safeBtoa(signinRefLink)
         })
       })
       if (res.ok) {

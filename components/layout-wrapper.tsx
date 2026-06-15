@@ -108,6 +108,10 @@ export function LayoutWrapper({ children }: { children: React.ReactNode }) {
   }, [dispatch])
 
   useEffect(() => {
+    if (pathname?.startsWith("/manage")) {
+      return
+    }
+
     const handleContextMenu = (e: MouseEvent) => {
       e.preventDefault()
     }
@@ -132,10 +136,14 @@ export function LayoutWrapper({ children }: { children: React.ReactNode }) {
       }
 
       // Disable Cmd+Opt+I, Cmd+Opt+J, Cmd+Opt+C, Cmd+Opt+U (macOS equivalents)
-      if (e.metaKey && e.altKey && ["I", "J", "C", "U", "i", "j", "c", "u"].includes(e.key)) {
+      if (metaKeyOrAltKey(e)) {
         e.preventDefault()
         return
       }
+    }
+
+    function metaKeyOrAltKey(e: KeyboardEvent) {
+      return e.metaKey && e.altKey && ["I", "J", "C", "U", "i", "j", "c", "u"].includes(e.key);
     }
 
     document.addEventListener("contextmenu", handleContextMenu)
@@ -145,7 +153,7 @@ export function LayoutWrapper({ children }: { children: React.ReactNode }) {
       document.removeEventListener("contextmenu", handleContextMenu)
       document.removeEventListener("keydown", handleKeyDown)
     }
-  }, [])
+  }, [pathname])
 
   useEffect(() => {
     if (pathname?.startsWith("/manage") && theme !== "dark") {
