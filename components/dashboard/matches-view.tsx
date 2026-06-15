@@ -43,7 +43,7 @@ export default function MatchesView({
         const isOdd = matches.length % 2 !== 0
 
         return (
-          <div key={date} className="space-y-4">
+          <div key={date} id={date} className="space-y-4">
             {/* Date Heading */}
             <div className="flex items-center gap-3">
               <div className="h-px flex-1 bg-linear-to-r from-transparent to-slate-800/80"></div>
@@ -57,15 +57,24 @@ export default function MatchesView({
             <div className="sm:p-6 p-2 rounded-3xl bg-slate-950/20 border border-slate-900/60 shadow-xl">
               {/* Games Grid */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                {matches.map((match) => (
-                  <MatchCard
-                    key={match._id}
-                    match={match}
-                    flagMap={flagMap}
-                    stadiumName={getStadiumName(match.stadium_id) || `#${match.stadium_id}`}
-                    teamNamesMap={teamNamesMap}
-                  />
-                ))}
+                {(() => {
+                  const firstUpcomingMatch = matches.find(
+                    (m) => m.finished.toUpperCase() !== "TRUE" && m.time_elapsed?.toLowerCase() !== "finished"
+                  )
+                  return matches.map((match) => {
+                    const isFirstUpcoming = firstUpcomingMatch && firstUpcomingMatch.id === match.id
+                    return (
+                      <div key={match._id} id={isFirstUpcoming ? `upcoming-${date}` : undefined}>
+                        <MatchCard
+                          match={match}
+                          flagMap={flagMap}
+                          stadiumName={getStadiumName(match.stadium_id) || `#${match.stadium_id}`}
+                          teamNamesMap={teamNamesMap}
+                        />
+                      </div>
+                    )
+                  })
+                })()}
 
                 {/* Ads Card (only shown if matches count is odd) */}
                 {isOdd && <AdCard scriptHtml={adsConfig?.hero_ads} scriptHtml2={adsConfig?.hero2_ads} />}

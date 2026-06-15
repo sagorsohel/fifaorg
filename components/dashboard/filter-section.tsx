@@ -16,7 +16,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu"
-import { translate } from "@/lib/i18n"
+import { translate, formatLocalDateOnly } from "@/lib/i18n"
 
 export default function FilterSection() {
   const dispatch = useAppDispatch()
@@ -26,6 +26,28 @@ export default function FilterSection() {
   const filterStatus = useAppSelector((state) => state.ui.filterStatus)
   const activeTab = useAppSelector((state) => state.ui.activeTab)
   const selectedGroup = useAppSelector((state) => state.ui.selectedGroup)
+  const detectedTimezone = useAppSelector((state) => state.ui.detectedTimezone)
+
+  const handleScrollToToday = () => {
+    dispatch(setActiveTab("matches"))
+    dispatch(resetFilters())
+    setTimeout(() => {
+      const today = new Date()
+      const todayStr = formatLocalDateOnly(today, lang, detectedTimezone)
+      
+      const upcomingElement = document.getElementById(`upcoming-${todayStr}`)
+      if (upcomingElement) {
+        upcomingElement.scrollIntoView({ behavior: "smooth", block: "center" })
+      } else {
+        const element = document.getElementById(todayStr)
+        if (element) {
+          element.scrollIntoView({ behavior: "smooth", block: "center" })
+        } else {
+          alert(lang === "ar" ? "لا توجد مباريات مجدولة اليوم." : "No matches scheduled for today.")
+        }
+      }
+    }, 100)
+  }
 
   const scrollRef = useRef<HTMLDivElement>(null)
   const [showLeftArrow, setShowLeftArrow] = useState(false)
@@ -71,7 +93,7 @@ export default function FilterSection() {
   return (
     <section className="flex flex-col lg:flex-row justify-between items-stretch lg:items-center gap-3 bg-slate-955/20 p-3 rounded-2xl border border-slate-900/60 shadow-inner">
       {/* Left Side: Tabs */}
-      <div className="flex p-1 bg-slate-950 rounded-xl border border-slate-900 shrink-0 w-full lg:w-auto">
+      <div className="flex p-1 bg-slate-950 rounded-xl border border-slate-900 shrink-0 w-full lg:w-auto gap-1">
         <button
           onClick={() => dispatch(setActiveTab("matches"))}
           className={`flex-1 lg:flex-initial flex items-center justify-center gap-2 px-4 py-2 lg:px-6 lg:py-2.5 rounded-lg text-xs lg:text-sm font-semibold transition-all duration-200 cursor-pointer ${activeTab === "matches"
@@ -80,7 +102,14 @@ export default function FilterSection() {
             }`}
         >
           <Calendar className="w-3.5 h-3.5 lg:w-4 lg:h-4" />
-          {translate("matches", lang)}
+          {translate("fixtures", lang)}
+        </button>
+        <button
+          onClick={handleScrollToToday}
+          className="flex-1 lg:flex-initial flex items-center justify-center gap-2 px-4 py-2 lg:px-6 lg:py-2.5 rounded-lg text-xs lg:text-sm font-semibold transition-all duration-200 cursor-pointer text-slate-400 hover:text-slate-200 hover:bg-slate-900/40 bg-slate-955/20 border border-slate-900/30"
+        >
+          <span>📅</span>
+          {translate("today_matches", lang)}
         </button>
         <button
           onClick={() => dispatch(setActiveTab("teams"))}
@@ -90,7 +119,7 @@ export default function FilterSection() {
             }`}
         >
           <Users className="w-3.5 h-3.5 lg:w-4 lg:h-4" />
-          {translate("teams_groups", lang)}
+          {translate("groups", lang)}
         </button>
       </div>
 
@@ -100,49 +129,13 @@ export default function FilterSection() {
           <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
             <span className="hidden sm:inline-flex text-xs text-slate-400 items-center gap-1 shrink-0 font-sans">
               <SlidersHorizontal className="w-3.5 h-3.5 text-slate-500" />
-              {translate("filter_matches", lang)}
-            </span>
-
-            {/* Status Selector Dropdown */}
-            <div className="flex z-20 flex-1 sm:flex-none">
-              <DropdownMenu>
-                <DropdownMenuTrigger className="w-full sm:w-auto bg-slate-950 border border-slate-800 text-xs font-bold text-slate-200 px-3 py-2 sm:py-1.5 rounded-lg hover:border-cyan-500/30 focus:outline-hidden transition-all cursor-pointer shadow-xs flex items-center justify-between sm:justify-start gap-1.5 capitalize">
-                  <span>
-                    {filterStatus === "all"
-                      ? translate("all_matches", lang)
-                      : filterStatus === "finished"
-                        ? translate("finished", lang)
-                        : translate("upcoming", lang)}
-                  </span>
-                  <span className="text-[10px] text-slate-500">▼</span>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="bg-slate-900 border border-slate-800 text-slate-200 rounded-xl min-w-[120px] shadow-xl p-1 z-50">
-                  {(["all", "finished", "upcoming"] as const).map((status) => (
-                    <DropdownMenuItem
-                      key={status}
-                      onClick={() => dispatch(setFilterStatus(status))}
-                      className={`cursor-pointer px-3 py-2 text-xs rounded-lg transition-all focus:bg-cyan-500/15 focus:text-cyan-400 font-bold ${filterStatus === status ? "bg-cyan-500/10 text-cyan-400" : "text-slate-300"
-                        }`}
-                    >
-                      {status === "all"
-                        ? translate("all_matches", lang)
-                        : status === "finished"
-                          ? translate("finished", lang)
-                          : translate("upcoming", lang)}
-                    </DropdownMenuItem>
-                  ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
-
-            <span className="hidden sm:inline-flex text-xs text-slate-400 font-bold uppercase tracking-wider items-center gap-1 ml-1 shrink-0 font-sans">
-              {translate("select_group_stage", lang)}
+              {translate("groups", lang)}:
             </span>
 
             {/* Stage Selector (Desktop Dropdown) */}
             <div className="hidden sm:flex z-20 flex-1 sm:flex-none animate-fade-in">
               <DropdownMenu>
-                <DropdownMenuTrigger className="w-full sm:w-auto bg-slate-950 border border-slate-700 text-xs font-bold text-slate-200 px-3 py-2 sm:py-1.5 rounded-lg hover:border-cyan-500/30 focus:outline-hidden transition-all cursor-pointer shadow-xs flex items-center justify-between sm:justify-start gap-1.5 capitalize">
+                <DropdownMenuTrigger className="w-full sm:w-auto bg-slate-950 border border-slate-750 text-xs font-bold text-slate-200 px-3 py-2 sm:py-1.5 rounded-lg hover:border-cyan-500/30 focus:outline-hidden transition-all cursor-pointer shadow-xs flex items-center justify-between sm:justify-start gap-1.5 capitalize">
                   <span className="truncate max-w-[110px] sm:max-w-none">
                     {stages.find((s) => s.id === selectedGroup)?.label || translate("all_matches", lang)}
                   </span>
@@ -248,3 +241,4 @@ export default function FilterSection() {
     </section>
   )
 }
+

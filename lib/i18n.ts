@@ -82,6 +82,18 @@ export const TRANSLATIONS: Record<string, Record<string, string>> = {
     sk: "Centrum zápasov", sl: "Središče za tekme", sr: "Центар утакмице",
     sv: "Matchcenter", tr: "Maç Merkezi", zh: "赛事中心"
   },
+  fixtures: {
+    en: "Fixtures", "en-us": "Fixtures", ar: "المباريات",
+    az: "Oyunlar", bn: "ম্যাচ সূচী", cs: "Zápasy",
+    da: "Kampprogram", de: "Spielplan", el: "Πρόγραμμα",
+    es: "Calendario", "es-la": "Calendario", fr: "Calendrier",
+    hi: "फिक्सचर", hr: "Raspored utakmica", hu: "Mérkőzések",
+    id: "Jadwal Pertandingan", it: "Calendario", nl: "Programma",
+    no: "Kampprogram", pl: "Terminarz", pt: "Jogos",
+    "pt-pt": "Jogos", ro: "Program", ru: "Календарь",
+    sk: "Rozpis zápasov", sl: "Spored tekem", sr: "Распоред утакмица",
+    sv: "Kampprogram", tr: "Fikstür", zh: "赛程"
+  },
   matches: {
     en: "Matches", "en-us": "Matches", ar: "المباريات",
     az: "Oyunlar", bn: "ম্যাচসমূহ", cs: "Zápasy",
@@ -93,6 +105,18 @@ export const TRANSLATIONS: Record<string, Record<string, string>> = {
     "pt-pt": "Jogos", ro: "Meciuri", ru: "Матчи",
     sk: "Zápasy", sl: "Tekme", sr: "Утакмице",
     sv: "Matcher", tr: "Maçlar", zh: "比赛"
+  },
+  today_matches: {
+    en: "Today's Matches", "en-us": "Today's Matches", ar: "مباريات اليوم",
+    az: "Bugünkü Oyunlar", bn: "আজকের ম্যাচ", cs: "Dnešní zápasy",
+    da: "Dagens kampe", de: "Heutige Spiele", el: "Σημερινοί Αγώνες",
+    es: "Partidos de hoy", "es-la": "Partidos de hoy", fr: "Matchs du jour",
+    hi: "आज के मैच", hr: "Današnje utakmice", hu: "Mai mérkőzések",
+    id: "Pertandingan Hari Ini", it: "Partite di Oggi", nl: "Wedstrijden van Vandaag",
+    no: "Dagens kamper", pl: "Dzisiejsze mecze", pt: "Jogos de Hoje",
+    "pt-pt": "Jogos de Hoje", ro: "Meciurile de azi", ru: "Матчи сегодня",
+    sk: "Dnešné zápasy", sl: "Današnje tekme", sr: "Данашње утакмице",
+    sv: "Dagens matcher", tr: "Bugünün Maçları", zh: "今日比赛"
   },
   team: {
     en: "Team", "en-us": "Team", ar: "الفريق",
@@ -117,6 +141,18 @@ export const TRANSLATIONS: Record<string, Record<string, string>> = {
     "pt-pt": "Equipas e Grupos", ro: "Echipe și Grupe", ru: "Команды и группы",
     sk: "Tímy a skupiny", sl: "Ekipe in skupine", sr: "Репрезентације и групе",
     sv: "Lag & Grupper", tr: "Takımlar ve Gruplar", zh: "球队与分组"
+  },
+  groups: {
+    en: "Groups", "en-us": "Groups", ar: "المجموعات",
+    az: "Qruplar", bn: "গ্রুপ", cs: "Skupiny",
+    da: "Grupper", de: "Gruppen", el: "Όμιλοι",
+    es: "Grupos", "es-la": "Grupos", fr: "Groupes",
+    hi: "समूह", hr: "Skupine", hu: "Csoportok",
+    id: "Grup", it: "Gruppi", nl: "Groepen",
+    no: "Grupper", pl: "Grupy", pt: "Grupos",
+    "pt-pt": "Grupos", ro: "Grupe", ru: "Группы",
+    sk: "Skupiny", sl: "Skupine", sr: "Групе",
+    sv: "Grupper", tr: "Gruplar", zh: "分组"
   },
   search_placeholder: {
     en: "Search teams, matchdays, groups...", "en-us": "Search teams, matchdays, groups...", ar: "البحث عن الفرق، الأيام، المجموعات...",
@@ -1499,4 +1535,24 @@ export function formatCountdownTime(timeLeft: { days: number; hours: number; min
   const sUnit = lang === "ar" ? "ثانية" : "s"
   
   return `${timeLeft.days}${dUnit} : ${timeLeft.hours}${hUnit} : ${timeLeft.minutes}${mUnit} : ${timeLeft.seconds}${sUnit}`
+}
+
+export function formatLocalDateOnly(date: Date, lang: LanguageCode, timeZone?: string | null): string {
+  try {
+    let locale = "en-GB"
+    if (lang === "en-us") locale = "en-US"
+    else if (lang === "pt") locale = "pt-BR"
+    else if (lang === "es-la") locale = "es-419"
+    else locale = lang
+
+    return date.toLocaleDateString(locale, {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      timeZone: timeZone || undefined
+    })
+  } catch {
+    return date.toDateString()
+  }
 }

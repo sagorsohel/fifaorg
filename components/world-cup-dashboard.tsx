@@ -28,6 +28,7 @@ import {
   LANGUAGES,
   translate,
   parseStadiumLocalDate,
+  formatLocalDateOnly,
 } from "@/lib/i18n"
 
 // Import sub-components
@@ -37,27 +38,6 @@ import FilterSection from "@/components/dashboard/filter-section"
 import MatchesView from "@/components/dashboard/matches-view"
 import TeamsView from "@/components/dashboard/teams-view"
 import TeamDetailView from "@/components/dashboard/team-detail-view"
-
-// Localized Date formatter helper for grouped headings
-function formatLocalDateOnly(date: Date, lang: LanguageCode, timeZone?: string | null): string {
-  try {
-    let locale = "en-GB"
-    if (lang === "en-us") locale = "en-US"
-    else if (lang === "pt") locale = "pt-BR"
-    else if (lang === "es-la") locale = "es-419"
-    else locale = lang
-
-    return date.toLocaleDateString(locale, {
-      weekday: "long",
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-      timeZone: timeZone || undefined
-    })
-  } catch {
-    return date.toDateString()
-  }
-}
 
 export default function WorldCupDashboard() {
   const dispatch = useAppDispatch()

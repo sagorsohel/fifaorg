@@ -6,7 +6,7 @@ import Image from "next/image"
 import { usePathname } from "next/navigation"
 import { Trophy, User } from "lucide-react"
 import { useAppDispatch, useAppSelector, RootState } from "@/lib/store"
-import { setLanguage } from "@/lib/features/uiSlice"
+import { setLanguage, setActiveTab } from "@/lib/features/uiSlice"
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -198,11 +198,14 @@ export function Navbar() {
 
             <Link
               href="/"
-              aria-label={translate("matches", lang) || "Matches"}
+              onClick={() => {
+                dispatch(setActiveTab("matches"))
+              }}
+              aria-label={translate("fixtures", lang) || "Fixtures"}
               className="bg-slate-900 border border-slate-800 text-slate-200 font-bold hover:border-cyan-500/30 hover:text-cyan-400 shadow-md px-2.5 sm:px-4 py-2 sm:py-2.5 rounded-lg sm:rounded-xl text-[9px] sm:text-xs uppercase cursor-pointer hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 flex items-center gap-1 sm:gap-1.5 select-none shrink-0"
             >
               <Trophy className="w-3 sm:w-3.5 h-3 sm:h-3.5" />
-              <span className="hidden md:inline">{translate("matches", lang)}</span>
+              <span className="hidden md:inline">{translate("fixtures", lang)}</span>
             </Link>
 
 
