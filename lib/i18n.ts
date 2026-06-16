@@ -1368,8 +1368,8 @@ export const COUNTRY_TO_LANG: Record<string, LanguageCode> = {
   ru: "ru",
   sk: "sk",
   sl: "sl",
-  sr: "sr",
-  sv: "sv",
+  rs: "sr",
+  se: "sv",
   tr: "tr",
   zh: "zh"
 }
