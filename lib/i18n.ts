@@ -1340,6 +1340,65 @@ export function mapCountryToLanguage(countryCode: string): LanguageCode {
   return mapping[code] || "en"
 }
 
+// Map of country/region codes to languages for URL prefixes
+export const COUNTRY_TO_LANG: Record<string, LanguageCode> = {
+  us: "en-us", ca: "en-us",
+  gb: "en", ie: "en", za: "en", au: "en", nz: "en",
+  ae: "ar", sa: "ar", qa: "ar", om: "ar", kw: "ar", bh: "ar", eg: "ar", jo: "ar", lb: "ar", sy: "ar", iq: "ar", ye: "ar", ly: "ar", ma: "ar", dz: "ar", tn: "ar", sd: "ar", ps: "ar",
+  az: "az",
+  bd: "bn",
+  cz: "cs",
+  dk: "da",
+  de: "de", at: "de", li: "de",
+  gr: "el", cy: "el",
+  es: "es",
+  mx: "es-la", cl: "es-la", co: "es-la", pe: "es-la", ve: "es-la", ec: "es-la", gt: "es-la", hn: "es-la", ni: "es-la", cr: "es-la", pa: "es-la", uy: "es-la", py: "es-la", bo: "es-la", sv: "es-la", do: "es-la", pr: "es-la", cu: "es-la",
+  fr: "fr", mc: "fr",
+  in: "hi",
+  hr: "hr",
+  hu: "hu",
+  id: "id",
+  it: "it", sm: "it", va: "it",
+  nl: "nl", be: "nl", sr: "nl",
+  no: "no",
+  pl: "pl",
+  br: "pt",
+  pt: "pt",
+  ro: "ro",
+  ru: "ru",
+  sk: "sk",
+  sl: "sl",
+  sr: "sr",
+  sv: "sv",
+  tr: "tr",
+  zh: "zh"
+}
+
+// Set of valid prefixes (both language codes and country codes)
+export const VALID_PREFIXES = new Set<string>([
+  ...LANGUAGES.map(l => l.code),
+  ...Object.keys(COUNTRY_TO_LANG)
+])
+
+export function getPrefixFromLanguage(lang: LanguageCode): string {
+  if (lang === "en-us") return "us"
+  if (lang === "hi") return "in"
+  return lang
+}
+
+export function getLanguageFromPrefix(prefix: string): LanguageCode | null {
+  const normalized = prefix.toLowerCase()
+  if (COUNTRY_TO_LANG[normalized]) {
+    return COUNTRY_TO_LANG[normalized]
+  }
+  const found = LANGUAGES.find(l => l.code === normalized)
+  if (found) {
+    return found.code
+  }
+  return null
+}
+
+
 // Parse match date local kickoff string and convert to UTC Date based on Stadium Location offsets
 export function parseStadiumLocalDate(localDateStr: string, stadiumId: string): Date {
   try {

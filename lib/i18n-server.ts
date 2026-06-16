@@ -37,6 +37,16 @@ export async function getPreferredLanguage(): Promise<LanguageCode> {
 
 export async function getLanguageFromServer(): Promise<LanguageCode> {
   try {
+    const headersList = await headers()
+    const headerLang = headersList.get("x-next-lang")
+    if (headerLang && LANGUAGES.some(l => l.code === headerLang)) {
+      return headerLang as LanguageCode
+    }
+  } catch (e) {
+    console.error("Failed to read x-next-lang header on server:", e)
+  }
+
+  try {
     const cookieList = await cookies()
     const cookieLang = cookieList.get("worldcup2026_lang")?.value
     if (cookieLang && LANGUAGES.some(l => l.code === cookieLang)) {
