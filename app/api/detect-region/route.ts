@@ -4,7 +4,7 @@ async function fetchRegionData(ip: string): Promise<{ country_code: string | nul
   const providers = [
     async () => {
       const url = ip ? `https://ipapi.co/${ip}/json/` : "https://ipapi.co/json/"
-      const r = await fetch(url, { signal: AbortSignal.timeout(3000) })
+      const r = await fetch(url, { signal: AbortSignal.timeout(1500) })
       if (r.ok) {
         const d = await r.json()
         return {
@@ -16,7 +16,7 @@ async function fetchRegionData(ip: string): Promise<{ country_code: string | nul
     },
     async () => {
       const url = ip ? `https://ipwhois.app/json/${ip}` : "https://ipwhois.app/json/"
-      const r = await fetch(url, { signal: AbortSignal.timeout(3000) })
+      const r = await fetch(url, { signal: AbortSignal.timeout(1500) })
       if (r.ok) {
         const d = await r.json()
         return {
@@ -28,7 +28,7 @@ async function fetchRegionData(ip: string): Promise<{ country_code: string | nul
     },
     async () => {
       const url = ip ? `http://ip-api.com/json/${ip}` : "http://ip-api.com/json/"
-      const r = await fetch(url, { signal: AbortSignal.timeout(3000) })
+      const r = await fetch(url, { signal: AbortSignal.timeout(1500) })
       if (r.ok) {
         const d = await r.json()
         return {

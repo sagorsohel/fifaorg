@@ -6,7 +6,7 @@ import { ChevronRight } from "lucide-react"
 import { Team } from "@/lib/services/apiSlice"
 import { useAppDispatch, useAppSelector } from "@/lib/store"
 import { setSelectedTeamId } from "@/lib/features/uiSlice"
-import { translate } from "@/lib/i18n"
+import { translate, getLocalizedTeamName } from "@/lib/i18n"
 import { getImageUrl } from "@/lib/utils"
 
 interface TeamsViewProps {
@@ -21,15 +21,7 @@ export default function TeamsView({ teamsGroupedByGroup }: TeamsViewProps) {
   const allGroupLetters = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"]
 
   const getTeamName = (team: Team) => {
-    if (!team) return "TBD"
-    if (team.translations) {
-      try {
-        const parsed = typeof team.translations === "string" ? JSON.parse(team.translations) : team.translations
-        if (parsed && parsed[lang]) return parsed[lang]
-      } catch { }
-    }
-    if (lang === "ar" && team.name_fa) return team.name_fa
-    return team.name_en
+    return getLocalizedTeamName(team, "TBD", lang)
   }
 
   const getTeamCode = (team: Team) => {

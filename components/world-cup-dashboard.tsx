@@ -29,6 +29,7 @@ import {
   translate,
   parseStadiumLocalDate,
   formatLocalDateOnly,
+  getLocalizedStadiumName,
 } from "@/lib/i18n"
 
 // Import sub-components
@@ -61,10 +62,6 @@ export default function WorldCupDashboard() {
       .catch(() => { })
   }, [])
 
-  useEffect(() => {
-    document.title = "World Cup 2026 Dashboard"
-  }, [])
-
   // Selectors from Redux UI State
   const lang = useAppSelector((state) => state.ui.language)
   const searchQuery = useAppSelector((state) => state.ui.searchQuery)
@@ -73,6 +70,10 @@ export default function WorldCupDashboard() {
   const selectedGroup = useAppSelector((state) => state.ui.selectedGroup)
   const selectedTeamId = useAppSelector((state) => state.ui.selectedTeamId)
   const detectedTimezone = useAppSelector((state) => state.ui.detectedTimezone)
+
+  useEffect(() => {
+    document.title = translate("title", lang)
+  }, [lang])
 
   // API Queries via RTK Query
   const {
@@ -139,17 +140,7 @@ export default function WorldCupDashboard() {
 
   const getStadiumName = (stadiumId: string) => {
     const stadium = stadiumsMap[stadiumId]
-    if (!stadium) return ""
-    if (stadium.translations) {
-      try {
-        const parsed = typeof stadium.translations === "string" ? JSON.parse(stadium.translations) : stadium.translations
-        if (parsed && parsed[lang]) return parsed[lang]
-      } catch { }
-    }
-    if (lang === "ar" && stadium.name_fa && stadium.city_fa) {
-      return `${stadium.name_fa}, ${stadium.city_fa}`
-    }
-    return `${stadium.name_en}, ${stadium.city_en}`
+    return getLocalizedStadiumName(stadium, lang)
   }
 
   // Selected team lookup & match filtering

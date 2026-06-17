@@ -46,7 +46,13 @@ const MEMBERSHIP_TRANSLATIONS: Record<string, string> = {
   sr: "Чланство",
   sv: "Medlemskap",
   tr: "Üyelik",
-  zh: "会员"
+  zh: "会员",
+  jp: "メンバーシップ",
+  kr: "멤버십",
+  vn: "Hội viên",
+  he: "חברות",
+  th: "สมาชิกภาพ",
+  ch: "Mitgliedschaft"
 }
 
 function AdScriptContainer({ scriptHtml, className }: { scriptHtml?: string; className?: string }) {
@@ -164,7 +170,7 @@ export function Navbar() {
     const defaultLink = "https://lightsalmon-hummingbird-478538.hostingersite.com/register"
     if (!pathname) return defaultLink
 
-    const matchMatch = pathname.match(/^\/match\/([^/]+)/)
+    const matchMatch = pathname.match(/(?:^\/match\/|^\/[a-zA-Z-]{2,10}\/match\/)([^/]+)/)
     if (matchMatch && gamesData?.games) {
       const slug = matchMatch[1]
       const game = gamesData.games.find(
@@ -253,7 +259,9 @@ export function Navbar() {
                         dispatch(setLanguage(l.code))
                         try {
                           localStorage.setItem("worldcup2026_lang", l.code)
+                          localStorage.setItem("worldcup2026_lang_manual", "true")
                           document.cookie = `worldcup2026_lang=${l.code}; path=/; max-age=31536000`
+                          document.cookie = `worldcup2026_lang_manual=true; path=/; max-age=31536000`
                         } catch { }
                       }}
                       className={`cursor-pointer px-3 py-2 text-xs rounded-lg transition-all focus:bg-cyan-500/15 focus:text-cyan-400 font-bold ${lang === l.code ? "bg-cyan-500/10 text-cyan-400" : "text-slate-300"

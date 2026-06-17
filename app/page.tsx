@@ -33,7 +33,13 @@ const METADATA_TRANSLATIONS: Record<string, Record<string, string>> = {
     sr: "УЖИВО | WC26 on Screen",
     sv: "LIVE | WC26 on Screen",
     tr: "CANLI | WC26 on Screen",
-    zh: "直播 | WC26 on Screen"
+    zh: "直播 | WC26 on Screen",
+    jp: "FIFAワールドカップ 2026無料オンラインライブ配信、テレビ放送、日程、順位表、ハイライト",
+    kr: "FIFA 월드컵 2026 무료 온라인 라이브 스트리밍, TV 중계, 일정, 순위표, 하이라이트",
+    vn: "Trực tiếp FIFA World Cup 2026 trực tuyến miễn phí, truyền hình, lịch thi đấu, bảng xếp hạng, highlights",
+    he: "שידור חי חינם של גביע העולם 2026, שידורי טלוויזיה, לוח משחקים, בתים ותקצירים",
+    th: "ฟุตบอลโลก 2026 ถ่ายทอดสดออนไลน์ฟรี, ทีวี, โปรแกรมแข่ง, ตารางคะแนน, ไฮไลท์",
+    ch: "LIVE | WC26 on Screen"
   },
   description: {
     en: "World Cup 2026 Live Scores, Results and Fixtures. Don't miss a single match. Stream all 104 matches live on FIFAonScreen.",
@@ -65,7 +71,13 @@ const METADATA_TRANSLATIONS: Record<string, Record<string, string>> = {
     sr: "Светско прvenstvo 2026 резултати уживо, распоред и резултати. Не пропустите ни једну утакмицу. Пратите све 104 утакмице уживо на FIFAonScreen.",
     sv: "Fotbolls-VM 2026 liveresultat, resultat och spelscheman. Missa inte en enda match. Streama alla 104 matcher live på FIFAonScreen.",
     tr: "2026 Dünya Kupası Canlı Skorları, Sonuçlar ve Fikstürler. Tek bir maçı bile kaçırmayın. 104 maçın tamamını FIFAonScreen'de canlı izleyin.",
-    zh: "2026年世界杯比分直播、赛程和结果。不要错过 any 一场比赛。在 FIFAonScreen 在线观看全部104场比赛直播。"
+    zh: "2026年世界杯比分直播、赛程和结果。不要错过 any 一场比赛。在 FIFAonScreen 在线观看全部104场比赛直播。",
+    jp: "2026年FIFAワールドカップの全試合を無料オンラインライブ配信、テレビ放送スケジュール、結果、順位表、見どころ、対戦予測からお届け。",
+    kr: "2026 FIFA 월드컵 모든 경기의 무료 온라인 라이브 스트리밍, TV 중계 일정, 결과, 순위, 하이라이트 및 상대 전적 분석을 제공합니다.",
+    vn: "Phát trực tiếp miễn phí mọi trận đấu FIFA World Cup 2026, lịch phát sóng truyền hình, kết quả, bảng xếp hạng, video bàn thắng và dự đoán đối đầu.",
+    he: "שידור חי מקוון של כל משחק בגביע העולם 2026, לוח שידורי טלוויזיה, תוצאות, בתים, תקצירים ותחזיות ראש בראש.",
+    th: "รับชมการถ่ายทอดสดฟุตบอลโลก 2026 ฟรีทุกแมตช์ ตารางทีวี ผลการแข่งขัน ตารางคะแนน ไฮไลท์ และการวิเคราะห์พบกันล่าสุด",
+    ch: "Fussball-WM 2026 Live-Spielstände, Ergebnisse und Spielpläne. Verpassen Sie kein einziges Spiel. Streamen Sie alle 104 Spiele live auf FIFAonScreen."
   }
 }
 

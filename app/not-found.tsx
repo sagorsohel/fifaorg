@@ -11,7 +11,7 @@ import {
   Stadium
 } from "@/lib/services/apiSlice"
 import { useAppSelector } from "@/lib/store"
-import { translate, parseStadiumLocalDate } from "@/lib/i18n"
+import { translate, parseStadiumLocalDate, getLocalizedStadiumName } from "@/lib/i18n"
 import MatchCard from "@/components/dashboard/match-card"
 
 export default function NotFound() {
@@ -56,14 +56,7 @@ export default function NotFound() {
 
   const getStadiumName = (stadiumId: string) => {
     const stadium = stadiumsMap[stadiumId]
-    if (!stadium) return ""
-    if (stadium.translations) {
-      try {
-        const parsed = typeof stadium.translations === "string" ? JSON.parse(stadium.translations) : stadium.translations
-        if (parsed && parsed[lang]) return parsed[lang]
-      } catch { }
-    }
-    return `${stadium.name_en}, ${stadium.city_en}`
+    return getLocalizedStadiumName(stadium, lang)
   }
 
   // Filter games scheduled for today (based on local user's calendar date)

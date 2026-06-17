@@ -13,6 +13,7 @@ import {
   parseStadiumLocalDate,
   formatCountdownTime,
   getTimezoneAbbr,
+  getLocalizedTeamName,
 } from "@/lib/i18n"
 import { formatScorers, getScorersArray, getImageUrl } from "@/lib/utils"
 
@@ -91,15 +92,7 @@ export default function MatchCard({ match, flagMap, stadiumName, teamNamesMap }:
 
   const getTeamName = (teamId: string) => {
     const team = teamNamesMap[teamId]
-    if (!team) return "TBD"
-    if (team.translations) {
-      try {
-        const parsed = typeof team.translations === "string" ? JSON.parse(team.translations) : team.translations
-        if (parsed && parsed[lang]) return parsed[lang]
-      } catch { }
-    }
-    if (lang === "ar" && team.name_fa) return team.name_fa
-    return team.name_en
+    return getLocalizedTeamName(team, "TBD", lang)
   }
 
   const getTeamCode = (teamId: string) => {
@@ -163,7 +156,7 @@ export default function MatchCard({ match, flagMap, stadiumName, teamNamesMap }:
         <div className="px-4 flex items-center justify-center shrink-0">
           {shouldShowScore ? (
             <div className="flex flex-col items-center gap-1">
-              <div className="flex items-center gap-2 bg-slate-950 px-4 py-1.5 rounded-xl border border-slate-855 shadow-inner font-mono font-bold text-lg text-emerald-400">
+              <div className="flex items-center gap-2 bg-slate-950 px-4 py-1.5 rounded-xl border border-slate-800 shadow-inner font-mono font-bold text-lg text-emerald-400">
                 <span>{match.home_score}</span>
                 <span className="text-slate-655 text-sm font-sans">:</span>
                 <span>{match.away_score}</span>

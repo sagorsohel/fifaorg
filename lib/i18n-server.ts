@@ -55,17 +55,8 @@ export async function getLanguageFromServer(): Promise<LanguageCode> {
   } catch (e) {
     console.error("Failed to read lang cookie on server:", e)
   }
-  return getPreferredLanguage()
+  return "en"
 }
 
-export function getLocalizedTeamName(team: any, fallback: string, activeLang: LanguageCode): string {
-  if (!team) return fallback
-  if (team.translations) {
-    try {
-      const parsed = typeof team.translations === "string" ? JSON.parse(team.translations) : team.translations
-      if (parsed && parsed[activeLang]) return parsed[activeLang]
-    } catch { }
-  }
-  if (activeLang === "ar" && team.name_fa) return team.name_fa
-  return team.name_en || fallback
-}
+export { getLocalizedTeamName } from "./i18n"
+

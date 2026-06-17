@@ -1,10 +1,10 @@
 "use client"
 
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import { useAppSelector, useAppDispatch } from "@/lib/store"
 import { setLanguage, setDetectedTimezone } from "@/lib/features/uiSlice"
-import { detectBrowserLanguage, LANGUAGES, mapCountryToLanguage, VALID_PREFIXES, getPrefixFromLanguage, getLanguageFromPrefix } from "@/lib/i18n"
-import { usePathname, useRouter } from "next/navigation"
+import { detectBrowserLanguage, LANGUAGES, mapCountryToLanguage, VALID_PREFIXES, getPrefixFromLanguage, getLanguageFromPrefix, getTimezoneLanguage, LanguageCode } from "@/lib/i18n"
+import { usePathname } from "next/navigation"
 import { Footer } from "./footer"
 // import { MobileNav } from "./mobile-nav"
 import { Navbar } from "./navbar"
@@ -14,8 +14,40 @@ export function LayoutWrapper({ children }: { children: React.ReactNode }) {
   const dispatch = useAppDispatch()
   const lang = useAppSelector((state) => state.ui.language)
   const pathname = usePathname()
-  const router = useRouter()
   const { theme, setTheme } = useTheme()
+  const [isInitialized, setIsInitialized] = useState(false)
+  const isManageRoute = pathname?.startsWith("/manage")
+
+  // Synchronize URL prefix when pathname or language changes (without page reloads!)
+  useEffect(() => {
+    if (isManageRoute || !isInitialized) return
+
+    const currentPrefix = getPrefixFromLanguage(lang)
+    const pathParts = window.location.pathname.split("/")
+    const firstSeg = pathParts[1]
+
+    if (firstSeg && VALID_PREFIXES.includes(firstSeg.toLowerCase())) {
+      const pathLang = getLanguageFromPrefix(firstSeg)
+      if (pathLang !== lang) {
+        // Language changed from the dropdown, update URL prefix in address bar without reload!
+        pathParts[1] = currentPrefix
+        const newPath = pathParts.join("/")
+        const search = window.location.search
+        
+        // Update cookie, localStorage, and browser URL path without reload
+        document.cookie = `worldcup2026_lang=${lang}; path=/; max-age=31536000`
+        localStorage.setItem("worldcup2026_lang", lang)
+        window.history.replaceState(null, "", newPath + search)
+      }
+    } else {
+      // Path has no prefix. Normalizing URL in address bar without reload!
+      const newPath = "/" + currentPrefix + window.location.pathname
+      const search = window.location.search
+      window.history.replaceState(null, "", newPath + search)
+      document.cookie = `worldcup2026_lang=${lang}; path=/; max-age=31536000`
+      localStorage.setItem("worldcup2026_lang", lang)
+    }
+  }, [lang, pathname, isManageRoute, isInitialized])
 
   useEffect(() => {
     // Detect browser, local storage, or IP-based region and sync to Redux
@@ -58,31 +90,67 @@ export function LayoutWrapper({ children }: { children: React.ReactNode }) {
           }
         } catch (tzErr) {}
 
-        // 0. Check path prefix first
+        // Check URL pathname prefix first
+        let pathLang: any = null
         if (typeof window !== "undefined") {
-          const segments = window.location.pathname.split("/")
-          const pathPrefix = segments[1]?.toLowerCase()
-          if (pathPrefix && VALID_PREFIXES.has(pathPrefix)) {
-            const pathLang = getLanguageFromPrefix(pathPrefix)
-            if (pathLang) {
-              dispatch(setLanguage(pathLang))
-              localStorage.setItem("worldcup2026_lang", pathLang)
-              document.cookie = `worldcup2026_lang=${pathLang}; path=/; max-age=31536000`
-              
-              // Fetch timezone in background
-              try {
-                const data = await getRegionData()
-                if (data && data.timezone) {
-                  dispatch(setDetectedTimezone(data.timezone))
-                }
-              } catch (e) {}
-              return
-            }
+          const pathParts = window.location.pathname.split("/")
+          const firstSeg = pathParts[1]
+          if (firstSeg && VALID_PREFIXES.includes(firstSeg.toLowerCase())) {
+            pathLang = getLanguageFromPrefix(firstSeg)
           }
         }
 
+        const cookieMatch = typeof document !== "undefined" && document.cookie.match(/(?:^|; )worldcup2026_lang=([^;]*)/)
+        const cookieLang = cookieMatch ? cookieMatch[1] : null
+
         const saved = localStorage.getItem("worldcup2026_lang")
-        if (saved) {
+        const hasManualCookie = typeof document !== "undefined" && document.cookie.includes("worldcup2026_lang_manual=true")
+        const isManual = (localStorage.getItem("worldcup2026_lang_manual") === "true") || hasManualCookie
+
+        if (pathLang) {
+          dispatch(setLanguage(pathLang))
+          localStorage.setItem("worldcup2026_lang", pathLang)
+          document.cookie = `worldcup2026_lang=${pathLang}; path=/; max-age=31536000`
+          
+          // Verify physical location in background and override if not manual selection
+          try {
+            const data = await getRegionData()
+            if (data) {
+              if (data.timezone) {
+                dispatch(setDetectedTimezone(data.timezone))
+              }
+              
+              if (!isManual) {
+                let detectedCountryLang: LanguageCode | null = null
+                if (data.country_code) {
+                  detectedCountryLang = mapCountryToLanguage(data.country_code)
+                } else {
+                  detectedCountryLang = getTimezoneLanguage()
+                }
+                
+                if (detectedCountryLang && detectedCountryLang !== pathLang) {
+                  console.log("[LAYOUT WRAPPER] Automatically overriding default prefix:", pathLang, "->", detectedCountryLang)
+                  dispatch(setLanguage(detectedCountryLang))
+                  localStorage.setItem("worldcup2026_lang", detectedCountryLang)
+                  document.cookie = `worldcup2026_lang=${detectedCountryLang}; path=/; max-age=31536000`
+                }
+              }
+            }
+          } catch (e) {
+            console.error("[LAYOUT WRAPPER] Failed dynamic prefix override check:", e)
+          }
+        } else if (cookieLang && isManual && LANGUAGES.some(l => l.code === cookieLang)) {
+          dispatch(setLanguage(cookieLang as any))
+          localStorage.setItem("worldcup2026_lang", cookieLang)
+          
+          // Only fetch timezone in background, do not overwrite language
+          try {
+            const data = await getRegionData()
+            if (data && data.timezone) {
+              dispatch(setDetectedTimezone(data.timezone))
+            }
+          } catch (e) {}
+        } else if (saved && isManual) {
           dispatch(setLanguage(saved as any))
           document.cookie = `worldcup2026_lang=${saved}; path=/; max-age=31536000`
           
@@ -93,67 +161,50 @@ export function LayoutWrapper({ children }: { children: React.ReactNode }) {
               dispatch(setDetectedTimezone(data.timezone))
             }
           } catch (e) {}
-          return
-        }
+        } else {
+          // 1. Initial guess based on browser locale
+          const detected = detectBrowserLanguage()
+          dispatch(setLanguage(detected))
+          document.cookie = `worldcup2026_lang=${detected}; path=/; max-age=31536000`
 
-        // 1. Initial guess based on timezone/browser locale (instant)
-        const detected = detectBrowserLanguage()
-        dispatch(setLanguage(detected))
-        document.cookie = `worldcup2026_lang=${detected}; path=/; max-age=31536000`
+          // 2. Fetch region/country/timezone based on IP (background)
+          try {
+            console.log("[LAYOUT WRAPPER] Fetching region data...")
+            const data = await getRegionData()
+            console.log("[LAYOUT WRAPPER] Geolocation response data:", data)
+            
+            let detectedCountryLang: LanguageCode | null = null
 
-        // 2. Fetch region/country/timezone based on IP (background)
-        const data = await getRegionData()
-        if (data) {
-          if (data.timezone) {
-            dispatch(setDetectedTimezone(data.timezone))
-          }
-          if (data.country_code) {
-            const mappedLang = mapCountryToLanguage(data.country_code)
-            if (mappedLang) {
-              dispatch(setLanguage(mappedLang))
-              localStorage.setItem("worldcup2026_lang", mappedLang)
-              document.cookie = `worldcup2026_lang=${mappedLang}; path=/; max-age=31536000`
-              return
+            if (data && data.country_code) {
+              detectedCountryLang = mapCountryToLanguage(data.country_code)
+            } else {
+              // Fallback to client-side timezone check (highly accurate for local developers)
+              detectedCountryLang = getTimezoneLanguage()
+              console.log("[LAYOUT WRAPPER] Geolocation failed/empty, timezone fallback lang:", detectedCountryLang)
             }
+
+            if (detectedCountryLang) {
+              console.log("[LAYOUT WRAPPER] Setting active language and redirecting prefix to:", detectedCountryLang)
+              dispatch(setLanguage(detectedCountryLang))
+              localStorage.setItem("worldcup2026_lang", detectedCountryLang)
+              document.cookie = `worldcup2026_lang=${detectedCountryLang}; path=/; max-age=31536000`
+            }
+          } catch (e) {
+            console.error("[LAYOUT WRAPPER] Failed background detection:", e)
           }
         }
-
-        // If fetch fails or no mapped language, save the initial timezone/browser locale guess
-        localStorage.setItem("worldcup2026_lang", detected)
-        document.cookie = `worldcup2026_lang=${detected}; path=/; max-age=31536000`
       } catch (e) {
+        console.error("[LAYOUT WRAPPER] General initialization error:", e)
         const detected = detectBrowserLanguage()
         dispatch(setLanguage(detected))
         document.cookie = `worldcup2026_lang=${detected}; path=/; max-age=31536000`
+      } finally {
+        setIsInitialized(true)
       }
     }
 
     initLanguage()
   }, [dispatch])
-
-  // Sync Redux language state with URL prefix
-  useEffect(() => {
-    if (typeof window === "undefined" || !pathname || pathname.startsWith("/manage") || pathname.startsWith("/api")) return
-
-    const segments = pathname.split("/")
-    const currentPrefix = segments[1]?.toLowerCase()
-    const targetPrefix = getPrefixFromLanguage(lang)
-
-    if (currentPrefix !== targetPrefix) {
-      let newPath = pathname
-      if (VALID_PREFIXES.has(currentPrefix)) {
-        newPath = "/" + targetPrefix + "/" + segments.slice(2).join("/")
-      } else {
-        newPath = "/" + targetPrefix + pathname
-      }
-      
-      newPath = newPath.replace(/\/+/g, "/").replace(/\/$/, "")
-      if (!newPath) newPath = "/" + targetPrefix
-
-      const search = window.location.search
-      router.push(newPath + search)
-    }
-  }, [lang, pathname, router])
 
   useEffect(() => {
     if (pathname?.startsWith("/manage")) {
@@ -210,20 +261,19 @@ export function LayoutWrapper({ children }: { children: React.ReactNode }) {
   }, [pathname, theme, setTheme])
 
   const dir = LANGUAGES.find((l) => l.code === lang)?.dir || "ltr"
-  const isManageRoute = pathname?.startsWith("/manage")
 
   if (isManageRoute) {
     return (
-      <div dir={dir} className="dark min-h-screen bg-slate-955 text-slate-100 font-sans antialiased relative">
+      <div suppressHydrationWarning dir={dir} className="dark min-h-screen bg-slate-955 text-slate-100 font-sans antialiased relative">
         {children}
       </div>
     )
   }
 
   return (
-    <div dir={dir} className="min-h-screen bg-slate-950 text-slate-100 transition-all duration-300 relative flex flex-col justify-between">
+    <div suppressHydrationWarning dir={dir} className="min-h-screen bg-slate-950 text-slate-100 transition-all duration-300 relative flex flex-col justify-between">
       <Navbar />
-      <div className="flex-1 w-full relative z-10">
+      <div suppressHydrationWarning className="flex-1 w-full relative z-10">
         {children}
       </div>
       <Footer />

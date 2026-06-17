@@ -71,6 +71,14 @@ export async function performSync() {
         groups: team.groups || null,
         translations: serializedTeamTrans,
         fifa_team_id: team.fifa_team_id || null,
+        mp: team.mp !== undefined ? Number(team.mp) : 0,
+        w: team.w !== undefined ? Number(team.w) : 0,
+        l: team.l !== undefined ? Number(team.l) : 0,
+        d: team.d !== undefined ? Number(team.d) : 0,
+        pts: team.pts !== undefined ? Number(team.pts) : 0,
+        gf: team.gf !== undefined ? Number(team.gf) : 0,
+        ga: team.ga !== undefined ? Number(team.ga) : 0,
+        gd: team.gd !== undefined ? Number(team.gd) : 0,
       }
     })
 

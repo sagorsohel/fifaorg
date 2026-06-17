@@ -4,7 +4,7 @@ import { useRouter, usePathname } from "next/navigation"
 import { RefreshCw } from "lucide-react"
 import { useAppDispatch, useAppSelector } from "@/lib/store"
 import { setActiveTab, setSelectedTeamId, setLanguage } from "@/lib/features/uiSlice"
-import { LANGUAGES, translate } from "@/lib/i18n"
+import { LANGUAGES, translate, VALID_PREFIXES } from "@/lib/i18n"
 import { useGetTeamsQuery, useGetGamesQuery, useGetStadiumsQuery } from "@/lib/services/apiSlice"
 import {
   DropdownMenu,
@@ -32,7 +32,8 @@ export function MobileNav() {
   const navigateToTab = (tab: "matches" | "teams") => {
     dispatch(setActiveTab(tab))
     dispatch(setSelectedTeamId(null))
-    if (pathname !== "/") {
+    const isHome = pathname === "/" || VALID_PREFIXES.some(prefix => pathname === `/${prefix}` || pathname === `/${prefix}/`)
+    if (!isHome) {
       router.push("/")
     }
   }
@@ -106,6 +107,8 @@ export function MobileNav() {
                   dispatch(setLanguage(l.code))
                   try {
                     localStorage.setItem("worldcup2026_lang", l.code)
+                    localStorage.setItem("worldcup2026_lang_manual", "true")
+                    document.cookie = `worldcup2026_lang=${l.code}; path=/; max-age=31536000`
                   } catch (err) { }
                 }}
                 className={`cursor-pointer px-3 py-2 text-xs rounded-lg transition-all focus:bg-cyan-500/15 focus:text-cyan-400 font-bold ${lang === l.code ? "bg-cyan-500/10 text-cyan-400" : "text-slate-300"

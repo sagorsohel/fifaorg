@@ -40,6 +40,8 @@ import {
   formatLocalTime,
   formatCountdownTime,
   getTimezoneAbbr,
+  getLocalizedTeamName,
+  getLocalizedStadiumName,
 } from "@/lib/i18n"
 import { formatScorers, getScorersArray, getImageUrl } from "@/lib/utils"
 
@@ -92,15 +94,7 @@ function Countdown({ dateStr, stadiumId, lang }: { dateStr: string; stadiumId: s
 }
 
 const getTeamName = (team: Team | null | undefined, fallback: string, activeLang: LanguageCode) => {
-  if (!team) return fallback
-  if (team.translations) {
-    try {
-      const parsed = typeof team.translations === "string" ? JSON.parse(team.translations) : team.translations
-      if (parsed && parsed[activeLang]) return parsed[activeLang]
-    } catch { }
-  }
-  if (activeLang === "ar" && team.name_fa) return team.name_fa
-  return team.name_en
+  return getLocalizedTeamName(team, fallback, activeLang)
 }
 
 const getTeamSlug = (team: Team | null | undefined) => {
@@ -228,6 +222,11 @@ const BUFFER_STAGE_TRANSLATIONS: Record<string, Record<string, string>> = {
     sv: "Ansluter till server...",
     tr: "Sunucuya Bağlanıyor...",
     zh: "正在连接服务器...",
+    jp: "サーバーに接続中...",
+    kr: "서버에 연결 중...",
+    vn: "Đang kết nối tới máy chủ...",
+    he: "מתחבר לשרת...",
+    th: "กำลังเชื่อมต่อกับเซิร์ฟเวอร์..."
   },
   buffering: {
     en: "Buffering HD Stream...",
@@ -260,6 +259,11 @@ const BUFFER_STAGE_TRANSLATIONS: Record<string, Record<string, string>> = {
     sv: "Buffrar HD-ström...",
     tr: "HD Yayın Yükleniyor...",
     zh: "正在缓冲高清直播...",
+    jp: "HD配信を読み込み中...",
+    kr: "HD 스트림 버퍼링 중...",
+    vn: "Đang tải luồng HD...",
+    he: "טוען שידור HD...",
+    th: "กำลังโหลดสตรีม HD..."
   }
 }
 
@@ -417,10 +421,12 @@ export default function MatchClientPage({ slug }: { slug: string }) {
     const stadium = stadiumsData.stadiums.find((s) => s.id === selectedGame.stadium_id || s._id === selectedGame.stadium_id)
     if (!stadium) return ""
 
+    const resolvedLang = lang === "ch" ? "de" : lang
+
     const name = stadium.translations ? (() => {
       try {
         const parsed = typeof stadium.translations === "string" ? JSON.parse(stadium.translations) : stadium.translations
-        if (parsed && parsed[lang]) return parsed[lang].split(",")[0].trim()
+        if (parsed && parsed[resolvedLang]) return parsed[resolvedLang].split(",")[0].trim()
       } catch { }
       return stadium.name_en
     })() : stadium.name_en
@@ -428,8 +434,8 @@ export default function MatchClientPage({ slug }: { slug: string }) {
     const location = stadium.translations ? (() => {
       try {
         const parsed = typeof stadium.translations === "string" ? JSON.parse(stadium.translations) : stadium.translations
-        if (parsed && parsed[lang]) {
-          const parts = parsed[lang].split(",")
+        if (parsed && parsed[resolvedLang]) {
+          const parts = parsed[resolvedLang].split(",")
           if (parts.length > 1) return parts.slice(1).join(",").trim()
         }
       } catch { }
@@ -470,17 +476,7 @@ export default function MatchClientPage({ slug }: { slug: string }) {
 
   const getStadiumName = (stadiumId: string) => {
     const stadium = stadiumsMap[stadiumId]
-    if (!stadium) return ""
-    if (stadium.translations) {
-      try {
-        const parsed = typeof stadium.translations === "string" ? JSON.parse(stadium.translations) : stadium.translations
-        if (parsed && parsed[lang]) return parsed[lang]
-      } catch { }
-    }
-    if (lang === "ar" && stadium.name_fa && stadium.city_fa) {
-      return `${stadium.name_fa}, ${stadium.city_fa}`
-    }
-    return `${stadium.name_en}, ${stadium.city_en}`
+    return getLocalizedStadiumName(stadium, lang)
   }
 
   const selectedGameHomeFlag = useMemo(() => {
@@ -917,7 +913,7 @@ export default function MatchClientPage({ slug }: { slug: string }) {
                   <div className="flex items-center justify-between gap-4 text-slate-300">
                     {/* Home Scorers */}
                     <div className="truncate flex-1 flex flex-col gap-0.5 min-w-0">
-                      <span className="text-[7px] text-slate-500 uppercase tracking-wider font-bold mb-0.5">{selectedGame.home_team_name_en || (lang === "ar" ? "المضيف" : "HOME")}</span>
+                      <span className="text-[7px] text-slate-500 uppercase tracking-wider font-bold mb-0.5">{homeName && homeName !== "TBD" ? homeName : (lang === "ar" ? "المضيف" : "HOME")}</span>
                       {homeScorersList.length > 0 ? (
                         homeScorersList.map((scorer, idx) => (
                           <div key={idx} className="truncate">{scorer}</div>
@@ -932,7 +928,7 @@ export default function MatchClientPage({ slug }: { slug: string }) {
 
                     {/* Away Scorers */}
                     <div className="truncate flex-1 text-right flex flex-col gap-0.5 min-w-0">
-                      <span className="text-[7px] text-slate-500 uppercase tracking-wider font-bold mb-0.5">{selectedGame.away_team_name_en || (lang === "ar" ? "الضيف" : "AWAY")}</span>
+                      <span className="text-[7px] text-slate-500 uppercase tracking-wider font-bold mb-0.5">{awayName && awayName !== "TBD" ? awayName : (lang === "ar" ? "الضيف" : "AWAY")}</span>
                       {awayScorersList.length > 0 ? (
                         awayScorersList.map((scorer, idx) => (
                           <div key={idx} className="truncate">{scorer}</div>
@@ -960,15 +956,16 @@ export default function MatchClientPage({ slug }: { slug: string }) {
                         <span className="text-cyan-500 font-bold">🏟️</span>
                         <span className="font-bold text-slate-200 text-[11px] truncate">
                           {(() => {
+                            const resolvedLang = lang === "ch" ? "de" : lang
                             if (stadium.translations) {
                               try {
                                 const parsed = typeof stadium.translations === "string" ? JSON.parse(stadium.translations) : stadium.translations
-                                if (parsed && parsed[lang]) {
-                                  return parsed[lang].split(",")[0].trim()
+                                if (parsed && parsed[resolvedLang]) {
+                                  return parsed[resolvedLang].split(",")[0].trim()
                                 }
                               } catch { }
                             }
-                            if (lang === "ar" && stadium.name_fa) return stadium.name_fa
+                            if (resolvedLang === "ar" && stadium.name_fa) return stadium.name_fa
                             return stadium.name_en
                           })()}
                         </span>
@@ -984,18 +981,19 @@ export default function MatchClientPage({ slug }: { slug: string }) {
                           <span className="text-slate-500 block">{translate("location", lang)}</span>
                           <span className="font-bold text-slate-300 mt-0.5 block truncate">
                             {(() => {
+                              const resolvedLang = lang === "ch" ? "de" : lang
                               if (stadium.translations) {
                                 try {
                                   const parsed = typeof stadium.translations === "string" ? JSON.parse(stadium.translations) : stadium.translations
-                                  if (parsed && parsed[lang]) {
-                                    const parts = parsed[lang].split(",")
+                                  if (parsed && parsed[resolvedLang]) {
+                                    const parts = parsed[resolvedLang].split(",")
                                     if (parts.length > 1) {
                                       return parts.slice(1).join(",").trim()
                                     }
                                   }
                                 } catch { }
                               }
-                              if (lang === "ar" && stadium.city_fa && stadium.country_fa) {
+                              if (resolvedLang === "ar" && stadium.city_fa && stadium.country_fa) {
                                 return `${stadium.city_fa}, ${stadium.country_fa}`
                               }
                               return `${stadium.city_en}, ${stadium.country_en}`

@@ -26,6 +26,8 @@ import {
 
 import {
   translate,
+  getLocalizedTeamName,
+  getLocalizedStadiumName,
 } from "@/lib/i18n"
 import { getImageUrl } from "@/lib/utils"
 
@@ -84,17 +86,7 @@ export default function TeamClientPage({ teamId }: { teamId: string }) {
 
   const getStadiumName = (stadiumId: string) => {
     const stadium = stadiumsMap[stadiumId]
-    if (!stadium) return ""
-    if (stadium.translations) {
-      try {
-        const parsed = typeof stadium.translations === "string" ? JSON.parse(stadium.translations) : stadium.translations
-        if (parsed && parsed[lang]) return parsed[lang]
-      } catch { }
-    }
-    if (lang === "ar" && stadium.name_fa && stadium.city_fa) {
-      return `${stadium.name_fa}, ${stadium.city_fa}`
-    }
-    return `${stadium.name_en}, ${stadium.city_en}`
+    return getLocalizedStadiumName(stadium, lang)
   }
 
   // Flag lookup map
@@ -207,7 +199,7 @@ export default function TeamClientPage({ teamId }: { teamId: string }) {
               <div className="relative w-28 h-20 overflow-hidden rounded-2xl border-2 border-slate-800 shadow-2xl shrink-0">
                 <Image
                   src={getImageUrl(team.flag)}
-                  alt={team.name_en}
+                  alt={getLocalizedTeamName(team, team.name_en, lang)}
                   fill
                   className="object-cover"
                   unoptimized
@@ -218,7 +210,7 @@ export default function TeamClientPage({ teamId }: { teamId: string }) {
             )}
             <div className="text-center sm:text-left">
               <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight bg-linear-to-r from-cyan-400 to-cyan-300 bg-clip-text text-transparent">
-                {lang === "ar" && team.name_fa ? team.name_fa : team.name_en}
+                {getLocalizedTeamName(team, team.name_en, lang)}
               </h2>
               <p className="text-sm text-slate-400 mt-1 font-mono font-medium">
                 Code: {team.fifa_code} | {translate("group", lang)}: {team.groups}

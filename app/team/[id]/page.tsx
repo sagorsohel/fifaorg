@@ -37,7 +37,13 @@ const METADATA_TRANSLATIONS: Record<string, Record<string, string>> = {
     sr: "{team} | Утакмица уживо, распоред & табела",
     sv: "{team} | Livematch, spelschema & tabell",
     tr: "{team} | Canlı Maç, Fikstür & Puan Durumu",
-    zh: "{team} | 比赛直播、赛程与积分榜"
+    zh: "{team} | 比赛直播、赛程与积分榜",
+    jp: "{team} | ライブ配信、日程、結果、順位表",
+    kr: "{team} | 라이브 매치, 일정 및 순위",
+    vn: "{team} | Trực tiếp, Lịch thi đấu & Bảng xếp hạng",
+    he: "{team} | שידור חי, לוח משחקים וטבלה",
+    th: "{team} | สตรีมสด, โปรแกรมการแข่งขัน & ตารางคะแนน",
+    ch: "{team} | Live-Spiel, Spielplan & Tabelle"
   },
   desc_template: {
     en: "Stream 2026 FIFA World Cup \"{team}\" match live including scores, standings, and highlights.",
@@ -69,7 +75,13 @@ const METADATA_TRANSLATIONS: Record<string, Record<string, string>> = {
     sr: "Гледајте уживо утакмицу ФИФА Светског првенства 2026. \"{team}\", укључујући резултате, табеле и сажетке.",
     sv: "Streama \"{team}\" live från FIFA Fotbolls-VM 2026, inklusive resultat, tabeller och höjdpunkter.",
     tr: "Skorlar, puan durumları ve özetler dahil 2026 FIFA Dünya Kupası \"{team}\" maçını canlı izleyin.",
-    zh: "在线观看2026年FIFA世界杯“{team}”比赛直播，包含比分、积分榜和集锦。"
+    zh: "在线观看2026年FIFA世界杯“{team}”比赛直播，包含比分、积分榜和集锦。",
+    jp: "2026年FIFAワールドカップの「{team}」の全試合を無料オンラインライブ配信、結果、順位表、見どころからお届け。",
+    kr: "2026 FIFA 월드컵 \"{team}\"의 모든 경기를 라이브 스코어, 순위, 하이라이트와 함께 실시간 스트리밍으로 감상하세요.",
+    vn: "Xem trực tiếp trận đấu \"{team}\" tại FIFA World Cup 2026 bao gồm tỷ số, bảng xếp hạng và highlights.",
+    he: "צפה בשידור חי במשחקי \"{team}\" בגביע העולם 2026 כולל תוצאות, בתים ותקצירים.",
+    th: "รับชมการถ่ายทอดสดการแข่งขันของ \"{team}\" ในฟุตบอลโลก 2026 รวมถึงผลคะแนน ตารางคะแนน และไฮไลท์",
+    ch: "Sehen Sie das FIFA WM 2026 Spiel \"{team}\" im Live-Stream mit Toren, Tabellen und Highlights."
   },
   not_found: {
     en: "Team Not Found | FIFA WC26 on Screen",
@@ -101,7 +113,13 @@ const METADATA_TRANSLATIONS: Record<string, Record<string, string>> = {
     sr: "Reprezentacija није пронађена | FIFA WC26 on Screen",
     sv: "Lag hittades inte | FIFA WC26 on Screen",
     tr: "Takım Bulunamadı | FIFA WC26 on Screen",
-    zh: "未找到该球队 | FIFA WC26 on Screen"
+    zh: "未找到该球队 | FIFA WC26 on Screen",
+    jp: "チームが見つかりません | FIFA WC26を画面で視聴",
+    kr: "팀을 찾을 수 없습니다 | FIFA WC26 온 스크린",
+    vn: "Không tìm thấy đội bóng | FIFA WC26 trên màn hình",
+    he: "הנבחרת לא נמצאה | גביע העולם 2026",
+    th: "ไม่พบทีม | FIFA WC26 บนหน้าจอ",
+    ch: "Team nicht gefunden | FIFA Fussball-WM 2026"
   }
 }
 

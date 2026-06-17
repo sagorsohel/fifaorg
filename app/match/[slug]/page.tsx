@@ -37,7 +37,13 @@ const METADATA_TRANSLATIONS: Record<string, Record<string, string>> = {
     sr: "УЖИВО: {home} против {away} пренос утакмице",
     sv: "LIVE: {home} mot {away} match-stream",
     tr: "CANLI: {home} - {away} Maç Yayını",
-    zh: "直播：{home} 对 {away} 比赛直播"
+    zh: "直播：{home} 对 {away} 比赛直播",
+    jp: "LIVE: {home} vs {away} マッチ配信",
+    kr: "실시간: {home} vs {away} 경기 스트림",
+    vn: "TRỰC TIẾP: Phát trực tiếp trận đấu {home} vs {away}",
+    he: "שידור חי: {home} נגד {away} סטרימינג",
+    th: "ถ่ายทอดสด: {home} vs {away} สตรีมการแข่งขัน",
+    ch: "LIVE: {home} gegen {away} Live-Stream"
   },
   desc_template: {
     en: "Stream \"{home} vs {away}\" live 2026 FIFA World Cup match including scores, standings, and highlights.",
@@ -69,7 +75,13 @@ const METADATA_TRANSLATIONS: Record<string, Record<string, string>> = {
     sr: "Гледајте уживо утакмицу ФИФА Светског првенства 2026. \"{home} против {away}\", укључујуći rezultate, tabele i sažetke.",
     sv: "Streama \"{home} mot {away}\" live från FIFA Fotbolls-VM 2026, inklusive resultat, tabeller och höjdpunkter.",
     tr: "Skorlar, puan durumları ve özetler dahil 2026 FIFA Dünya Kupası \"{home} - {away}\" maçını canlı izleyin.",
-    zh: "在线观看2026年FIFA世界杯“{home} 对 {away}”比赛直播，包含比分、积分榜和集锦。"
+    zh: "在线观看2026年FIFA世界杯“{home} 对 {away}”比赛直播，包含比分、积分榜和集锦。",
+    jp: "2026年FIFAワールドカップの「{home}対{away}」の無料ライブ配信をリアルタイムのスコア、ハイライトとともにお楽しみください。",
+    kr: "2026 FIFA 월드컵 \"{home} 대 {away}\" 경기의 무료 실시간 스트리밍을 점수, 하이라이트와 함께 즐겨보세요.",
+    vn: "Xem trực tiếp miễn phí trận đấu \"{home} vs {away}\" tại FIFA World Cup 2026 với tỷ số thời gian thực và highlights.",
+    he: "צפה בשידור חי חינם במשחק גביע העולם \"{home} נגד {away}\" כולל תוצאות בזמן אמת ותקצירים.",
+    th: "รับชมสตรีมสดฟรี \"{home} vs {away}\" ในฟุตบอลโลก 2026 พร้อมผลคะแนนแบบเรียลไทม์และไฮไลท์",
+    ch: "Sehen Sie das FIFA WM 2026 Spiel \"{home} gegen {away}\" im Live-Stream mit Toren, Tabellen und Highlights."
   },
   not_found: {
     en: "Match Not Found | FIFA WC26 on Screen",
@@ -101,7 +113,13 @@ const METADATA_TRANSLATIONS: Record<string, Record<string, string>> = {
     sr: "Утакмица није пронађена | FIFA WC26 on Screen",
     sv: "Match hittades inte | FIFA WC26 on Screen",
     tr: "Maç Bulunamadı | FIFA WC26 on Screen",
-    zh: "未找到该比赛 | FIFA WC26 on Screen"
+    zh: "未找到该比赛 | FIFA WC26 on Screen",
+    jp: "試合が見つかりません | FIFA WC26を画面で視聴",
+    kr: "경기를 찾을 수 없습니다 | FIFA WC26 온 스크린",
+    vn: "Không tìm thấy trận đấu | FIFA WC26 trên màn hình",
+    he: "המשחק לא נמצא | גביע העולם 2026",
+    th: "ไม่พบการแข่งขัน | FIFA WC26 บนหน้าจอ",
+    ch: "Spiel nicht gefunden | FIFA Fussball-WM 2026"
   }
 }
 

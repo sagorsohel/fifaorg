@@ -17,6 +17,7 @@ import {
   LanguageCode,
   translate,
   parseStadiumLocalDate,
+  getLocalizedTeamName,
 } from "@/lib/i18n"
 import MatchCard from "@/components/dashboard/match-card"
 import { getImageUrl } from "@/lib/utils"
@@ -124,7 +125,7 @@ export default function TeamDetailView({
             <div className="relative w-28 h-20 overflow-hidden rounded-2xl border-2 border-slate-800 shadow-2xl shrink-0">
               <Image
                 src={getImageUrl(selectedTeam.flag)}
-                alt={selectedTeam.name_en}
+                alt={getLocalizedTeamName(selectedTeam, selectedTeam.name_en, lang)}
                 fill
                 className="object-cover"
                 unoptimized
@@ -135,7 +136,7 @@ export default function TeamDetailView({
           )}
           <div className="text-center sm:text-left">
             <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight bg-linear-to-r from-cyan-400 to-cyan-300 bg-clip-text text-transparent">
-              {selectedTeam.name_en}
+              {getLocalizedTeamName(selectedTeam, selectedTeam.name_en, lang)}
             </h2>
             <p className="text-sm text-slate-400 mt-1 font-mono font-medium">
               FIFA Code: {selectedTeam.fifa_code} | {translate("group", lang)}: {selectedTeam.groups}
