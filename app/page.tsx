@@ -34,11 +34,11 @@ const METADATA_TRANSLATIONS: Record<string, Record<string, string>> = {
     sv: "LIVE | WC26 on Screen",
     tr: "CANLI | WC26 on Screen",
     zh: "直播 | WC26 on Screen",
-    jp: "FIFAワールドカップ 2026無料オンラインライブ配信、テレビ放送、日程、順位表、ハイライト",
-    kr: "FIFA 월드컵 2026 무료 온라인 라이브 스트리밍, TV 중계, 일정, 순위표, 하이라이트",
-    vn: "Trực tiếp FIFA World Cup 2026 trực tuyến miễn phí, truyền hình, lịch thi đấu, bảng xếp hạng, highlights",
-    he: "שידור חי חינם של גביע העולם 2026, שידורי טלוויזיה, לוח משחקים, בתים ותקצירים",
-    th: "ฟุตบอลโลก 2026 ถ่ายทอดสดออนไลน์ฟรี, ทีวี, โปรแกรมแข่ง, ตารางคะแนน, ไฮไลท์",
+    jp: "ライブ | WC26の試合をスクリーンで観戦",
+    kr: "생중계 | WC26 생중계",
+    vn: "TRỰC TIẾP | WC26 trên màn hình",
+    he: "שידור חי | WC26 על המסך",
+    th: "ถ่ายทอดสด | WC26 บนหน้าจอ",
     ch: "LIVE | WC26 on Screen"
   },
   description: {
