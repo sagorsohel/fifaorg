@@ -184,7 +184,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
   const title = titleTemplate.replace("{home}", homeName).replace("{away}", awayName)
   const description = descTemplate.replace("{home}", homeName).replace("{away}", awayName)
-  const siteUrl = "https://fifaonscreen.com"
+  const siteUrl = "https://fifaonscreen.org"
 
   let images = [`${siteUrl}/logo.png`]
   if (matchInfo.game.modal_image) {

@@ -12,7 +12,7 @@ import { db, ensureTablesExist } from "@/lib/db"
 import { ads } from "@/lib/db/schema"
 import { eq } from "drizzle-orm"
 
-const siteUrl = "https://fifaonscreen.com"
+const siteUrl = "https://fifaonscreen.org"
 const imageUrl = `${siteUrl}/logo.png`
 
 export const metadata: Metadata = {

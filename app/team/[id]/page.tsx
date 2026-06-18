@@ -160,7 +160,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
 
   const title = titleTemplate.replace("{team}", teamName)
   const description = descTemplate.replace("{team}", teamName)
-  const siteUrl = "https://fifaonscreen.com"
+  const siteUrl = "https://fifaonscreen.org"
   const images = team.flag ? [getImageUrl(team.flag)] : [`${siteUrl}/logo.png`]
 
   return {

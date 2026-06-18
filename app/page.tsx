@@ -86,7 +86,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const title = METADATA_TRANSLATIONS.title[lang] || METADATA_TRANSLATIONS.title["en"]
   const description = METADATA_TRANSLATIONS.description[lang] || METADATA_TRANSLATIONS.description["en"]
 
-  const siteUrl = "https://fifaonscreen.com"
+  const siteUrl = "https://fifaonscreen.org"
   const imageUrl = `${siteUrl}/logo.png`
 
   return {
