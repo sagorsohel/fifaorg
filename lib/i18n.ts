@@ -1740,7 +1740,7 @@ export function mapCountryToLanguage(countryCode: string): LanguageCode {
 
 export const PREFIX_TO_LANG: Record<string, LanguageCode> = {
   en: "en",
-  us: "en-us",
+  "en-us": "en-us",
   ar: "ar",
   az: "az",
   bn: "bn",
@@ -1753,7 +1753,6 @@ export const PREFIX_TO_LANG: Record<string, LanguageCode> = {
   la: "es-la",
   fr: "fr",
   hi: "hi",
-  in: "hi",
   hr: "hr",
   hu: "hu",
   id: "id",
@@ -1784,7 +1783,7 @@ export const PREFIX_TO_LANG: Record<string, LanguageCode> = {
 
 export const LANG_TO_PREFIX: Record<LanguageCode, string> = {
   en: "en",
-  "en-us": "us",
+  "en-us": "en-us",
   ar: "ar",
   az: "az",
   bn: "bn",
@@ -1795,7 +1794,7 @@ export const LANG_TO_PREFIX: Record<LanguageCode, string> = {
   es: "es",
   "es-la": "la",
   fr: "fr",
-  hi: "in",
+  hi: "hi",
   hr: "hr",
   hu: "hu",
   id: "id",

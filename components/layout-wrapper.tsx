@@ -18,36 +18,13 @@ export function LayoutWrapper({ children }: { children: React.ReactNode }) {
   const [isInitialized, setIsInitialized] = useState(false)
   const isManageRoute = pathname?.startsWith("/manage")
 
-  // Synchronize URL prefix when pathname or language changes (without page reloads!)
+  // Synchronize language state with cookie/localStorage when it changes (without modifying URL path!)
   useEffect(() => {
     if (isManageRoute || !isInitialized) return
 
-    const currentPrefix = getPrefixFromLanguage(lang)
-    const pathParts = window.location.pathname.split("/")
-    const firstSeg = pathParts[1]
-
-    if (firstSeg && VALID_PREFIXES.includes(firstSeg.toLowerCase())) {
-      const pathLang = getLanguageFromPrefix(firstSeg)
-      if (pathLang !== lang) {
-        // Language changed from the dropdown, update URL prefix in address bar without reload!
-        pathParts[1] = currentPrefix
-        const newPath = pathParts.join("/")
-        const search = window.location.search
-        
-        // Update cookie, localStorage, and browser URL path without reload
-        document.cookie = `worldcup2026_lang=${lang}; path=/; max-age=31536000`
-        localStorage.setItem("worldcup2026_lang", lang)
-        window.history.replaceState(null, "", newPath + search)
-      }
-    } else {
-      // Path has no prefix. Normalizing URL in address bar without reload!
-      const newPath = "/" + currentPrefix + window.location.pathname
-      const search = window.location.search
-      window.history.replaceState(null, "", newPath + search)
-      document.cookie = `worldcup2026_lang=${lang}; path=/; max-age=31536000`
-      localStorage.setItem("worldcup2026_lang", lang)
-    }
-  }, [lang, pathname, isManageRoute, isInitialized])
+    document.cookie = `worldcup2026_lang=${lang}; path=/; max-age=31536000`
+    localStorage.setItem("worldcup2026_lang", lang)
+  }, [lang, isManageRoute, isInitialized])
 
   useEffect(() => {
     // Detect browser, local storage, or IP-based region and sync to Redux
