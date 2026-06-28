@@ -251,7 +251,7 @@ export function Navbar() {
                   <span className="sm:hidden">{lang === "en" || lang === "en-us" ? "EN" : lang.toUpperCase()}</span>
                   <span className="text-[8px] sm:text-[10px] text-slate-500">▼</span>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent className="bg-slate-900 border border-slate-800 text-slate-200 rounded-xl min-w-[120px] shadow-xl p-1 z-50">
+                <DropdownMenuContent className="bg-slate-900 border border-slate-800 text-slate-200 rounded-xl min-w-[180px] max-h-[100vh] overflow-y-auto shadow-xl p-1 z-50">
                   {LANGUAGES.map((l) => (
                     <DropdownMenuItem
                       key={l.code}

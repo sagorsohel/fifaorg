@@ -99,7 +99,7 @@ export function MobileNav() {
               {lang === "en" || lang === "en-us" ? "EN" : lang.toUpperCase()} ▼
             </span>
           </DropdownMenuTrigger>
-          <DropdownMenuContent side="top" align="center" className="bg-slate-900 border border-slate-800 text-slate-200 rounded-xl min-w-[120px] shadow-xl p-1 z-50">
+          <DropdownMenuContent side="top" align="center" className="bg-slate-900 border border-slate-800 text-slate-200 rounded-xl min-w-[120px] max-h-[350px] overflow-y-auto shadow-xl p-1 z-50">
             {LANGUAGES.map((l) => (
               <DropdownMenuItem
                 key={l.code}

@@ -172,16 +172,25 @@ export async function performSync() {
       .values(gamesValues)
       .onDuplicateKeyUpdate({
         set: {
+          _id: sql`VALUES(_id)`,
+          home_team_id: sql`VALUES(home_team_id)`,
+          away_team_id: sql`VALUES(away_team_id)`,
           home_score: sql`VALUES(home_score)`,
           away_score: sql`VALUES(away_score)`,
           home_scorers: sql`VALUES(home_scorers)`,
           away_scorers: sql`VALUES(away_scorers)`,
+          group: sql`VALUES(\`group\`)`,
+          matchday: sql`VALUES(matchday)`,
           local_date: sql`VALUES(local_date)`,
           persian_date: sql`VALUES(persian_date)`,
           stadium_id: sql`VALUES(stadium_id)`,
           finished: sql`VALUES(finished)`,
           time_elapsed: sql`VALUES(time_elapsed)`,
+          type: sql`VALUES(type)`,
           slug: sql`VALUES(slug)`,
+          referral_link: sql`VALUES(referral_link)`,
+          modal_image: sql`VALUES(modal_image)`,
+          bg_image: sql`VALUES(bg_image)`,
         }
       })
   }
@@ -243,16 +252,25 @@ export async function performGamesSync() {
       .values(gamesValues)
       .onDuplicateKeyUpdate({
         set: {
+          _id: sql`VALUES(_id)`,
+          home_team_id: sql`VALUES(home_team_id)`,
+          away_team_id: sql`VALUES(away_team_id)`,
           home_score: sql`VALUES(home_score)`,
           away_score: sql`VALUES(away_score)`,
           home_scorers: sql`VALUES(home_scorers)`,
           away_scorers: sql`VALUES(away_scorers)`,
+          group: sql`VALUES(\`group\`)`,
+          matchday: sql`VALUES(matchday)`,
           local_date: sql`VALUES(local_date)`,
           persian_date: sql`VALUES(persian_date)`,
           stadium_id: sql`VALUES(stadium_id)`,
           finished: sql`VALUES(finished)`,
           time_elapsed: sql`VALUES(time_elapsed)`,
+          type: sql`VALUES(type)`,
           slug: sql`VALUES(slug)`,
+          referral_link: sql`VALUES(referral_link)`,
+          modal_image: sql`VALUES(modal_image)`,
+          bg_image: sql`VALUES(bg_image)`,
         }
       })
   }

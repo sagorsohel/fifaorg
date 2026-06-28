@@ -8,8 +8,23 @@ export async function GET(req: Request) {
     const { searchParams } = new URL(req.url)
     const secret = searchParams.get("secret")
     const envSecret = process.env.CRON_SECRET
+    const authHeader = req.headers.get("authorization")
+    const cronHeader = req.headers.get("x-vercel-cron")
 
-    if (envSecret && secret !== envSecret) {
+    let isAuthorized = false
+    if (!envSecret) {
+      isAuthorized = true
+    } else {
+      if (secret === envSecret) {
+        isAuthorized = true
+      } else if (authHeader === `Bearer ${envSecret}`) {
+        isAuthorized = true
+      } else if (cronHeader === "true") {
+        isAuthorized = true
+      }
+    }
+
+    if (!isAuthorized) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
