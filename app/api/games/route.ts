@@ -13,7 +13,14 @@ export async function GET() {
   try {
     await ensureTablesExist()
     let gamesListRaw = await db.select().from(games)
+    if (gamesListRaw.length === 0) {
+      console.log("Database has no games. Triggering full sync on-demand...")
+      const { performSync } = await import("@/lib/db/sync")
+      await performSync()
+      gamesListRaw = await db.select().from(games)
+    }
     let gamesList = gamesListRaw.map(adjustGameStatus)
+
 
     // Check if any game is live or starting soon
     const isLiveOrStartingSoon = gamesList.some((game) => {

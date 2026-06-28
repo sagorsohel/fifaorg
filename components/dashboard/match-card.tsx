@@ -14,6 +14,7 @@ import {
   formatCountdownTime,
   getTimezoneAbbr,
   getLocalizedTeamName,
+  getLocalizedGroupOrStage,
 } from "@/lib/i18n"
 import { formatScorers, getScorersArray, getImageUrl } from "@/lib/utils"
 
@@ -114,8 +115,8 @@ export default function MatchCard({ match, flagMap, stadiumName, teamNamesMap }:
     >
       {/* Card Header info */}
       <div className="flex items-center justify-between text-slate-400 text-xs mb-4 pb-2 border-b border-slate-900/40">
-        <span className="bg-slate-950 px-2.5 py-1 rounded-md border border-slate-900 font-medium">
-          {translate("group", lang)} {match.group} • {translate("matchday", lang)} {match.matchday}
+        <span className="bg-slate-955 px-2.5 py-1 rounded-md border border-slate-900 font-medium">
+          {getLocalizedGroupOrStage(match.group, match.matchday, lang)}
         </span>
 
         {!isFinished && <Countdown dateStr={match.local_date} stadiumId={match.stadium_id} lang={lang} />}

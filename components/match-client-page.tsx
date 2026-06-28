@@ -42,6 +42,7 @@ import {
   getTimezoneAbbr,
   getLocalizedTeamName,
   getLocalizedStadiumName,
+  getLocalizedGroupOrStage,
 } from "@/lib/i18n"
 import { formatScorers, getScorersArray, getImageUrl } from "@/lib/utils"
 
@@ -618,7 +619,7 @@ export default function MatchClientPage({ slug }: { slug: string }) {
           {/* Top info and badge row */}
           <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-900/40 pb-2.5">
             <span className="bg-slate-955 px-2.5 py-1 rounded-full border border-slate-900 font-semibold text-[10px] text-slate-400">
-              {translate("group", lang)} {selectedGame.group} • {translate("matchday", lang)} {selectedGame.matchday}
+              {getLocalizedGroupOrStage(selectedGame.group, selectedGame.matchday, lang)}
             </span>
 
             {!isFinished && <Countdown dateStr={selectedGame.local_date} stadiumId={selectedGame.stadium_id} lang={lang} />}

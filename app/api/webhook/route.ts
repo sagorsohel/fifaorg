@@ -3,7 +3,7 @@ import { db, ensureTablesExist } from "@/lib/db"
 import { games, teams } from "@/lib/db/schema"
 import { sql } from "drizzle-orm"
 import { getGameSlug } from "@/lib/services/apiSlice"
-import { performGamesSync } from "@/lib/db/sync"
+import { performGamesSync, performGroupsSync } from "@/lib/db/sync"
 
 export async function POST(req: Request) {
   try {
@@ -114,8 +114,37 @@ export async function POST(req: Request) {
         updatedCount += body.teams.length
       }
 
-      // If we synced direct pushed items, return success immediately
+      // Case 3: Directly push groups data list
+      if (Array.isArray(body.groups) && body.groups.length > 0) {
+        console.log(`Directly syncing ${body.groups.length} groups via webhook payload...`)
+        for (const group of body.groups) {
+          const groupTeams = group.teams || []
+          for (const t of groupTeams) {
+            await db
+              .update(teams)
+              .set({
+                mp: Number(t.mp || 0),
+                w: Number(t.w || 0),
+                l: Number(t.l || 0),
+                d: Number(t.d || 0),
+                pts: Number(t.pts || 0),
+                gf: Number(t.gf || 0),
+                ga: Number(t.ga || 0),
+                gd: Number(t.gd || 0),
+              })
+              .where(sql`id = ${t.team_id}`)
+          }
+        }
+        updatedCount += body.groups.length
+      }
+
+      // If we synced direct pushed items, return success immediately after syncing group standings
       if (updatedCount > 0) {
+        try {
+          await performGroupsSync()
+        } catch (err) {
+          console.error("Failed to sync groups during webhook update:", err)
+        }
         return NextResponse.json({
           success: true,
           message: `Webhook processed successfully: synced ${updatedCount} items.`,

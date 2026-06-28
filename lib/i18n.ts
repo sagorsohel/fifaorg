@@ -3103,6 +3103,40 @@ export function translate(key: string, lang: LanguageCode): string {
   return dict[resolvedLang] || dict["en"]
 }
 
+export function getLocalizedGroupOrStage(
+  group: string | null | undefined,
+  matchday: string | null | undefined,
+  lang: LanguageCode
+): string {
+  if (!group) return ""
+
+  const groupUpper = group.toUpperCase()
+  const stageMap: Record<string, string> = {
+    R32: "round_32",
+    R16: "round_16",
+    QF: "quarter_finals",
+    SF: "semi_finals",
+    "3RD": "third_place",
+    FINAL: "final"
+  }
+
+  if (stageMap[groupUpper]) {
+    const stageKey = stageMap[groupUpper]
+    const translatedStage = translate(stageKey, lang)
+    if (matchday && matchday !== "null" && matchday !== "") {
+      return `${translatedStage} • ${translate("matchday", lang)} ${matchday}`
+    }
+    return translatedStage
+  }
+
+  const groupLabel = `${translate("group", lang)} ${group}`
+  if (matchday && matchday !== "null" && matchday !== "") {
+    return `${groupLabel} • ${translate("matchday", lang)} ${matchday}`
+  }
+  return groupLabel
+}
+
+
 export function getTimezoneLanguage(): LanguageCode | null {
   try {
     const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone

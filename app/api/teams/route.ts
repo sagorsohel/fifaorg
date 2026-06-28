@@ -5,7 +5,14 @@ import { teams } from "@/lib/db/schema"
 export async function GET() {
   try {
     await ensureTablesExist()
-    const teamsList = await db.select().from(teams)
+    let teamsList = await db.select().from(teams)
+    if (teamsList.length === 0) {
+      console.log("Database has no teams. Triggering full sync on-demand...")
+      const { performSync } = await import("@/lib/db/sync")
+      await performSync()
+      teamsList = await db.select().from(teams)
+    }
+
     const formattedTeams = teamsList.map(team => {
       let parsed = null
       if (team.translations) {
