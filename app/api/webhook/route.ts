@@ -72,9 +72,9 @@ export async function POST(req: Request) {
               time_elapsed: sql`VALUES(time_elapsed)`,
               type: sql`VALUES(type)`,
               slug: sql`VALUES(slug)`,
-              referral_link: sql`VALUES(referral_link)`,
-              modal_image: sql`VALUES(modal_image)`,
-              bg_image: sql`VALUES(bg_image)`,
+              referral_link: sql`COALESCE(NULLIF(referral_link, ''), VALUES(referral_link))`,
+              modal_image: sql`COALESCE(NULLIF(modal_image, ''), VALUES(modal_image))`,
+              bg_image: sql`COALESCE(NULLIF(bg_image, ''), VALUES(bg_image))`,
             }
           })
         updatedCount += body.games.length
