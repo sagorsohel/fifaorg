@@ -80,5 +80,7 @@ export const ads = mysqlTable("ads", {
   header_ads: text("header_ads"),
   membership_ref_link: text("membership_ref_link"),
   signin_ref_link: text("signin_ref_link"),
+  global_bg: text("global_bg"),
 })
+
 

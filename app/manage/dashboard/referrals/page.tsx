@@ -14,6 +14,7 @@ export default function ReferralLinksPage() {
   const [hero2Ads, setHero2Ads] = useState("")
   const [modalAds, setModalAds] = useState("")
   const [headerAds, setHeaderAds] = useState("")
+  const [globalBg, setGlobalBg] = useState("")
 
   const [referralsSaving, setReferralsSaving] = useState(false)
   const [referralsMessage, setReferralsMessage] = useState({ text: "", type: "success" })
@@ -30,6 +31,7 @@ export default function ReferralLinksPage() {
           setHero2Ads(data.ads.hero2_ads || "")
           setModalAds(data.ads.modal_ads || "")
           setHeaderAds(data.ads.header_ads || "")
+          setGlobalBg(data.ads.global_bg || "")
         }
       })
       .catch(() => { })
@@ -61,7 +63,8 @@ export default function ReferralLinksPage() {
           modal_ads: safeBtoa(modalAds),
           header_ads: safeBtoa(headerAds),
           membership_ref_link: safeBtoa(membershipRefLink),
-          signin_ref_link: safeBtoa(signinRefLink)
+          signin_ref_link: safeBtoa(signinRefLink),
+          global_bg: safeBtoa(globalBg)
         })
       })
       if (res.ok) {

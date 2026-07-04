@@ -4,8 +4,12 @@ import { useState, useEffect } from "react"
 import {
   SlidersHorizontal,
   CheckCircle,
-  AlertTriangle
+  AlertTriangle,
+  Upload,
+  Image as ImageIcon,
+  X
 } from "lucide-react"
+import { getImageUrl } from "@/lib/utils"
 
 export default function AdsControlPage() {
   const [heroAds, setHeroAds] = useState("")
@@ -14,8 +18,10 @@ export default function AdsControlPage() {
   const [headerAds, setHeaderAds] = useState("")
   const [membershipRefLink, setMembershipRefLink] = useState("")
   const [signinRefLink, setSigninRefLink] = useState("")
+  const [globalBg, setGlobalBg] = useState("")
   
   const [adsSaving, setAdsSaving] = useState(false)
+  const [uploading, setUploading] = useState(false)
   const [adsMessage, setAdsMessage] = useState({ text: "", type: "success" })
 
   // Fetch Ads settings on load
@@ -30,10 +36,40 @@ export default function AdsControlPage() {
           setHeaderAds(data.ads.header_ads || "")
           setMembershipRefLink(data.ads.membership_ref_link || "")
           setSigninRefLink(data.ads.signin_ref_link || "")
+          setGlobalBg(data.ads.global_bg || "")
         }
       })
       .catch(() => { })
   }, [])
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    setUploading(true)
+    setAdsMessage({ text: "", type: "success" })
+
+    const formData = new FormData()
+    formData.append("file", file)
+
+    try {
+      const res = await fetch("/api/manage/upload", {
+        method: "POST",
+        body: formData,
+      })
+      const data = await res.json()
+      if (res.ok && data.success) {
+        setGlobalBg(data.url)
+        setAdsMessage({ text: "Image uploaded successfully!", type: "success" })
+      } else {
+        setAdsMessage({ text: data.error || "Failed to upload image.", type: "error" })
+      }
+    } catch (err: any) {
+      setAdsMessage({ text: err.message || "Network error during upload.", type: "error" })
+    } finally {
+      setUploading(false)
+    }
+  }
 
   const handleSaveAds = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -61,7 +97,8 @@ export default function AdsControlPage() {
           modal_ads: safeBtoa(modalAds),
           header_ads: safeBtoa(headerAds),
           membership_ref_link: safeBtoa(membershipRefLink),
-          signin_ref_link: safeBtoa(signinRefLink)
+          signin_ref_link: safeBtoa(signinRefLink),
+          global_bg: safeBtoa(globalBg)
         })
       })
       if (res.ok) {
@@ -75,6 +112,7 @@ export default function AdsControlPage() {
       setAdsSaving(false)
     }
   }
+
 
   return (
     <div className="space-y-6 max-w-4xl animate-fade-in font-sans">
@@ -178,6 +216,76 @@ export default function AdsControlPage() {
           </p>
         </div>
 
+        {/* Global Background Image */}
+        <div className="space-y-3 bg-slate-955 border border-slate-900 rounded-2xl p-5 shadow-xs">
+          <label className="text-[10px] uppercase tracking-wider font-bold text-slate-400 flex items-center gap-1.5 font-mono">
+            <ImageIcon className="w-3.5 h-3.5 text-cyan-505" />
+            Global Background Image
+          </label>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-3">
+              <input
+                type="text"
+                value={globalBg}
+                onChange={(e) => setGlobalBg(e.target.value)}
+                placeholder="https://example.com/background.jpg or relative path"
+                className="w-full bg-slate-950 border border-slate-900 rounded-xl px-4 py-3 text-xs text-slate-200 placeholder-slate-600 focus:outline-hidden focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/20 transition-all font-sans"
+              />
+              
+              <div className="flex items-center gap-3">
+                <label className="flex items-center gap-2 px-4 py-2.5 bg-slate-900 hover:bg-slate-805 border border-slate-800 text-slate-300 rounded-xl cursor-pointer text-xs font-semibold select-none transition-all active:scale-[0.98]">
+                  <Upload className="w-3.5 h-3.5 text-cyan-500" />
+                  {uploading ? "Uploading..." : "Upload Image"}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                    disabled={uploading}
+                    className="hidden"
+                  />
+                </label>
+                
+                {globalBg && (
+                  <button
+                    type="button"
+                    onClick={() => setGlobalBg("")}
+                    className="flex items-center gap-1.5 px-3 py-2.5 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-red-400 rounded-xl text-xs font-semibold transition-all active:scale-[0.98] cursor-pointer"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                    Clear Background
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Preview Container */}
+            <div className="flex items-center justify-center border-2 border-dashed border-slate-900 rounded-2xl p-4 bg-slate-950/40 relative min-h-[120px] overflow-hidden">
+              {globalBg ? (
+                <div className="relative w-full h-full min-h-[100px] flex items-center justify-center">
+                  <img
+                    src={getImageUrl(globalBg)}
+                    alt="Background Preview"
+                    className="max-h-[100px] w-auto object-contain rounded-lg border border-slate-800 shadow-lg"
+                    onError={(e) => {
+                      e.currentTarget.style.display = 'none';
+                    }}
+                  />
+                </div>
+              ) : (
+                <div className="text-center space-y-1">
+                  <ImageIcon className="w-8 h-8 text-slate-705 mx-auto" />
+                  <span className="text-[10px] text-slate-600 font-bold uppercase tracking-wider block">No Background Configured</span>
+                </div>
+              )}
+            </div>
+          </div>
+          
+          <p className="text-[9px] text-slate-550 leading-relaxed font-sans">
+            Configure a global background image to be applied across the entire site (homepage and match detail views). It can be overridden by match-specific backgrounds.
+          </p>
+        </div>
+
         {/* Save button */}
         <div className="pt-2 border-t border-slate-900/60 flex items-center justify-end">
           <button
@@ -188,6 +296,7 @@ export default function AdsControlPage() {
             {adsSaving ? "Saving..." : "Save Configuration"}
           </button>
         </div>
+
       </form>
     </div>
   )

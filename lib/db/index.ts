@@ -117,12 +117,13 @@ export function ensureTablesExist(): Promise<void> {
           \`modal_ads\` text,
           \`header_ads\` text,
           \`membership_ref_link\` text,
-          \`signin_ref_link\` text
+          \`signin_ref_link\` text,
+          \`global_bg\` text
         )
       `)
 
       try {
-        await poolConnection.query("INSERT IGNORE INTO `ads` (`id`, `hero_ads`, `hero2_ads`, `modal_ads`, `header_ads`, `membership_ref_link`, `signin_ref_link`) VALUES ('global', '', '', '', '', '', '')")
+        await poolConnection.query("INSERT IGNORE INTO `ads` (`id`, `hero_ads`, `hero2_ads`, `modal_ads`, `header_ads`, `membership_ref_link`, `signin_ref_link`, `global_bg`) VALUES ('global', '', '', '', '', '', '', '')")
       } catch (err) {}
 
       try {
@@ -136,6 +137,11 @@ export function ensureTablesExist(): Promise<void> {
       try {
         await poolConnection.query("ALTER TABLE `ads` ADD COLUMN `signin_ref_link` TEXT NULL")
       } catch (err) {}
+
+      try {
+        await poolConnection.query("ALTER TABLE `ads` ADD COLUMN `global_bg` TEXT NULL")
+      } catch (err) {}
+
 
       // Self-healing columns for existing tables
       try {

@@ -318,6 +318,7 @@ export default function MatchClientPage({ slug }: { slug: string }) {
     modal_ads?: string
     membership_ref_link?: string
     signin_ref_link?: string
+    global_bg?: string
   } | null>(null)
 
   const [currentModalAd, setCurrentModalAd] = useState<"hero" | "hero2">(() => {
@@ -594,10 +595,10 @@ export default function MatchClientPage({ slug }: { slug: string }) {
       <div className="fixed inset-0 bg-black z-0 pointer-events-none"></div>
 
       {/* Page Background Image */}
-      {selectedGame.bg_image && (
+      {(selectedGame.bg_image || adsConfig?.global_bg) && (
         <div className="fixed inset-0 z-0 select-none pointer-events-none">
           <Image
-            src={getImageUrl(selectedGame.bg_image)}
+            src={getImageUrl(selectedGame.bg_image || adsConfig?.global_bg)}
             alt=""
             fill
             className="object-cover "
