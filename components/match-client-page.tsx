@@ -381,14 +381,6 @@ export default function MatchClientPage({ slug }: { slug: string }) {
     return adsConfig?.modal_ads || adsConfig?.hero_ads || adsConfig?.hero2_ads || ""
   })()
 
-  const activeHeaderAdHtml = (() => {
-    if (adsConfig?.header_ads) return adsConfig.header_ads
-    if (adsConfig?.hero_ads && adsConfig?.hero2_ads) {
-      return currentModalAd === "hero" ? adsConfig.hero_ads : adsConfig.hero2_ads
-    }
-    return adsConfig?.hero_ads || adsConfig?.hero2_ads || ""
-  })()
-
   // API Queries via RTK Query
   const { data: teamsData, isLoading: isTeamsLoading } = useGetTeamsQuery()
   const [pollingInterval, setPollingInterval] = useState(0)
@@ -769,11 +761,6 @@ export default function MatchClientPage({ slug }: { slug: string }) {
             </span>
           </div>
         </div>
-
-        {/* Header Ads between Scorecard Card and Player */}
-        {activeHeaderAdHtml && (
-          <AdScriptContainer scriptHtml={activeHeaderAdHtml} className="max-w-4xl mx-auto w-full flex justify-center py-1.5" />
-        )}
 
         {/* Stream Player Container (Centered) */}
         <div className="max-w-4xl mx-auto w-full aspect-video rounded-3xl overflow-hidden border border-cyan-500/25 bg-[#050b14]/90 backdrop-blur-md relative shadow-[0_0_60px_rgba(245,158,11,0.15)] transition-all duration-500">

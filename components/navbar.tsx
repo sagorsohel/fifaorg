@@ -280,7 +280,7 @@ export function Navbar() {
           </div>
         </div>
       </header>
-      {!isMatchPage && (adsConfig === null || activeAdHtml) && (
+      {(adsConfig === null || activeAdHtml) && (
         <div className="w-full flex justify-center py-2 bg-slate-955/50 border-b border-slate-900/40 relative z-30 min-h-[66px] sm:min-h-[106px] overflow-hidden">
           {activeAdHtml ? (
             <AdScriptContainer scriptHtml={activeAdHtml} className="max-w-7xl mx-auto w-full flex justify-center" />
