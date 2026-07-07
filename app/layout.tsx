@@ -100,6 +100,8 @@ export default async function RootLayout({
   const pathname = headersList.get("x-url") || ""
   const isManage = pathname.startsWith("/manage")
 
+  const isMatchPage = pathname.includes("/match/")
+
   const { headerAds, modalAds } = isManage ? { headerAds: "", modalAds: "" } : await getAds()
 
   const headerScripts = parseScriptTags(headerAds)
@@ -141,7 +143,7 @@ export default async function RootLayout({
         <Providers>
           <ThemeProvider>
             <LayoutWrapper>
-              {headerNonScriptHtml && (
+              {!isMatchPage && headerNonScriptHtml && (
                 <div dangerouslySetInnerHTML={{ __html: headerNonScriptHtml }} />
               )}
               {children}

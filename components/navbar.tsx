@@ -183,6 +183,8 @@ export function Navbar() {
     return defaultLink
   })()
 
+  const isMatchPage = pathname ? pathname.includes("/match/") : false
+
   return (
     <>
       <header className="sticky top-0 z-40 bg-slate-955/80 backdrop-blur-md border-b border-slate-900 w-full">
@@ -276,7 +278,7 @@ export function Navbar() {
           </div>
         </div>
       </header>
-      {(adsConfig === null || activeAdHtml) && (
+      {!isMatchPage && (adsConfig === null || activeAdHtml) && (
         <div className="w-full flex justify-center py-2 bg-slate-955/50 border-b border-slate-900/40 relative z-30 min-h-[66px] sm:min-h-[106px] overflow-hidden">
           {activeAdHtml ? (
             <AdScriptContainer scriptHtml={activeAdHtml} className="max-w-7xl mx-auto w-full flex justify-center" />

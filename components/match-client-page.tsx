@@ -275,6 +275,8 @@ export default function MatchClientPage({ slug }: { slug: string }) {
   const [isBuffering, setIsBuffering] = useState(false)
   const [bufferStage, setBufferStage] = useState<"none" | "connecting" | "buffering">("none")
   const [showInlineSignup, setShowInlineSignup] = useState(false)
+  const [isAdLoading, setIsAdLoading] = useState(false)
+  const [shouldLoadAd, setShouldLoadAd] = useState(false)
 
   const lang = useAppSelector((state) => state.ui.language)
   const detectedTimezone = useAppSelector((state) => state.ui.detectedTimezone)
@@ -291,14 +293,33 @@ export default function MatchClientPage({ slug }: { slug: string }) {
     const t2 = setTimeout(() => {
       setIsBuffering(false)
       setBufferStage("none")
-      setShowInlineSignup(true)
-    }, 1000) // 4 seconds delay as required by user request
+      if (!isMobile) {
+        setShowInlineSignup(true)
+      }
+    }, 2000)
 
     return () => {
       clearTimeout(t1)
       clearTimeout(t2)
     }
-  }, [isBuffering])
+  }, [isBuffering, isMobile])
+
+  useEffect(() => {
+    if (!showInlineSignup) {
+      setIsAdLoading(false)
+      setShouldLoadAd(false)
+      setIsBuffering(false)
+      setBufferStage("none")
+      return
+    }
+
+    setIsAdLoading(true)
+    const timer = setTimeout(() => {
+      setIsAdLoading(false)
+    }, 1000)
+
+    return () => clearTimeout(timer)
+  }, [showInlineSignup])
 
   const getBufferText = () => {
     const stage = bufferStage
@@ -356,6 +377,14 @@ export default function MatchClientPage({ slug }: { slug: string }) {
       return currentModalAd === "hero" ? adsConfig.hero_ads : adsConfig.hero2_ads
     }
     return adsConfig?.modal_ads || adsConfig?.hero_ads || adsConfig?.hero2_ads || ""
+  })()
+
+  const activeHeaderAdHtml = (() => {
+    if (adsConfig?.header_ads) return adsConfig.header_ads
+    if (adsConfig?.hero_ads && adsConfig?.hero2_ads) {
+      return currentModalAd === "hero" ? adsConfig.hero_ads : adsConfig.hero2_ads
+    }
+    return adsConfig?.hero_ads || adsConfig?.hero2_ads || ""
   })()
 
   // API Queries via RTK Query
@@ -495,6 +524,10 @@ export default function MatchClientPage({ slug }: { slug: string }) {
   const handlePlayClick = () => {
     if (isBuffering || showInlineSignup) return
     setIsBuffering(true)
+    setShouldLoadAd(true)
+    if (isMobile) {
+      setShowInlineSignup(true)
+    }
   }
 
   const handleActionRedirect = () => {
@@ -735,12 +768,19 @@ export default function MatchClientPage({ slug }: { slug: string }) {
           </div>
         </div>
 
+        {/* Header Ads between Scorecard Card and Player */}
+        {activeHeaderAdHtml && (
+          <AdScriptContainer scriptHtml={activeHeaderAdHtml} className="max-w-4xl mx-auto w-full flex justify-center py-1.5" />
+        )}
+
         {/* Stream Player Container (Centered) */}
-        <div className="max-w-4xl mx-auto w-full">
-          {(!showInlineSignup || isMobile) ? (
+        <div className="max-w-4xl mx-auto w-full aspect-video rounded-3xl overflow-hidden border border-cyan-500/25 bg-[#050b14]/90 backdrop-blur-md relative shadow-[0_0_60px_rgba(245,158,11,0.15)] transition-all duration-500">
+
+          {/* 2. Cover / Buffering Overlay (Visible when showInlineSignup is false OR isMobile is true) */}
+          {(!showInlineSignup || isMobile) && (
             <div
               onClick={handlePlayClick}
-              className="w-full aspect-video rounded-3xl overflow-hidden border-2 border-cyan-500/30 bg-slate-955 relative group cursor-pointer shadow-[0_0_35px_rgba(6,182,212,0.15)] hover:border-cyan-455 hover:shadow-[0_0_50px_rgba(6,182,212,0.4)] transition-all duration-500 transform hover:scale-[1.005]"
+              className="absolute inset-0 bg-slate-955 border-2 border-cyan-500/30 flex flex-col items-center justify-center cursor-pointer group shadow-[0_0_35px_rgba(6,182,212,0.15)] hover:border-cyan-455 hover:shadow-[0_0_50px_rgba(6,182,212,0.4)] transition-all duration-500 z-20"
             >
 
               {/* Split Screen Image or Custom Background */}
@@ -810,8 +850,8 @@ export default function MatchClientPage({ slug }: { slug: string }) {
                 ) : null}
               </div>
 
-              {/* bottom strip */}
-              <div className="absolute bottom-0 inset-x-0 bg-slate-955/90 backdrop-blur-xs border-t border-slate-900/60 px-5 py-3 flex items-center justify-between text-slate-400 text-xs z-10">
+              {/* Bottom strip */}
+              <div className="absolute bottom-0 inset-x-0 bg-slate-955/90 backdrop-blur-xs border-t border-slate-900/60 px-5 py-3 flex items-center justify-between text-slate-400 text-xs z-10 shrink-0">
                 <div className="flex items-center gap-4">
                   <Play className="w-4 h-4 cursor-pointer hover:text-white transition-colors" />
                   <Volume2 className="w-4 h-4 cursor-pointer hover:text-white transition-colors" />
@@ -825,8 +865,11 @@ export default function MatchClientPage({ slug }: { slug: string }) {
                 </div>
               </div>
             </div>
-          ) : (
-            <div className="w-full min-h-[420px] md:aspect-video rounded-3xl overflow-hidden border border-cyan-500/25 bg-[#050b14]/90 backdrop-blur-md relative shadow-[0_0_60px_rgba(245,158,11,0.15)] transition-all duration-300 flex flex-col justify-between p-6 animate-fade-in z-10">
+          )}
+
+          {/* 1. Signup block (Always mounted on desktop when isMobile is false) */}
+          {!isMobile && (
+            <div className={`absolute inset-0 flex flex-col justify-between p-6 z-10 ${!showInlineSignup ? "invisible opacity-0 pointer-events-none" : "visible opacity-100 transition-all duration-500"}`}>
               {/* Header */}
               <div className="flex items-center justify-between border-b border-slate-900/60 pb-3">
                 <div className="flex items-center gap-2 text-cyan-500">
@@ -850,16 +893,23 @@ export default function MatchClientPage({ slug }: { slug: string }) {
                 </h3>
 
                 {/* Main action button */}
-                <button
-                  onClick={handleActionRedirect}
-                  className="w-full max-w-sm py-3 bg-cyan-700 hover:bg-cyan-600 active:scale-[0.98] transition-all rounded-xl text-slate-955 font-extrabold tracking-wider text-xs sm:text-sm shadow-lg shadow-cyan-500/20 hover:shadow-cyan-500/35 cursor-pointer uppercase"
-                >
-                  {translate("signup_btn", lang)}
-                </button>
+                {isAdLoading ? (
+                  <div className="w-full max-w-sm py-3 flex items-center justify-center gap-2.5 bg-slate-900 border border-slate-800 rounded-xl text-slate-400 font-bold text-xs uppercase shadow-inner">
+                    <div className="w-4 h-4 rounded-full border-2 border-t-cyan-500 border-r-transparent border-b-cyan-500 border-l-transparent animate-spin"></div>
+                    <span>{lang === "bn" ? "অপেক্ষা করুন..." : "Preparing Stream..."}</span>
+                  </div>
+                ) : (
+                  <button
+                    onClick={handleActionRedirect}
+                    className="w-full max-w-sm py-3 bg-cyan-700 hover:bg-cyan-600 active:scale-[0.98] transition-all rounded-xl text-slate-955 font-extrabold tracking-wider text-xs sm:text-sm shadow-lg shadow-cyan-500/20 hover:shadow-cyan-500/35 cursor-pointer uppercase"
+                  >
+                    {translate("signup_btn", lang)}
+                  </button>
+                )}
 
                 {/* Modal Ads show under signup button */}
-                {activeModalAdHtml && (
-                  <AdScriptContainer scriptHtml={activeModalAdHtml} className="w-full max-w-sm flex justify-center my-2 shrink-0" />
+                {activeModalAdHtml && shouldLoadAd && (
+                  <AdScriptContainer scriptHtml={activeModalAdHtml} className="w-full max-w-sm flex justify-center my-2 shrink-0 animate-fade-in" />
                 )}
 
                 {/* Features list */}
@@ -1171,21 +1221,36 @@ export default function MatchClientPage({ slug }: { slug: string }) {
               </div>
 
               {/* Body */}
-              <div className="flex flex-col justify-center items-center gap-4 my-2">
+              <div className="flex flex-col justify-center items-center gap-4 my-2 relative min-h-[200px]">
+                {isBuffering ? (
+                  <div className="absolute inset-0 bg-[#050b14] flex flex-col items-center justify-center gap-3 z-30 rounded-2xl">
+                    <div className="w-8 h-8 rounded-full border-4 border-t-cyan-500 border-r-transparent border-b-cyan-500 border-l-transparent animate-spin"></div>
+                    <span className="text-[10px] font-bold font-mono tracking-widest text-slate-350 uppercase animate-pulse">
+                      {getBufferText()}
+                    </span>
+                  </div>
+                ) : null}
                 <h3 className="text-center font-bold text-[12px] text-slate-100 leading-snug px-2">
                   {translate("signup_title", lang)}
                 </h3>
 
                 {/* Main action button */}
-                <button
-                  onClick={handleActionRedirect}
-                  className="w-fit px-3 py-3 bg-cyan-700 hover:bg-cyan-600 active:scale-[0.98] transition-all rounded-xl text-slate-955 font-extrabold tracking-wider text-xs sm:text-sm shadow-lg shadow-cyan-500/20 hover:shadow-cyan-500/35 cursor-pointer uppercase"
-                >
-                  {translate("signup_btn", lang)}
-                </button>
+                {isAdLoading ? (
+                  <div className="w-fit px-6 py-3 flex items-center justify-center gap-2 bg-slate-900 border border-slate-800 rounded-xl text-slate-400 font-bold text-xs uppercase shadow-inner">
+                    <div className="w-3.5 h-3.5 rounded-full border-2 border-t-cyan-500 border-r-transparent border-b-cyan-500 border-l-transparent animate-spin"></div>
+                    <span>{lang === "bn" ? "অপেক্ষা করুন..." : "Preparing..."}</span>
+                  </div>
+                ) : (
+                  <button
+                    onClick={handleActionRedirect}
+                    className="w-fit px-3 py-3 bg-cyan-700 hover:bg-cyan-600 active:scale-[0.98] transition-all rounded-xl text-slate-955 font-extrabold tracking-wider text-xs sm:text-sm shadow-lg shadow-cyan-500/20 hover:shadow-cyan-500/35 cursor-pointer uppercase"
+                  >
+                    {translate("signup_btn", lang)}
+                  </button>
+                )}
 
                 {/* Modal Ads show under signup button */}
-                {activeModalAdHtml && (
+                {activeModalAdHtml && shouldLoadAd && (
                   <AdScriptContainer scriptHtml={activeModalAdHtml} className="w-full flex justify-center my-2 shrink-0" />
                 )}
 
