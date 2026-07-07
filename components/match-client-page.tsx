@@ -162,7 +162,7 @@ function AdScriptContainer({ scriptHtml, className }: { scriptHtml?: string; cla
             margin: 0;
             padding: 0;
             overflow: hidden;
-            background: transparent;
+            background: transparent !important;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -178,7 +178,7 @@ function AdScriptContainer({ scriptHtml, className }: { scriptHtml?: string; cla
   `
 
   return (
-    <div className={`${className} flex justify-center items-center overflow-hidden max-w-full`}>
+    <div className={`${className} flex justify-center items-center overflow-hidden max-w-full bg-transparent`}>
       <iframe
         srcDoc={iframeSrcDoc}
         width={width}
@@ -186,6 +186,7 @@ function AdScriptContainer({ scriptHtml, className }: { scriptHtml?: string; cla
         style={{ border: "none", overflow: "hidden", background: "transparent", maxWidth: "100%" }}
         scrolling="no"
         title="Ad Space"
+        allowTransparency={true}
       />
     </div>
   )
