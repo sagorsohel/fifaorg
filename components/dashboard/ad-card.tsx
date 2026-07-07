@@ -17,8 +17,9 @@ function AdScriptContainer({ scriptHtml, className }: { scriptHtml?: string; cla
 
   const iframeSrcDoc = `
     <!DOCTYPE html>
-    <html>
+    <html style="color-scheme: dark;">
       <head>
+        <meta name="color-scheme" content="dark">
         <style>
           html, body {
             margin: 0;

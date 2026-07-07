@@ -73,8 +73,9 @@ function AdScriptContainer({ scriptHtml, className }: { scriptHtml?: string; cla
 
   const iframeSrcDoc = `
     <!DOCTYPE html>
-    <html>
+    <html style="color-scheme: dark;">
       <head>
+        <meta name="color-scheme" content="dark">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <style>
           html, body {
