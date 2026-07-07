@@ -31,7 +31,7 @@ import {
   useAppSelector,
 } from "@/lib/store"
 import { useIsMobile } from "@/hooks/use-mobile"
-import { Dialog, DialogContent } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog"
 
 import {
   LanguageCode,
@@ -1177,14 +1177,18 @@ export default function MatchClientPage({ slug }: { slug: string }) {
 
         {isMobile && (
           <Dialog open={showInlineSignup} onOpenChange={setShowInlineSignup}>
-            <DialogContent className="bg-slate-955/95 backdrop-blur-md border border-cyan-500/25 text-slate-100 w-[calc(100%-1rem)] max-w-[22rem] max-h-[96vh] overflow-y-auto rounded-3xl p-3 shadow-[0_0_50px_rgba(6,182,212,0.15)] outline-hidden" showCloseButton={false}>
+            <DialogContent
+              className="bg-slate-955/95 backdrop-blur-md border border-cyan-500/25 text-slate-100 w-[calc(100%-1rem)] max-w-[22rem] max-h-[96vh] overflow-y-auto rounded-3xl p-3 shadow-[0_0_50px_rgba(6,182,212,0.15)] outline-hidden"
+              showCloseButton={false}
+              aria-describedby={undefined}
+            >
               {/* Header */}
               <div className="flex items-center justify-between border-b border-slate-900/60 pb-3">
                 <div className="flex items-center gap-2 text-cyan-500">
                   <Tv className="w-5 h-5 text-cyan-500" />
-                  <span className="font-bold text-[12px] tracking-wider uppercase text-slate-100">
+                  <DialogTitle className="font-bold text-[12px] tracking-wider uppercase text-slate-100">
                     {translate("title", lang)}
-                  </span>
+                  </DialogTitle>
                 </div>
                 <button
                   onClick={() => setShowInlineSignup(false)}
