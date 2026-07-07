@@ -4,6 +4,8 @@ import { games } from "@/lib/db/schema"
 import { performGamesSync } from "@/lib/db/sync"
 import { adjustGameStatus } from "@/lib/i18n"
 
+export const dynamic = "force-dynamic"
+
 const globalForSync = global as unknown as {
   lastSyncTime: number | undefined
   syncPromise: Promise<any> | null

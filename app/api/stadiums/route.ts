@@ -2,6 +2,8 @@ import { NextResponse } from "next/server"
 import { db, ensureTablesExist } from "@/lib/db"
 import { stadiums } from "@/lib/db/schema"
 
+export const dynamic = "force-dynamic"
+
 export async function GET() {
   try {
     await ensureTablesExist()

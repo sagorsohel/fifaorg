@@ -3,6 +3,8 @@ import { db, ensureTablesExist } from "@/lib/db"
 import { ads } from "@/lib/db/schema"
 import { eq } from "drizzle-orm"
 
+export const dynamic = "force-dynamic"
+
 export async function GET() {
   try {
     await ensureTablesExist()
