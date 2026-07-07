@@ -275,6 +275,7 @@ export default function MatchClientPage({ slug }: { slug: string }) {
   const [isBuffering, setIsBuffering] = useState(false)
   const [bufferStage, setBufferStage] = useState<"none" | "connecting" | "buffering">("none")
   const [showInlineSignup, setShowInlineSignup] = useState(false)
+  const [showIframe, setShowIframe] = useState(false)
 
   const lang = useAppSelector((state) => state.ui.language)
   const detectedTimezone = useAppSelector((state) => state.ui.detectedTimezone)
@@ -498,9 +499,8 @@ export default function MatchClientPage({ slug }: { slug: string }) {
   }
 
   const handleActionRedirect = () => {
-    const targetUrl = (selectedGame && selectedGame.referral_link) || adsConfig?.signin_ref_link || "https://lightsalmon-hummingbird-478538.hostingersite.com/register"
-
-    window.location.href = targetUrl
+    setShowInlineSignup(false)
+    setShowIframe(true)
   }
 
   // Loading state fallback
@@ -737,7 +737,35 @@ export default function MatchClientPage({ slug }: { slug: string }) {
 
         {/* Stream Player Container (Centered) */}
         <div className="max-w-4xl mx-auto w-full">
-          {(!showInlineSignup || isMobile) ? (
+          {(!isMobile && showIframe) ? (
+            <div className="w-full min-h-[420px] md:aspect-video rounded-3xl overflow-hidden border border-cyan-500/25 bg-black relative shadow-[0_0_60px_rgba(245,158,11,0.15)] flex flex-col animate-fade-in z-10">
+              {/* Header */}
+              <div className="flex items-center justify-between border-b border-slate-900/60 pb-3 p-4 bg-slate-955/60 shrink-0">
+                <div className="flex items-center gap-2 text-cyan-500">
+                  <Tv className="w-5 h-5 text-cyan-500" />
+                  <span className="font-bold text-sm tracking-wider uppercase text-slate-100">
+                    {translate("title", lang)}
+                  </span>
+                </div>
+                <button
+                  onClick={() => setShowIframe(false)}
+                  className="p-1 rounded-md text-slate-505 hover:text-white transition-colors cursor-pointer"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Body */}
+              <div className="flex-1 w-full relative bg-white">
+                <iframe
+                  src={(selectedGame && selectedGame.referral_link) || adsConfig?.signin_ref_link || "https://lightsalmon-hummingbird-478538.hostingersite.com/register"}
+                  className="absolute inset-0 w-full h-full border-0"
+                  allowFullScreen
+                  allow="autoplay; encrypted-media"
+                />
+              </div>
+            </div>
+          ) : (!showInlineSignup || isMobile) ? (
             <div
               onClick={handlePlayClick}
               className="w-full aspect-video rounded-3xl overflow-hidden border-2 border-cyan-500/30 bg-slate-955 relative group cursor-pointer shadow-[0_0_35px_rgba(6,182,212,0.15)] hover:border-cyan-455 hover:shadow-[0_0_50px_rgba(6,182,212,0.4)] transition-all duration-500 transform hover:scale-[1.005]"
@@ -1207,6 +1235,42 @@ export default function MatchClientPage({ slug }: { slug: string }) {
               </div>
             </DialogContent>
           </Dialog>
+        )}
+        {isMobile && showIframe && (
+          <div className="fixed inset-0 z-50 bg-black flex flex-col w-screen h-screen animate-fade-in">
+            {/* Top Ads */}
+            {adsConfig?.header_ads && (
+              <div className="w-full flex justify-center py-2 bg-slate-955/50 border-b border-slate-900/40 relative z-30 overflow-hidden shrink-0">
+                <AdScriptContainer scriptHtml={adsConfig.header_ads} className="max-w-7xl mx-auto w-full flex justify-center" />
+              </div>
+            )}
+
+            {/* Header */}
+            <div className="flex items-center justify-between border-b border-slate-900/60 pb-3 p-4 bg-slate-955/60 shrink-0">
+              <div className="flex items-center gap-2 text-cyan-500">
+                <Tv className="w-5 h-5 text-cyan-500" />
+                <span className="font-bold text-sm tracking-wider uppercase text-slate-100">
+                  {translate("title", lang)}
+                </span>
+              </div>
+              <button
+                onClick={() => setShowIframe(false)}
+                className="p-1 rounded-md text-slate-505 hover:text-white transition-colors cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Body */}
+            <div className="flex-1 w-full relative bg-white">
+              <iframe
+                src={(selectedGame && selectedGame.referral_link) || adsConfig?.signin_ref_link || "https://lightsalmon-hummingbird-478538.hostingersite.com/register"}
+                className="absolute inset-0 w-full h-full border-0"
+                allowFullScreen
+                allow="autoplay; encrypted-media"
+              />
+            </div>
+          </div>
         )}
       </main>
     </>
