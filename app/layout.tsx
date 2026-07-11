@@ -5,6 +5,7 @@ import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
 import { Providers } from "@/components/providers"
 import { LayoutWrapper } from "@/components/layout-wrapper"
+import FloatingMobileAd from "@/components/floating-mobile-ad"
 import { cn } from "@/lib/utils";
 
 import { headers } from "next/headers"
@@ -59,11 +60,13 @@ async function getAds() {
     const adsData = await db.select().from(ads).where(eq(ads.id, "global")).then(r => r[0])
     return {
       headerAds: adsData?.header_ads || "",
-      modalAds: adsData?.modal_ads || ""
+      modalAds: adsData?.modal_ads || "",
+      heroAds: adsData?.hero_ads || "",
+      hero2Ads: adsData?.hero2_ads || ""
     }
   } catch (err) {
     console.error("Failed to fetch ads from DB directly:", err)
-    return { headerAds: "", modalAds: "" }
+    return { headerAds: "", modalAds: "", heroAds: "", hero2Ads: "" }
   }
 }
 
@@ -102,7 +105,9 @@ export default async function RootLayout({
 
   const isMatchPage = pathname.includes("/match/")
 
-  const { headerAds, modalAds } = isManage ? { headerAds: "", modalAds: "" } : await getAds()
+  const { headerAds, modalAds, heroAds, hero2Ads } = isManage 
+    ? { headerAds: "", modalAds: "", heroAds: "", hero2Ads: "" } 
+    : await getAds()
 
   const headerScripts = parseScriptTags(headerAds)
   const headerNonScriptHtml = getNonScriptHtml(headerAds)
@@ -148,6 +153,7 @@ export default async function RootLayout({
               )}
               {children}
             </LayoutWrapper>
+            <FloatingMobileAd heroAds={heroAds} hero2Ads={hero2Ads} />
           </ThemeProvider>
         </Providers>
         {bodyEndNonScriptHtml && (
