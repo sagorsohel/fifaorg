@@ -15,7 +15,7 @@ function AdScriptContainer({ scriptHtml, className }: { scriptHtml?: string; cla
 
   // Attempt to parse width and height from the ad configuration (e.g. from atOptions)
   let width = "100%"
-  let height = "100px" // Default mobile banner height is typically 100px or less
+  let height = "50px" // Default mobile banner height is typically 50px
   if (scriptHtml.includes("atOptions")) {
     const widthMatch = scriptHtml.match(/'width'\s*:\s*(\d+)/)
     const heightMatch = scriptHtml.match(/'height'\s*:\s*(\d+)/)
@@ -111,7 +111,7 @@ export default function FloatingMobileAd({ floatingAds, heroAds, hero2Ads }: Flo
 
   return (
     <div
-      className="fixed bottom-0 left-0 right-0 z-50 bg-slate-950/95 border-t border-slate-800 shadow-[0_-8px_30px_rgb(0,0,0,0.4)] flex justify-center items-center py-1 pb-[calc(4px+env(safe-area-inset-bottom))] animate-in slide-in-from-bottom duration-300 md:hidden"
+      className="fixed bottom-0 left-0 right-0 z-50 bg-slate-950/70 backdrop-blur-md border-t border-slate-800/80 shadow-[0_-8px_30px_rgb(0,0,0,0.4)] flex justify-center items-center pt-[5px] pb-[calc(5px+env(safe-area-inset-bottom))] animate-in slide-in-from-bottom duration-300 md:hidden"
     >
 
 
