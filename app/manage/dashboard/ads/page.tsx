@@ -20,6 +20,7 @@ export default function AdsControlPage() {
   const [signinRefLink, setSigninRefLink] = useState("")
   const [globalBg, setGlobalBg] = useState("")
   const [floatingAds, setFloatingAds] = useState("")
+  const [floatingAdsStatus, setFloatingAdsStatus] = useState("on")
   
   const [adsSaving, setAdsSaving] = useState(false)
   const [uploading, setUploading] = useState(false)
@@ -39,6 +40,7 @@ export default function AdsControlPage() {
           setSigninRefLink(data.ads.signin_ref_link || "")
           setGlobalBg(data.ads.global_bg || "")
           setFloatingAds(data.ads.floating_ads || "")
+          setFloatingAdsStatus(data.ads.floating_ads_status || "on")
         }
       })
       .catch(() => { })
@@ -101,7 +103,8 @@ export default function AdsControlPage() {
           membership_ref_link: safeBtoa(membershipRefLink),
           signin_ref_link: safeBtoa(signinRefLink),
           global_bg: safeBtoa(globalBg),
-          floating_ads: safeBtoa(floatingAds)
+          floating_ads: safeBtoa(floatingAds),
+          floating_ads_status: floatingAdsStatus
         })
       })
       if (res.ok) {
@@ -219,20 +222,61 @@ export default function AdsControlPage() {
           </p>
         </div>
 
-        {/* Floating Mobile Ads Input */}
-        <div className="space-y-2">
-          <label className="text-[10px] uppercase tracking-wider font-bold text-slate-400 flex items-center gap-1.5 font-mono">
-            Floating Mobile Ads (Script / HTML Code)
-          </label>
+        {/* Floating Mobile Ads Section */}
+        <div className="space-y-3 bg-slate-955/20 border border-slate-900/60 rounded-2xl p-5 shadow-xs">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <label className="text-[10px] uppercase tracking-wider font-bold text-slate-400 flex items-center gap-1.5 font-mono">
+              Floating Mobile Ads (Script / HTML Code)
+            </label>
+            
+            {/* Status Radio Toggles */}
+            <div className="flex items-center gap-4 bg-slate-950 p-1 rounded-xl border border-slate-900 select-none">
+              <label className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider cursor-pointer transition-all ${
+                floatingAdsStatus === "on" 
+                  ? "bg-linear-to-r from-cyan-500 to-emerald-500 text-slate-955 shadow-md shadow-cyan-500/10" 
+                  : "text-slate-500 hover:text-slate-300"
+              }`}>
+                <input
+                  type="radio"
+                  name="floatingAdsStatus"
+                  value="on"
+                  checked={floatingAdsStatus === "on"}
+                  onChange={() => setFloatingAdsStatus("on")}
+                  className="hidden"
+                />
+                Enabled (On)
+              </label>
+              
+              <label className={`flex items-center gap-1.5 px-3 py-1.5 border-slate-800 rounded-lg text-[10px] font-bold uppercase tracking-wider cursor-pointer transition-all ${
+                floatingAdsStatus === "off" 
+                  ? "bg-red-500/20 border border-red-500/20 text-red-400 shadow-md shadow-red-500/10" 
+                  : "text-slate-500 hover:text-slate-300"
+              }`}>
+                <input
+                  type="radio"
+                  name="floatingAdsStatus"
+                  value="off"
+                  checked={floatingAdsStatus === "off"}
+                  onChange={() => setFloatingAdsStatus("off")}
+                  className="hidden"
+                />
+                Disabled (Off)
+              </label>
+            </div>
+          </div>
+          
           <textarea
             value={floatingAds}
             onChange={(e) => setFloatingAds(e.target.value)}
             placeholder="<!-- Paste floating mobile overlay banner scripts here -->"
             rows={6}
-            className="w-full bg-slate-950 border border-slate-900 rounded-xl px-4 py-3 text-xs text-slate-200 placeholder-slate-600 focus:outline-hidden focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/20 font-mono transition-all"
+            disabled={floatingAdsStatus === "off"}
+            className={`w-full bg-slate-950 border border-slate-900 rounded-xl px-4 py-3 text-xs text-slate-200 placeholder-slate-600 focus:outline-hidden focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/20 font-mono transition-all ${
+              floatingAdsStatus === "off" ? "opacity-40 cursor-not-allowed" : ""
+            }`}
           />
-          <p className="text-[9px] text-slate-550 leading-relaxed">
-            This script renders as a floating overlay banner at the bottom of mobile screens.
+          <p className="text-[9px] text-slate-550 leading-relaxed font-sans">
+            This script renders as a floating overlay banner at the bottom of mobile screens. Switch the toggle to completely disable the mobile banner.
           </p>
         </div>
 

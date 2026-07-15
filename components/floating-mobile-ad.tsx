@@ -5,6 +5,7 @@ import { useIsMobile } from "@/hooks/use-mobile"
 import { X } from "lucide-react"
 
 interface FloatingMobileAdProps {
+  floatingAdsStatus?: string
   floatingAds?: string
   heroAds?: string
   hero2Ads?: string
@@ -63,7 +64,7 @@ function AdScriptContainer({ scriptHtml, className }: { scriptHtml?: string; cla
   )
 }
 
-export default function FloatingMobileAd({ floatingAds, heroAds, hero2Ads }: FloatingMobileAdProps) {
+export default function FloatingMobileAd({ floatingAdsStatus, floatingAds, heroAds, hero2Ads }: FloatingMobileAdProps) {
   const isMobile = useIsMobile()
   const [mounted, setMounted] = useState(false)
   const [isDismissed, setIsDismissed] = useState(false)
@@ -91,7 +92,7 @@ export default function FloatingMobileAd({ floatingAds, heroAds, hero2Ads }: Flo
     return () => clearInterval(interval)
   }, [heroAds, hero2Ads])
 
-  if (!mounted || !isMobile || isDismissed) {
+  if (!mounted || !isMobile || isDismissed || floatingAdsStatus === "off") {
     return null
   }
 
