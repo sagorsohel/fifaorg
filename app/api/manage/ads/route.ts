@@ -18,7 +18,8 @@ export async function GET() {
         header_ads: "",
         membership_ref_link: "",
         signin_ref_link: "",
-        global_bg: ""
+        global_bg: "",
+        floating_ads: ""
       })
       adsData = { 
         id: "global", 
@@ -28,7 +29,8 @@ export async function GET() {
         header_ads: "",
         membership_ref_link: "",
         signin_ref_link: "",
-        global_bg: ""
+        global_bg: "",
+        floating_ads: ""
       }
     }
     return NextResponse.json({ success: true, ads: adsData })
@@ -40,7 +42,7 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     await ensureTablesExist()
-    let { hero_ads, hero2_ads, modal_ads, header_ads, membership_ref_link, signin_ref_link, global_bg } = await request.json()
+    let { hero_ads, hero2_ads, modal_ads, header_ads, membership_ref_link, signin_ref_link, global_bg, floating_ads } = await request.json()
 
     const isBase64 = request.headers.get("x-encoded-payload") === "base64"
     if (isBase64) {
@@ -59,6 +61,7 @@ export async function POST(request: Request) {
       membership_ref_link = safeDecode(membership_ref_link)
       signin_ref_link = safeDecode(signin_ref_link)
       global_bg = safeDecode(global_bg)
+      floating_ads = safeDecode(floating_ads)
     }
 
     await db.update(ads)
@@ -69,7 +72,8 @@ export async function POST(request: Request) {
         header_ads: header_ads ?? "",
         membership_ref_link: membership_ref_link ?? "",
         signin_ref_link: signin_ref_link ?? "",
-        global_bg: global_bg ?? ""
+        global_bg: global_bg ?? "",
+        floating_ads: floating_ads ?? ""
       })
       .where(eq(ads.id, "global"))
 

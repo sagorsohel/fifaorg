@@ -62,11 +62,12 @@ async function getAds() {
       headerAds: adsData?.header_ads || "",
       modalAds: adsData?.modal_ads || "",
       heroAds: adsData?.hero_ads || "",
-      hero2Ads: adsData?.hero2_ads || ""
+      hero2Ads: adsData?.hero2_ads || "",
+      floatingAds: adsData?.floating_ads || ""
     }
   } catch (err) {
     console.error("Failed to fetch ads from DB directly:", err)
-    return { headerAds: "", modalAds: "", heroAds: "", hero2Ads: "" }
+    return { headerAds: "", modalAds: "", heroAds: "", hero2Ads: "", floatingAds: "" }
   }
 }
 
@@ -105,8 +106,8 @@ export default async function RootLayout({
 
   const isMatchPage = pathname.includes("/match/")
 
-  const { headerAds, modalAds, heroAds, hero2Ads } = isManage 
-    ? { headerAds: "", modalAds: "", heroAds: "", hero2Ads: "" } 
+  const { headerAds, modalAds, heroAds, hero2Ads, floatingAds } = isManage 
+    ? { headerAds: "", modalAds: "", heroAds: "", hero2Ads: "", floatingAds: "" } 
     : await getAds()
 
   const headerScripts = parseScriptTags(headerAds)
@@ -153,7 +154,7 @@ export default async function RootLayout({
               )}
               {children}
             </LayoutWrapper>
-            <FloatingMobileAd heroAds={heroAds} hero2Ads={hero2Ads} />
+            <FloatingMobileAd floatingAds={floatingAds} heroAds={heroAds} hero2Ads={hero2Ads} />
           </ThemeProvider>
         </Providers>
         {bodyEndNonScriptHtml && (

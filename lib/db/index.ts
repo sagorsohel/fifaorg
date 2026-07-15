@@ -118,12 +118,13 @@ export function ensureTablesExist(): Promise<void> {
           \`header_ads\` text,
           \`membership_ref_link\` text,
           \`signin_ref_link\` text,
-          \`global_bg\` text
+          \`global_bg\` text,
+          \`floating_ads\` text
         )
       `)
 
       try {
-        await poolConnection.query("INSERT IGNORE INTO `ads` (`id`, `hero_ads`, `hero2_ads`, `modal_ads`, `header_ads`, `membership_ref_link`, `signin_ref_link`, `global_bg`) VALUES ('global', '', '', '', '', '', '', '')")
+        await poolConnection.query("INSERT IGNORE INTO `ads` (`id`, `hero_ads`, `hero2_ads`, `modal_ads`, `header_ads`, `membership_ref_link`, `signin_ref_link`, `global_bg`, `floating_ads`) VALUES ('global', '', '', '', '', '', '', '', '')")
       } catch (err) {}
 
       try {
@@ -140,6 +141,10 @@ export function ensureTablesExist(): Promise<void> {
 
       try {
         await poolConnection.query("ALTER TABLE `ads` ADD COLUMN `global_bg` TEXT NULL")
+      } catch (err) {}
+
+      try {
+        await poolConnection.query("ALTER TABLE `ads` ADD COLUMN `floating_ads` TEXT NULL")
       } catch (err) {}
 
 
